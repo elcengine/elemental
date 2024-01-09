@@ -1,6 +1,9 @@
 package elemental
 
-import "reflect"
+import (
+	"elemental/lib"
+	"reflect"
+)
 
 type TS struct {
 	CreatedAt string
@@ -8,16 +11,22 @@ type TS struct {
 }
 
 type SchemaTimestamps struct {
-	enabled bool
-	createdAt string `default:"createdAt"`
-	updatedAt string `default:"updatedAt"`
+	Enabled   bool
+	CreatedAt string `default:"createdAt"`
+	UpdatedAt string `default:"updatedAt"`
+}
+
+func (ts *SchemaTimestamps) WithDefaults() {
+	elemental.SetDefaults(ts)
 }
 
 type SchemaOptions struct {
-	timestamps SchemaTimestamps
+	Collection string
+	Timestamps SchemaTimestamps
 }
 
 type Field struct {
+	Disabled bool
 	Type     reflect.Kind
 	Required bool
 	Default  any

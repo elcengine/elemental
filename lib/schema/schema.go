@@ -1,18 +1,28 @@
 package elemental
 
 import (
-	"fmt"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"reflect"
-	"time"
-	"elemental/lib"
+
+	"github.com/creasty/defaults"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Schema[T any] struct {
-	T,
-	CreatedAt *time.Time
-	UpdatedAt *time.Time
-	options   SchemaOptions
+type Schema struct {
+	Definitions map[string]Field
+	Options     SchemaOptions
+}
+
+type Model struct {
+	Name   string
+	Schema Schema
+}
+
+func NewSchema(definitions map[string]Field, opts SchemaOptions) Schema {
+	defaults.Set(opts)
+	return Schema{
+		Definitions: definitions,
+		Options:     opts,
+	}
 }
 
 // Enables timestamps with the default field names of createdAt and updatedAt.
@@ -20,9 +30,9 @@ type Schema[T any] struct {
 // @returns void
 //
 // @example
-// 
+//
 // schema.DefaultTimestamps()
-func (s Schema[T]) DefaultTimestamps() {
+func (s Schema) DefaultTimestamps() {
 	s.Timestamps(nil)
 }
 
@@ -34,61 +44,58 @@ func (s Schema[T]) DefaultTimestamps() {
 //
 // @example
 //
-// schema.Timestamps(&TS{
-// 	CreatedAt: "created_at",
-// 	UpdatedAt: "updated_at",
-// })
-func (s Schema[T]) Timestamps(ts *TS) {
-	elemental.SetDefaults(s.options.timestamps)
-	s.options.timestamps.enabled = true
+//	schema.Timestamps(&TS{
+//		CreatedAt: "created_at",
+//		UpdatedAt: "updated_at",
+//	})
+func (s Schema) Timestamps(ts *TS) {
+	defaults.Set(s.Options.Timestamps)
+	s.Options.Timestamps.Enabled = true
 	if ts.CreatedAt != "" {
-		s.options.timestamps.createdAt = ts.CreatedAt
+		s.Options.Timestamps.CreatedAt = ts.CreatedAt
 	}
 	if ts.UpdatedAt != "" {
-		s.options.timestamps.updatedAt = ts.UpdatedAt
+		s.Options.Timestamps.UpdatedAt = ts.UpdatedAt
 	}
 }
 
-func (s Schema[T]) Validate() error {
+func (m Model) Validate() error {
 	return nil
 }
 
-func (s Schema[T]) ValidateField() error {
+func (m Model) ValidateField() error {
 	return nil
 }
 
-func (s Schema[T]) Create() (primitive.ObjectID, error) {
-
+func (m Model) Create() (primitive.ObjectID, error) {
+	return primitive.ObjectID{}, nil
 }
 
-func (s Schema[T]) FindOne(query primitive.M) *T {
-
-}
-
-type User struct {
-	// ID               primitive.ObjectID `json:"_id" bson:"_id,omitempty"`
-	// Email            string             `json:"email" bson:"email,omitempty"`
-	// Password         string             `json:"password" bson:"password,omitempty"`
-	// Organizations    []string           `json:"organizations" bson:"organizations"`
-	// Verified         bool               `json:"verified" bson:"verified"`
-	// VerificationCode *string            `json:"verification_code" bson:"verification_code,omitempty"`
-	// Role             UserRole           `json:"role" bson:"role,omitempty"`
-	// CreatedAt        string             `json:"created_at" bson:"created_at,omitempty"`
-	// UpdatedAt        string             `json:"updated_at" bson:"updated_at,omitempty"`
-	Name Field
-}
-
-func (u User) Validate() error {
-	a := User{
-		Name: Field{
-			Type: reflect.String,
+func (m Model) FindOne(query primitive.M) *T {
+	userSchema := NewSchema(map[string]Field{
+		"ID": Field{
+			Disabled: true,
 		},
-	}
-	userSchema := Schema[User]{}
-	userSchema.Timestamps(&TS{
-		CreatedAt: "created_at",
-		UpdatedAt: "updated_at",
+		"Name": Field{
+			Type:     reflect.String,
+			Required: true,
+		},
+	}, SchemaOptions{
+		Collection: "users",
 	})
-	fmt.Println(a)
-	return nil
+	type User struct {
+		Model
+		ID   primitive.ObjectID `bson:"_id"`
+		Name string             `bson:"name"`
+	}
+	user := User{
+		Name: "John Doe",
+	}
+	u, _ := User.Create(user)
+	User.FindOne(User{}, primitive.M{"name": "John Doe"})
+}
+
+type UserSchema struct {
+	ID   bool `default:"true"`
+	Name Field
 }
