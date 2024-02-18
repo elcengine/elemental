@@ -1,20 +1,12 @@
-package e_schema
+package elemental
 
 import (
-	"reflect"
-
 	"github.com/creasty/defaults"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Schema struct {
 	Definitions map[string]Field
 	Options     SchemaOptions
-}
-
-type Model struct {
-	Name   string
-	Schema Schema
 }
 
 func NewSchema(definitions map[string]Field, opts SchemaOptions) Schema {
@@ -57,44 +49,4 @@ func (s Schema) Timestamps(ts *TS) {
 	if ts.UpdatedAt != "" {
 		s.Options.Timestamps.UpdatedAt = ts.UpdatedAt
 	}
-}
-
-func (m Model) Validate() error {
-	return nil
-}
-
-func (m Model) ValidateField() error {
-	return nil
-}
-
-func (m Model) Create() (primitive.ObjectID, error) {
-	return primitive.ObjectID{}, nil
-}
-
-func (m Model) FindOne(query primitive.M) *T {
-	userSchema := NewSchema(map[string]Field{
-		"ID": Field{
-			Disabled: true,
-		},
-		"Name": Field{
-			Type:     reflect.String,
-			Required: true,
-		},
-	}, SchemaOptions{
-		Collection: "users",
-	})
-	type User struct {
-		ID   primitive.ObjectID `bson:"_id"`
-		Name string             `bson:"name"`
-	}
-	user := User{
-		Name: "John Doe",
-	}
-	u, _ := User.Create(user)
-	User.FindOne(User{}, primitive.M{"name": "John Doe"})
-}
-
-type UserSchema struct {
-	ID   bool `default:"true"`
-	Name Field
 }

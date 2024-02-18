@@ -1,4 +1,4 @@
-package e_schema
+package elemental
 
 import (
 	"elemental/utils"

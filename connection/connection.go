@@ -31,13 +31,18 @@ func Connect(opts ConnectionOptions) mongo.Client {
 			panic(e_constants.ErrURIRequired)
 		}
 	}
-	cs := qkit.Ok(connstring.ParseAndValidate(clientOpts.GetURI()))
+	cs := qkit.Must(connstring.ParseAndValidate(clientOpts.GetURI()))
 	defaultDatabase = cs.Database
 	ctx, cancel := context.WithTimeout(context.Background(), *qkit.Coalesce(clientOpts.ConnectTimeout, qkit.ValPtr(connectionTimeout)))
 	defer cancel()
 	client := qkit.Must(mongo.Connect(ctx, clientOpts))
 	e_utils.Must(client.Ping(ctx, readpref.Primary()))
 	return *client
+}
+
+// Simplest form of connect with just a URI and no options
+func ConnectLite(uri string) mongo.Client {
+	return Connect(ConnectionOptions{URI: uri})
 }
 
 func Disconnect() error {
