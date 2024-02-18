@@ -1,7 +1,7 @@
-package elemental
+package e_schema
 
 import (
-	"elemental/lib"
+	"elemental/utils"
 	"reflect"
 )
 
@@ -17,7 +17,7 @@ type SchemaTimestamps struct {
 }
 
 func (ts *SchemaTimestamps) WithDefaults() {
-	elemental.SetDefaults(ts)
+	e_utils.SetDefaults(ts)
 }
 
 type SchemaOptions struct {

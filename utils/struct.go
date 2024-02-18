@@ -1,4 +1,4 @@
-package elemental
+package e_utils
 
 import (
 	"fmt"

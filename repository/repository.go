@@ -1,7 +1,8 @@
-package elemental
+package e_repository
 
 import (
 	"context"
+	"elemental/connection"
 	"errors"
 	"fmt"
 	"log"
@@ -19,7 +20,7 @@ func NewRepository[T any](collection string) Repository[T] {
 }
 
 func (r Repository[T]) Create(payload T) primitive.ObjectID {
-	result, err := UseDefault().Collection(r.collection).InsertOne(context.TODO(), payload)
+	result, err := e_connection.UseDefault().Collection(r.collection).InsertOne(context.TODO(), payload)
 	if err != nil {
 		panic(err)
 	}
@@ -28,7 +29,7 @@ func (r Repository[T]) Create(payload T) primitive.ObjectID {
 
 func (r Repository[T]) FindOne(query primitive.M) *T {
 	model := new(T)
-	doc := UseDefault().Collection(r.collection).FindOne(context.Background(), query)
+	doc := e_connection.UseDefault().Collection(r.collection).FindOne(context.Background(), query)
 	if doc.Err() != nil {
 		if errors.Is(doc.Err(), mongo.ErrNoDocuments) {
 			log.Fatal(fmt.Sprintf("%v %s", r, doc.Err().Error()))
@@ -46,7 +47,7 @@ func (r Repository[T]) FindByID(id primitive.ObjectID) *T {
 
 func (r Repository[T]) FindAll() []T {
 	var users []T
-	cursor, err := UseDefault().Collection(r.collection).Find(context.Background(), primitive.M{})
+	cursor, err := e_connection.UseDefault().Collection(r.collection).Find(context.Background(), primitive.M{})
 	if err != nil {
 		panic(err)
 	}
@@ -55,14 +56,14 @@ func (r Repository[T]) FindAll() []T {
 }
 
 func (r Repository[T]) Update(id primitive.ObjectID, payload T) {
-	_, err := UseDefault().Collection(r.collection).UpdateOne(context.Background(), primitive.M{"_id": id}, primitive.M{"$set": payload})
+	_, err := e_connection.UseDefault().Collection(r.collection).UpdateOne(context.Background(), primitive.M{"_id": id}, primitive.M{"$set": payload})
 	if err != nil {
 		panic(err)
 	}
 }
 
 func (r Repository[T]) Delete(id primitive.ObjectID) {
-	_, err := UseDefault().Collection(r.collection).DeleteOne(context.Background(), primitive.M{"_id": id})
+	_, err := e_connection.UseDefault().Collection(r.collection).DeleteOne(context.Background(), primitive.M{"_id": id})
 	if err != nil {
 		panic(err)
 	}

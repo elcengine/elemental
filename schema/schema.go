@@ -1,4 +1,4 @@
-package elemental
+package e_schema
 
 import (
 	"reflect"
@@ -84,7 +84,6 @@ func (m Model) FindOne(query primitive.M) *T {
 		Collection: "users",
 	})
 	type User struct {
-		Model
 		ID   primitive.ObjectID `bson:"_id"`
 		Name string             `bson:"name"`
 	}
