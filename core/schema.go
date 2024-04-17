@@ -1,7 +1,14 @@
 package elemental
 
 import (
+	"context"
+	"elemental/connection"
+
+	"github.com/clubpay/qlubkit-go"
 	"github.com/creasty/defaults"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Schema struct {
@@ -54,9 +61,15 @@ func (s Schema) Timestamps(ts *TS) {
 }
 
 func (s Schema) SyncIndexes() {
-	for _, definition := range s.Definitions {
-		if definition.Index {
-			
+	collection := e_connection.Use(s.Options.Database, s.Options.Connection).Collection(s.Options.Collection);
+	collection.Indexes().DropAll(context.Background())
+	for field, definition := range s.Definitions {
+		if (definition.Index != options.IndexOptions{}) {
+			indexModel := mongo.IndexModel{
+				Keys: bson.D{{Key: field, Value: qkit.Coalesce(definition.IndexOrder, -1)}},
+				Options: &definition.Index,
+			}
+			collection.Indexes().CreateOne(context.TODO(), indexModel)
 		}
 	}
 }

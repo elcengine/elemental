@@ -3,6 +3,8 @@ package elemental
 import (
 	"elemental/utils"
 	"reflect"
+
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type TS struct {
@@ -23,6 +25,7 @@ func (ts *SchemaTimestamps) WithDefaults() {
 type SchemaOptions struct {
 	Collection string
 	Database   string
+	Connection string
 	Timestamps SchemaTimestamps
 }
 
@@ -35,7 +38,7 @@ type Field struct {
 	Max      float64
 	Length   int64
 	Regex    string
-	Unique   bool
-	Index    bool
+	Index    options.IndexOptions
+	IndexOrder int
 	Validate string
 }
