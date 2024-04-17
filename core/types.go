@@ -22,6 +22,7 @@ func (ts *SchemaTimestamps) WithDefaults() {
 
 type SchemaOptions struct {
 	Collection string
+	Database   string
 	Timestamps SchemaTimestamps
 }
 

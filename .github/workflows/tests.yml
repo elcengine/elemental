@@ -1,0 +1,25 @@
+name: Run tests
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+    test:
+        name: Test
+        runs-on: ubuntu-latest
+        steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        - name: Set up Golang 1.21
+          uses: actions/setup-go@v5
+          with:
+           go-version: '^1.21.0' 
+
+        - name: Install dependencies
+          run: go get -v -t -d ./...
+        
+        - name: Run tests
+          run: go test -v ./...
+            

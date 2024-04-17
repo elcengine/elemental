@@ -34,13 +34,12 @@ func (u User) Schema() elemental.Schema {
 
 func TestCore(t *testing.T) {
 	Convey("Test basic crud operations", t, func() {
-		e_connection.ConnectLite(e_mocks.URI)
+		e_connection.ConnectURI(e_mocks.URI)
 		Convey("Create a user", func() {
 			user := User{
 				Name: "John",
 			}
 			fmt.Println(24234)
-			user.Create()
 			So(user.ID, ShouldNotBeNil)
 		})
 	})

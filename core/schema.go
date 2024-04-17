@@ -11,10 +11,12 @@ type Schema struct {
 
 func NewSchema(definitions map[string]Field, opts SchemaOptions) Schema {
 	defaults.Set(opts)
-	return Schema{
+	schema :=  Schema{
 		Definitions: definitions,
 		Options:     opts,
 	}
+	schema.SyncIndexes()	
+	return schema
 }
 
 // Enables timestamps with the default field names of createdAt and updatedAt.
@@ -30,7 +32,7 @@ func (s Schema) DefaultTimestamps() {
 
 // Enables timestamps with custom field names.
 //
-// @param *ts* - A struct containing the custom field names.
+// @param ts - A struct containing the custom field names.
 //
 // @returns void
 //
@@ -48,5 +50,13 @@ func (s Schema) Timestamps(ts *TS) {
 	}
 	if ts.UpdatedAt != "" {
 		s.Options.Timestamps.UpdatedAt = ts.UpdatedAt
+	}
+}
+
+func (s Schema) SyncIndexes() {
+	for _, definition := range s.Definitions {
+		if definition.Index {
+			
+		}
 	}
 }

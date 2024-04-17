@@ -1,8 +1,6 @@
 package elemental
 
 import (
-	"fmt"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -14,10 +12,12 @@ type ModelSkeleton[T any] interface {
 
 type Model[T any] struct {
 	ModelSkeleton[T]
+	CreatedAt primitive.DateTime
+	UpdatedAt primitive.DateTime
 }
 
 func (u Model[T]) Create() primitive.ObjectID {
-	fmt.Println("creating entity")
+	enforceSchema(u.Schema(), u)
 	return primitive.ObjectID{}
 }
 
@@ -32,9 +32,3 @@ func (u Model[T]) Validate() error {
 func (u Model[T]) ValidateField() error {
 	return nil
 }
-
-// func a () {
-// 	user := User{
-// 		Name: "John",
-// 	}
-// }
