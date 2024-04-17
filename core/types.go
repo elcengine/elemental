@@ -3,7 +3,6 @@ package elemental
 import (
 	"elemental/utils"
 	"reflect"
-
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -40,5 +39,4 @@ type Field struct {
 	Regex    string
 	Index    options.IndexOptions
 	IndexOrder int
-	Validate string
 }
