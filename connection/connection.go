@@ -92,3 +92,10 @@ func Use(database string, alias ...string) *mongo.Database {
 func UseDefault(alias ...string) *mongo.Database {
 	return qkit.ValPtr(clients[qkit.Coalesce(alias[0], "default")]).Database(qkit.Coalesce(defaultDatabases[qkit.Coalesce(alias[0], "default")], "test"))
 }
+
+// Get the client for a given alias or the default client if no alias is provided
+//
+// @param alias - The alias of the client to get
+func Client(alias ...string) *mongo.Client {
+	return qkit.ValPtr(clients[qkit.Coalesce(alias[0], "default")])
+}
