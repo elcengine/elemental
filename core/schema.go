@@ -3,10 +3,12 @@ package elemental
 import (
 	"context"
 	"elemental/connection"
+
 	"github.com/clubpay/qlubkit-go"
 	"github.com/creasty/defaults"
 	"github.com/rxwycdh/rxhash"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -28,9 +30,7 @@ func NewSchema(definitions map[string]Field, opts SchemaOptions) Schema {
 		Definitions: definitions,
 		Options:     opts,
 	}
-	e_connection.OnConnect(qkit.Coalesce(opts.Connection, "default"), func() {
-		schema.SyncIndexes()
-	})
+	e_connection.On(event.ConnectionReady, schema.SyncIndexes)
 	schemas[key] = schema
 	return schema
 }

@@ -4,10 +4,12 @@ import (
 	"context"
 	"elemental/constants"
 	"elemental/utils"
-	"golang.org/x/exp/maps"
 	"time"
 
+	"golang.org/x/exp/maps"
+
 	"github.com/clubpay/qlubkit-go"
+	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -18,16 +20,17 @@ const connectionTimeout = 30 * time.Second
 
 var clients = make(map[string]mongo.Client)
 var defaultDatabases = make(map[string]string)
-var connectionListeners = make(map[string]func())
 
 type ConnectionOptions struct {
 	Alias         string
 	URI           string
 	ClientOptions *options.ClientOptions
+	PoolMonitor   *event.PoolMonitor
 }
 
 func Connect(opts ConnectionOptions) mongo.Client {
-	clientOpts := qkit.Coalesce(opts.ClientOptions, options.Client()).SetServerAPIOptions(options.ServerAPI(options.ServerAPIVersion1))
+	opts.Alias = qkit.Coalesce(opts.Alias, "default")
+	clientOpts := qkit.Coalesce(opts.ClientOptions, options.Client()).SetServerAPIOptions(options.ServerAPI(options.ServerAPIVersion1)).SetPoolMonitor(qkit.Coalesce(opts.PoolMonitor, poolMonitor(opts.Alias)))
 	if clientOpts.GetURI() == "" {
 		clientOpts = clientOpts.ApplyURI(opts.URI)
 		if clientOpts.GetURI() == "" {
@@ -35,16 +38,12 @@ func Connect(opts ConnectionOptions) mongo.Client {
 		}
 	}
 	cs := qkit.Must(connstring.ParseAndValidate(clientOpts.GetURI()))
-	opts.Alias = qkit.Coalesce(opts.Alias, "default")
 	defaultDatabases[opts.Alias] = cs.Database
 	ctx, cancel := context.WithTimeout(context.Background(), *qkit.Coalesce(clientOpts.ConnectTimeout, qkit.ValPtr(connectionTimeout)))
 	defer cancel()
 	client := qkit.Must(mongo.Connect(ctx, clientOpts))
 	e_utils.Must(client.Ping(ctx, readpref.Primary()))
 	clients[opts.Alias] = *client
-	if listener, ok := connectionListeners[opts.Alias]; ok {
-		listener()
-	}
 	return *client
 }
 
@@ -92,13 +91,4 @@ func Use(database string, alias ...string) *mongo.Database {
 // @param alias - The alias of the connection to use
 func UseDefault(alias ...string) *mongo.Database {
 	return qkit.ValPtr(clients[qkit.Coalesce(alias[0], "default")]).Database(qkit.Coalesce(defaultDatabases[qkit.Coalesce(alias[0], "default")], "test"))
-}
-
-// Add a listener to a connection
-//
-// @param alias - The alias of the connection to listen to
-//
-// @param listener - The listener to add
-func OnConnect(alias string, listener func()) {
-	connectionListeners[alias] = listener
 }
