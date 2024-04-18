@@ -18,6 +18,7 @@ const connectionTimeout = 30 * time.Second
 
 var clients = make(map[string]mongo.Client)
 var defaultDatabases = make(map[string]string)
+var connectionListeners = make(map[string]func())
 
 type ConnectionOptions struct {
 	Alias         string
@@ -40,6 +41,10 @@ func Connect(opts ConnectionOptions) mongo.Client {
 	defer cancel()
 	client := qkit.Must(mongo.Connect(ctx, clientOpts))
 	e_utils.Must(client.Ping(ctx, readpref.Primary()))
+	clients[opts.Alias] = *client
+	if listener, ok := connectionListeners[opts.Alias]; ok {
+		listener()
+	}
 	return *client
 }
 
@@ -79,7 +84,7 @@ func Disconnect(aliases ...string) error {
 //
 // @param alias - The alias of the connection to use
 func Use(database string, alias ...string) *mongo.Database {
-	return qkit.ValPtr(clients[qkit.Coalesce(alias[0], "default")]).Database(database)
+	return qkit.ValPtr(clients[qkit.Coalesce(alias[0], "default")]).Database(qkit.Coalesce(database, defaultDatabases[qkit.Coalesce(alias[0], "default")]))
 }
 
 // Use the default database on a connection. Uses the default connection if no alias is provided
@@ -87,4 +92,13 @@ func Use(database string, alias ...string) *mongo.Database {
 // @param alias - The alias of the connection to use
 func UseDefault(alias ...string) *mongo.Database {
 	return qkit.ValPtr(clients[qkit.Coalesce(alias[0], "default")]).Database(qkit.Coalesce(defaultDatabases[qkit.Coalesce(alias[0], "default")], "test"))
+}
+
+// Add a listener to a connection
+//
+// @param alias - The alias of the connection to listen to
+//
+// @param listener - The listener to add
+func OnConnect(alias string, listener func()) {
+	connectionListeners[alias] = listener
 }

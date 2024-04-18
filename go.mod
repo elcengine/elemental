@@ -3,20 +3,14 @@ module elemental
 go 1.21.3
 
 require (
-	github.com/DataDog/datadog-agent/pkg/util/hostname/validate v0.52.1
 	github.com/clubpay/qlubkit-go v1.0.2
 	github.com/creasty/defaults v1.7.0
+	github.com/rxwycdh/rxhash v0.0.0-20230131062142-10b7a38b400d
 	github.com/smartystreets/goconvey v1.8.1
 	go.mongodb.org/mongo-driver v1.14.0
 )
 
-require (
-	github.com/DataDog/datadog-agent/pkg/util/log v0.52.1 // indirect
-	github.com/DataDog/datadog-agent/pkg/util/scrubber v0.52.1 // indirect
-	github.com/cihub/seelog v0.0.0-20170130134532-f561c5e57575 // indirect
-	go.uber.org/atomic v1.11.0 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
-)
+require github.com/google/go-cmp v0.5.9 // indirect
 
 require (
 	github.com/golang/snappy v0.0.4 // indirect

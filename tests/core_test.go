@@ -8,38 +8,44 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/clubpay/qlubkit-go"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type User struct {
-	elemental.Model[User]
-	ID   primitive.ObjectID `bson:"_id"`
-	Name string             `bson:"name"`
+	ID   primitive.ObjectID `json:"_id" bson:"_id"`
+	Name string             `json:"name" bson:"name"`
+	Age  int                `json:"age" bson:"age"`
 }
 
-func (u User) Schema() elemental.Schema {
-	return elemental.NewSchema(map[string]elemental.Field{
-		"ID": {
-			Disabled: true,
+var UserModel = elemental.NewModel[User]("User", elemental.NewSchema(map[string]elemental.Field{
+	"Name": {
+		Type:     reflect.String,
+		Required: true,
+		Index: options.IndexOptions{
+			Unique: qkit.ValPtr(true),
 		},
-		"Name": {
-			Type:     reflect.String,
-			Required: true,
-		},
-	}, elemental.SchemaOptions{
-		Collection: "users",
-	})
-}
+	},
+	"Age": {
+		Type: reflect.Int,
+		Default: 18,
+	},
+}, elemental.SchemaOptions{
+	Collection: "users",
+}))
 
 func TestCore(t *testing.T) {
+	e_connection.ConnectURI(e_mocks.URI)
 	Convey("Test basic crud operations", t, func() {
 		e_connection.ConnectURI(e_mocks.URI)
 		Convey("Create a user", func() {
 			user := User{
-				Name: "John",
+				Name: "Akalanka",
 			}
-			fmt.Println(24234)
+			id := UserModel.Create(user)
+			fmt.Println("newly created user id", id)
 			So(user.ID, ShouldNotBeNil)
 		})
 	})
