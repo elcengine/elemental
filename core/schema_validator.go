@@ -18,7 +18,7 @@ func enforceSchema[T any](schema Schema, doc *T) primitive.M {
 		reflectedEntity = reflect.Indirect(reflectedEntity)
 	}
 	for field, definition := range schema.Definitions {
-		reflectedField := reflectedEntity.FieldByName("Base").FieldByName(field)
+		reflectedField := reflect.Indirect(reflectedEntity.FieldByName("Base")).FieldByName(field)
 		if !reflectedField.IsValid() || reflectedField.IsZero() {
 			if definition.Required {
 				panic(fmt.Sprintf("Field %s is required", field))
@@ -56,7 +56,7 @@ func enforceSchema[T any](schema Schema, doc *T) primitive.M {
 }
 
 func extractBaseValueOrSetDefault[T any](reflectedEntity *reflect.Value, fieldName string, defaultValue T) {
-	field := reflectedEntity.FieldByName("Base").FieldByName(fieldName)
+	field := reflect.Indirect(reflectedEntity.FieldByName("Base")).FieldByName(fieldName)
 	if field.IsValid() && !field.IsZero() {
 		reflectedEntity.FieldByName(fieldName).Set(reflect.ValueOf(field))
 	}

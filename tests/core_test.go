@@ -44,8 +44,8 @@ func TestCore(t *testing.T) {
 			user := User{
 				Name: "Akalanka",
 			}
-			id := UserModel.Create(user)
-			fmt.Println("newly created user id", id)
+			u := UserModel.Create(user)
+			fmt.Println("newly created user id", u)
 			So(user.ID, ShouldNotBeNil)
 		})
 	})

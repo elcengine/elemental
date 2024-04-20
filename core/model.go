@@ -3,10 +3,12 @@ package elemental
 import (
 	"context"
 	"elemental/connection"
+	"reflect"
 	"time"
 
 	"github.com/clubpay/qlubkit-go"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -21,7 +23,7 @@ type Model[T any] struct {
 }
 
 type Document[T any] struct {
-	Base      T                   `json:",omitempty" bson:",omitempty"`
+	Base      *T                  `json:",omitempty" bson:",omitempty"`
 	ID        *primitive.ObjectID `json:"_id" bson:"_id"`
 	CreatedAt *time.Time          `json:"created_at" bson:"created_at"`
 	UpdatedAt *time.Time          `json:"updated_at" bson:"updated_at"`
@@ -30,21 +32,25 @@ type Document[T any] struct {
 var models = make(map[string]Model[any])
 
 func NewModel[T any](name string, schema Schema) Model[T] {
+	var sample [0]T
 	if _, ok := models[name]; ok {
 		return qkit.Cast[Model[T]](models[name])
 	}
 	model := Model[T]{schema: schema}
 	models[name] = qkit.Cast[Model[any]](model)
+	e_connection.On(event.ConnectionReady, func() {
+		schema.syncIndexes(reflect.TypeOf(sample).Elem())
+	})
 	return model
 }
 
-func (m Model[T]) Create(doc T) primitive.ObjectID {
+func (m Model[T]) Create(doc T) Document[T] {
 	document := enforceSchema(m.schema, &Document[T]{
-		Base:      doc,
-		CreatedAt: qkit.ValPtr(time.Now()),
+		Base: &doc,
 	})
 	result := qkit.Must(m.Collection().InsertOne(context.TODO(), document))
-	return result.InsertedID.(primitive.ObjectID)
+	document["_id"] = result.InsertedID.(primitive.ObjectID)
+	return qkit.CastJSON[Document[T]](document)
 }
 
 func (m Model[T]) FindOne(query primitive.M) *T {
