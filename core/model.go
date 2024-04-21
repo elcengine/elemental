@@ -23,8 +23,7 @@ type Model[T any] struct {
 	Name               string
 	schema             Schema
 	pipeline           mongo.Pipeline
-	returnSingleRecord bool
-	resultExtractor    func(docs []map[string]any) any
+	executor           func(ctx context.Context) any
 }
 
 var models = make(map[string]Model[any])
@@ -62,53 +61,39 @@ func (m Model[T]) InsertMany(docs []T, ctx ...context.Context) []T {
 
 func (m Model[T]) Find(query ...primitive.M) Model[T] {
 	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}})
-	m.resultExtractor = func(docs []map[string]any) any {
-		return e_utils.CastSliceFromMaps[T](docs)
+	m.executor = func(ctx context.Context) any {
+		var results []T
+		e_utils.Must(qkit.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
+		return results
 	}
 	return m
 }
 
 func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
-	m.returnSingleRecord = true
-	m.resultExtractor = func(docs []map[string]any) any {
-		if len(docs) == 0 {
-			return nil
-		}
-		return qkit.CastJSON[T](docs[0])
+	m.pipeline = append(m.pipeline, 
+		bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}},
+		bson.D{{Key: "$limit", Value: 1}},
+	)
+	m.executor = func(ctx context.Context) any {
+		var results []T
+		e_utils.Must(qkit.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
+		return results[0]
 	}
-	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}})
 	return m
 }
 func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
 	m.pipeline = append(m.pipeline, bson.D{{Key: "$count", Value: "count"}})
-	m.resultExtractor = func(docs []map[string]any) any {
-		if len(docs) == 0 {
-			return 0
-		}
-		return int64(qkit.Cast[int32](docs[0]["count"]))
+	m.executor = func(ctx context.Context) any {
+		var results []map[string]any
+		e_utils.Must(qkit.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
+		return int64(qkit.Cast[int32](results[0]["count"]))
 	}
 	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}})
 	return m
 }
 
 func (m Model[T]) Exec(ctx ...context.Context) any {
-	cursor := qkit.Must(m.Collection().Aggregate(e_utils.DefaultCTX(ctx), m.pipeline))
-	var results []map[string]any
-	if err := cursor.All(e_utils.DefaultCTX(ctx), &results); err != nil {
-		panic(err)
-	}
-	if m.resultExtractor != nil {
-		return m.resultExtractor(results)
-	}
-	return results
-}
-
-func (m Model[T]) Validate() error {
-	return nil
-}
-
-func (m Model[T]) ValidateField() error {
-	return nil
+	return m.executor(e_utils.DefaultCTX(ctx))
 }
 
 func (m Model[T]) Collection() *mongo.Collection {
@@ -118,4 +103,8 @@ func (m Model[T]) Collection() *mongo.Collection {
 func (m Model[T]) CreateCollection(ctx ...context.Context) *mongo.Collection {
 	e_connection.Use(m.schema.Options.Database, m.schema.Options.Connection).CreateCollection(e_utils.DefaultCTX(ctx), m.schema.Options.Collection)
 	return m.Collection()
+}
+
+func (m Model[T]) Validate() error {
+	return nil
 }
