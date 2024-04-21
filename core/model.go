@@ -4,6 +4,7 @@ import (
 	"context"
 	"elemental/connection"
 	"reflect"
+
 	"github.com/clubpay/qlubkit-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -18,8 +19,8 @@ type ModelSkeleton[T any] interface {
 }
 
 type Model[T any] struct {
-	schema   Schema
-	pipeline mongo.Pipeline
+	schema             Schema
+	pipeline           mongo.Pipeline
 	returnSingleRecord bool
 }
 
@@ -42,6 +43,17 @@ func (m Model[T]) Create(doc T) T {
 	document := enforceSchema(m.schema, &doc)
 	qkit.Must(m.Collection().InsertOne(context.TODO(), document))
 	return document
+}
+
+func (m Model[T]) InsertMany(docs []T) []T {
+	var documents []interface{}
+	for _, doc := range docs {
+		documents = append(documents, enforceSchema(m.schema, &doc))
+	}
+	qkit.Must(m.Collection().InsertMany(context.TODO(), documents))
+	return qkit.Map(func(doc interface{}) T {
+		return doc.(T)
+	}, documents)
 }
 
 func (m Model[T]) Find(query *primitive.M) Model[T] {
@@ -78,4 +90,9 @@ func (m Model[T]) ValidateField() error {
 
 func (m Model[T]) Collection() *mongo.Collection {
 	return e_connection.Use(m.schema.Options.Database, m.schema.Options.Connection).Collection(m.schema.Options.Collection)
+}
+
+func (m Model[T]) CreateCollection() *mongo.Collection {
+	e_connection.Use(m.schema.Options.Database, m.schema.Options.Connection).CreateCollection(context.TODO(), m.schema.Options.Collection)
+	return m.Collection()
 }
