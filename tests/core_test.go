@@ -1,6 +1,7 @@
 package e_tests
 
 import (
+	"context"
 	"elemental/connection"
 	"elemental/core"
 	"elemental/tests/mocks"
@@ -20,7 +21,7 @@ type User struct {
 	ID         primitive.ObjectID `json:"_id" bson:"_id"`
 	Name       string             `json:"name" bson:"name"`
 	Age        int                `json:"age" bson:"age"`
-	Occupation string             `json:"occupation" bson:"occupation"`
+	Occupation string             `json:"occupation" bson:"occupation,omitempty"`
 	CreatedAt  time.Time          `json:"created_at" bson:"created_at"`
 	UpdatedAt  time.Time          `json:"updated_at" bson:"updated_at"`
 }
@@ -45,7 +46,11 @@ var UserModel = elemental.NewModel[User]("User", elemental.NewSchema(map[string]
 }))
 
 func TestCore(t *testing.T) {
+
 	e_connection.ConnectURI(e_mocks.URI)
+
+	e_connection.UseDefault().Drop(context.TODO());
+
 	Convey("Test basic crud operations", t, func() {
 		e_connection.ConnectURI(e_mocks.URI)
 		Convey("Create a user", func() {
