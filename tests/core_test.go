@@ -76,21 +76,26 @@ func TestCore(t *testing.T) {
 			So(users[1].Age, ShouldEqual, 18)
 		})
 		Convey("Find all users", func() {
-			users := UserModel.Find(nil).Exec().([]User)
+			users := UserModel.Find().Exec().([]User)
 			So(len(users), ShouldEqual, 3)
 		})
 		Convey("Filter users", func() {
-			users := UserModel.Find(&primitive.M{"age": 18}).Exec().([]User)
+			users := UserModel.Find(primitive.M{"age": 18}).Exec().([]User)
 			So(len(users), ShouldEqual, 2)
 			So(users[0].Name, ShouldEqual, "Ciri")
 		})
 		Convey("Find a user", func() {
-			user := qkit.Cast[User](UserModel.FindOne(&primitive.M{"age": 18}).Exec())
+			user := qkit.Cast[User](UserModel.FindOne(primitive.M{"age": 100}).Exec())
+			So(user, ShouldNotBeNil)
+			So(user.Name, ShouldEqual, "Geralt of Rivia")
+		})
+		Convey("Find first user", func() {
+			user := qkit.Cast[User](UserModel.FindOne().Exec())
 			So(user, ShouldNotBeNil)
 			So(user.Name, ShouldEqual, "Ciri")
 		})
 		Convey("Count users", func() {
-			count := UserModel.CountDocuments(nil).Exec().(int64)
+			count := UserModel.CountDocuments().Exec().(int64)
 			So(count, ShouldEqual, 3)
 		})
 	})

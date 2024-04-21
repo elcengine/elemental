@@ -45,30 +45,30 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 	return model
 }
 
-func (m Model[T]) Create(doc T) T {
+func (m Model[T]) Create(doc T, ctx ...context.Context) T {
 	document := enforceSchema(m.schema, &doc)
-	qkit.Must(m.Collection().InsertOne(context.TODO(), document))
+	qkit.Must(m.Collection().InsertOne(e_utils.DefaultCTX(ctx), document))
 	return document
 }
 
-func (m Model[T]) InsertMany(docs []T) []T {
+func (m Model[T]) InsertMany(docs []T, ctx ...context.Context) []T {
 	var documents []interface{}
 	for _, doc := range docs {
 		documents = append(documents, enforceSchema(m.schema, &doc))
 	}
-	qkit.Must(m.Collection().InsertMany(context.TODO(), documents))
-	return e_utils.CastArray[T](documents)
+	qkit.Must(m.Collection().InsertMany(e_utils.DefaultCTX(ctx), documents))
+	return e_utils.CastSlice[T](documents)
 }
 
-func (m Model[T]) Find(query *primitive.M) Model[T] {
-	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: qkit.Coalesce(query, &primitive.M{})}})
+func (m Model[T]) Find(query ...primitive.M) Model[T] {
+	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}})
 	m.resultExtractor = func(docs []map[string]any) any {
-		return e_utils.CastArrayFromMaps[T](docs)
+		return e_utils.CastSliceFromMaps[T](docs)
 	}
 	return m
 }
 
-func (m Model[T]) FindOne(query *primitive.M) Model[T] {
+func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
 	m.returnSingleRecord = true
 	m.resultExtractor = func(docs []map[string]any) any {
 		if len(docs) == 0 {
@@ -76,10 +76,10 @@ func (m Model[T]) FindOne(query *primitive.M) Model[T] {
 		}
 		return qkit.CastJSON[T](docs[0])
 	}
-	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: qkit.Coalesce(query, &primitive.M{})}})
+	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}})
 	return m
 }
-func (m Model[T]) CountDocuments(query *primitive.M) Model[T] {
+func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
 	m.pipeline = append(m.pipeline, bson.D{{Key: "$count", Value: "count"}})
 	m.resultExtractor = func(docs []map[string]any) any {
 		if len(docs) == 0 {
@@ -87,14 +87,14 @@ func (m Model[T]) CountDocuments(query *primitive.M) Model[T] {
 		}
 		return int64(qkit.Cast[int32](docs[0]["count"]))
 	}
-	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: qkit.Coalesce(query, &primitive.M{})}})
+	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}})
 	return m
 }
 
-func (m Model[T]) Exec() any {
-	cursor := qkit.Must(m.Collection().Aggregate(context.TODO(), m.pipeline))
+func (m Model[T]) Exec(ctx ...context.Context) any {
+	cursor := qkit.Must(m.Collection().Aggregate(e_utils.DefaultCTX(ctx), m.pipeline))
 	var results []map[string]any
-	if err := cursor.All(context.TODO(), &results); err != nil {
+	if err := cursor.All(e_utils.DefaultCTX(ctx), &results); err != nil {
 		panic(err)
 	}
 	if m.resultExtractor != nil {
@@ -115,7 +115,7 @@ func (m Model[T]) Collection() *mongo.Collection {
 	return e_connection.Use(m.schema.Options.Database, m.schema.Options.Connection).Collection(m.schema.Options.Collection)
 }
 
-func (m Model[T]) CreateCollection() *mongo.Collection {
-	e_connection.Use(m.schema.Options.Database, m.schema.Options.Connection).CreateCollection(context.TODO(), m.schema.Options.Collection)
+func (m Model[T]) CreateCollection(ctx ...context.Context) *mongo.Collection {
+	e_connection.Use(m.schema.Options.Database, m.schema.Options.Connection).CreateCollection(e_utils.DefaultCTX(ctx), m.schema.Options.Collection)
 	return m.Collection()
 }

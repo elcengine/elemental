@@ -56,7 +56,7 @@ func ConnectURI(uri string) mongo.Client {
 //
 // @param alias - The alias of the connection to get
 func GetConnection(alias ...string) mongo.Client {
-	return clients[qkit.Coalesce(e_utils.ElementAtIndex(alias, 0), "default")]
+	return clients[qkit.Coalesce(e_utils.First(alias), "default")]
 }
 
 // Disconnect a set of connections by alias or disconnect all connections if no alias is provided
@@ -83,19 +83,19 @@ func Disconnect(aliases ...string) error {
 //
 // @param alias - The alias of the connection to use
 func Use(database string, alias ...string) *mongo.Database {
-	return qkit.ValPtr(clients[qkit.Coalesce(e_utils.ElementAtIndex(alias, 0), "default")]).Database(qkit.Coalesce(database, defaultDatabases[qkit.Coalesce(e_utils.ElementAtIndex(alias, 0), "default")]))
+	return qkit.ValPtr(clients[qkit.Coalesce(e_utils.First(alias), "default")]).Database(qkit.Coalesce(database, defaultDatabases[qkit.Coalesce(e_utils.First(alias), "default")]))
 }
 
 // Use the default database on a connection. Uses the default connection if no alias is provided
 //
 // @param alias - The alias of the connection to use
 func UseDefault(alias ...string) *mongo.Database {
-	return qkit.ValPtr(clients[qkit.Coalesce(e_utils.ElementAtIndex(alias, 0), "default")]).Database(qkit.Coalesce(defaultDatabases[qkit.Coalesce(e_utils.ElementAtIndex(alias, 0), "default")], "test"))
+	return qkit.ValPtr(clients[qkit.Coalesce(e_utils.First(alias), "default")]).Database(qkit.Coalesce(defaultDatabases[qkit.Coalesce(e_utils.First(alias), "default")], "test"))
 }
 
 // Get the client for a given alias or the default client if no alias is provided
 //
 // @param alias - The alias of the client to get
 func Client(alias ...string) *mongo.Client {
-	return qkit.ValPtr(clients[qkit.Coalesce(e_utils.ElementAtIndex(alias, 0), "default")])
+	return qkit.ValPtr(clients[qkit.Coalesce(e_utils.First(alias), "default")])
 }
