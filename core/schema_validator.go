@@ -11,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func enforceSchema[T any](schema Schema, doc *T) T {
+func enforceSchema[T any](schema Schema, doc *T, defaults ...bool) T {
 	reflectedEntity := reflect.ValueOf(doc)
 	if reflectedEntity.Kind() == reflect.Ptr {
 		reflectedEntity = reflect.Indirect(reflectedEntity)
@@ -42,9 +42,11 @@ func enforceSchema[T any](schema Schema, doc *T) T {
 			panic(fmt.Sprintf("Field %s must match the regex pattern %s", field, definition.Regex))
 		}
 	}
-	SetDefault(&reflectedEntity, "ID", primitive.NewObjectID())
-	SetDefault(&reflectedEntity, "CreatedAt", time.Now())
-	SetDefault(&reflectedEntity, "UpdatedAt", time.Now())
+	if (len(defaults) == 0 || defaults[0]) {
+		SetDefault(&reflectedEntity, "ID", primitive.NewObjectID())
+		SetDefault(&reflectedEntity, "CreatedAt", time.Now())
+		SetDefault(&reflectedEntity, "UpdatedAt", time.Now())
+	}
 	return qkit.Cast[T](reflectedEntity.Interface())
 }
 

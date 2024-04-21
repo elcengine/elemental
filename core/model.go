@@ -20,10 +20,10 @@ type ModelSkeleton[T any] interface {
 }
 
 type Model[T any] struct {
-	Name               string
-	schema             Schema
-	pipeline           mongo.Pipeline
-	executor           func(ctx context.Context) any
+	Name     string
+	schema   Schema
+	pipeline mongo.Pipeline
+	executor func(ctx context.Context) any
 }
 
 var models = make(map[string]Model[any])
@@ -70,7 +70,7 @@ func (m Model[T]) Find(query ...primitive.M) Model[T] {
 }
 
 func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
-	m.pipeline = append(m.pipeline, 
+	m.pipeline = append(m.pipeline,
 		bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}},
 		bson.D{{Key: "$limit", Value: 1}},
 	)
@@ -105,6 +105,6 @@ func (m Model[T]) CreateCollection(ctx ...context.Context) *mongo.Collection {
 	return m.Collection()
 }
 
-func (m Model[T]) Validate() error {
-	return nil
+func (m Model[T]) Validate(doc T) {
+	enforceSchema(m.schema, &doc, false)
 }
