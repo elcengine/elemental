@@ -20,6 +20,7 @@ type User struct {
 	Name       string             `json:"name" bson:"name"`
 	Age        int                `json:"age" bson:"age"`
 	Occupation string             `json:"occupation" bson:"occupation,omitempty"`
+	Weapons    []string           `json:"weapons" bson:"weapons"`
 	CreatedAt  time.Time          `json:"created_at" bson:"created_at"`
 	UpdatedAt  time.Time          `json:"updated_at" bson:"updated_at"`
 }
@@ -35,6 +36,13 @@ var UserModel = elemental.NewModel[User]("User", elemental.NewSchema(map[string]
 	"Age": {
 		Type:    reflect.Int,
 		Default: 18,
+	},
+	"Occupation": {
+		Type: reflect.String,
+	},
+	"Weapons": {
+		Type:    reflect.Slice,
+		Default: []string{},
 	},
 }, elemental.SchemaOptions{
 	Collection: "users",
@@ -64,6 +72,7 @@ func TestCore(t *testing.T) {
 					Name:       "Geralt of Rivia",
 					Age:        100,
 					Occupation: "Witcher",
+					Weapons:    []string{"Silver sword", "Mahakaman battle hammer", "Battle Axe", "Crossbow", "Steel sword"},
 				},
 				{
 					Name: "Eredin Bréacc Glas",
@@ -72,11 +81,13 @@ func TestCore(t *testing.T) {
 					Name:       "Caranthir",
 					Age:        120,
 					Occupation: "Mage",
+					Weapons:    []string{"Staff"},
 				},
 				{
 					Name:       "Imlerith",
 					Age:        150,
 					Occupation: "General",
+					Weapons:    []string{"Mace", "Battle Axe"},
 				},
 			})
 			So(len(users), ShouldEqual, 4)
@@ -116,12 +127,12 @@ func TestCore(t *testing.T) {
 			So(found, ShouldNotBeNil)
 			So(found.Name, ShouldEqual, name)
 		})
-		Convey("Find users whose age is 100", func() {
+		Convey("Find all where age is 100", func() {
 			users := UserModel.Where("age").Equals(100).Exec().([]User)
 			So(len(users), ShouldEqual, 1)
 			So(users[0].Name, ShouldEqual, "Geralt of Rivia")
 		})
-		Convey("Find where age is greater than 50", func() {
+		Convey("Find all where age is greater than 50", func() {
 			users := UserModel.Where("age").GreaterThan(50).Exec().([]User)
 			So(len(users), ShouldEqual, 3)
 			So(users[0].Name, ShouldEqual, "Geralt of Rivia")
@@ -161,6 +172,51 @@ func TestCore(t *testing.T) {
 				users := UserModel.Where("age").Between(90, 110).Exec().([]User)
 				So(len(users), ShouldEqual, 1)
 				So(users[0].Name, ShouldEqual, "Geralt of Rivia")
+			})
+		})
+		Convey("Find where age is 120 or 150", func() {
+			Convey("In conjuntion with find", func() {
+				users := UserModel.Find(primitive.M{"$or": []primitive.M{
+					{"age": 120},
+					{"age": 150},
+				}}).Exec().([]User)
+				So(len(users), ShouldEqual, 2)
+				So(users[0].Name, ShouldEqual, "Caranthir")
+				So(users[1].Name, ShouldEqual, "Imlerith")
+			})
+			Convey("In conjuntion with in", func() {
+				users := UserModel.Where("age").In(120, 150).Exec().([]User)
+				So(len(users), ShouldEqual, 2)
+				So(users[0].Name, ShouldEqual, "Caranthir")
+				So(users[1].Name, ShouldEqual, "Imlerith")
+			})
+		})
+		Convey("Find where age is not 18", func() {
+			Convey("In conjuntion with find", func() {
+				users := UserModel.Find(primitive.M{"age": primitive.M{"$ne": 18}}).Exec().([]User)
+				So(len(users), ShouldEqual, 3)
+			})
+			Convey("In conjuntion with not equals", func() {
+				users := UserModel.Where("age").NotEquals(18).Exec().([]User)
+				So(len(users), ShouldEqual, 3)
+			})
+			Convey("In conjuntion with not in", func() {
+				users := UserModel.Where("age").NotIn(18).Exec().([]User)
+				So(len(users), ShouldEqual, 3)
+			})
+		})
+		Convey("Find where weapon list contains Battle Axe", func() {
+			Convey("In conjuntion with find", func() {
+				users := UserModel.Find(primitive.M{"weapons": "Battle Axe"}).Exec().([]User)
+				So(len(users), ShouldEqual, 2)
+				So(users[0].Name, ShouldEqual, "Geralt of Rivia")
+				So(users[1].Name, ShouldEqual, "Imlerith")
+			})
+			Convey("In conjuntion with element match", func() {
+				users := UserModel.Where("weapons").ElementMatch(primitive.M{"$eq": "Battle Axe"}).Exec().([]User)
+				So(len(users), ShouldEqual, 2)
+				So(users[0].Name, ShouldEqual, "Geralt of Rivia")
+				So(users[1].Name, ShouldEqual, "Imlerith")
 			})
 		})
 		Convey("Count users", func() {

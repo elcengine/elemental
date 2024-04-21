@@ -143,6 +143,18 @@ func (m Model[T]) Exists(value bool) Model[T] {
 	return m.addToPipeline("$match", "$exists", value)
 }
 
+func (m Model[T]) In(values ...any) Model[T] {
+	return m.addToPipeline("$match", "$in", values)
+}
+
+func (m Model[T]) NotIn(values ...any) Model[T] {
+	return m.addToPipeline("$match", "$nin", values)
+}
+
+func (m Model[T]) ElementMatch(query primitive.M) Model[T] {
+	return m.addToPipeline("$match", "$elemMatch", query)
+}
+
 func (m Model[T]) Collection() *mongo.Collection {
 	return e_connection.Use(m.schema.Options.Database, m.schema.Options.Connection).Collection(m.schema.Options.Collection)
 }
