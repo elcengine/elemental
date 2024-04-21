@@ -11,6 +11,7 @@ import (
 
 	"github.com/clubpay/qlubkit-go"
 	. "github.com/smartystreets/goconvey/convey"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -244,6 +245,10 @@ func TestCore(t *testing.T) {
 		Convey("Find where occupation does not exist", func() {
 			users := UserModel.Where("occupation").Exists(false).Exec().([]User)
 			So(len(users), ShouldEqual, 2)
+		})
+		Convey("Find where occupation is of type string", func() {
+			users := UserModel.Where("occupation").IsType(bson.TypeString).Exec().([]User)
+			So(len(users), ShouldEqual, 4)
 		})
 		Convey("Count users", func() {
 			count := UserModel.CountDocuments().Exec().(int64)
