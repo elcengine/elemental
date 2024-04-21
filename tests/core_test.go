@@ -106,6 +106,20 @@ func TestCore(t *testing.T) {
 			users := UserModel.Find().Limit(2).Exec().([]User)
 			So(len(users), ShouldEqual, 2)
 		})
+		Convey("Find all with a limit of 2 and skip 2", func() {
+			Convey("In order of skip -> limit", func() {
+				users := UserModel.Find().Skip(2).Limit(2).Exec().([]User)
+				So(len(users), ShouldEqual, 2)
+				So(users[0].Name, ShouldEqual, "Eredin Bréacc Glas")
+				So(users[1].Name, ShouldEqual, "Caranthir")
+			})
+			Convey("In order of limit -> skip", func() {
+				users := UserModel.Find().Limit(2).Skip(2).Exec().([]User)
+				So(len(users), ShouldEqual, 2)
+				So(users[0].Name, ShouldEqual, "Eredin Bréacc Glas")
+				So(users[1].Name, ShouldEqual, "Caranthir")
+			})
+		})
 		Convey("Filter users", func() {
 			users := UserModel.Find(primitive.M{"age": 18}).Exec().([]User)
 			So(len(users), ShouldEqual, 2)
