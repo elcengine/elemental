@@ -151,8 +151,13 @@ func (m Model[T]) NotIn(values ...any) Model[T] {
 	return m.addToPipeline("$match", "$nin", values)
 }
 
-func (m Model[T]) ElementMatch(query primitive.M) Model[T] {
+func (m Model[T]) ElementMatches(query primitive.M) Model[T] {
 	return m.addToPipeline("$match", "$elemMatch", query)
+}
+
+func (m Model[T]) Limit(limit int64) Model[T] {
+	m.pipeline = append(m.pipeline, bson.D{{Key: "$limit", Value: limit}})
+	return m
 }
 
 func (m Model[T]) Collection() *mongo.Collection {

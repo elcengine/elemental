@@ -102,6 +102,10 @@ func TestCore(t *testing.T) {
 			users := UserModel.Find().Exec().([]User)
 			So(len(users), ShouldEqual, 5)
 		})
+		Convey("Find all with a limit of 2", func() {
+			users := UserModel.Find().Limit(2).Exec().([]User)
+			So(len(users), ShouldEqual, 2)
+		})
 		Convey("Filter users", func() {
 			users := UserModel.Find(primitive.M{"age": 18}).Exec().([]User)
 			So(len(users), ShouldEqual, 2)
@@ -213,7 +217,7 @@ func TestCore(t *testing.T) {
 				So(users[1].Name, ShouldEqual, "Imlerith")
 			})
 			Convey("In conjuntion with element match", func() {
-				users := UserModel.Where("weapons").ElementMatch(primitive.M{"$eq": "Battle Axe"}).Exec().([]User)
+				users := UserModel.Where("weapons").ElementMatches(primitive.M{"$eq": "Battle Axe"}).Exec().([]User)
 				So(len(users), ShouldEqual, 2)
 				So(users[0].Name, ShouldEqual, "Geralt of Rivia")
 				So(users[1].Name, ShouldEqual, "Imlerith")
