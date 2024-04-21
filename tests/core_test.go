@@ -237,6 +237,14 @@ func TestCore(t *testing.T) {
 				So(users[1].Name, ShouldEqual, "Imlerith")
 			})
 		})
+		Convey("Find where occupation exists", func() {
+			users := UserModel.Where("occupation").Exists(true).Exec().([]User)
+				So(len(users), ShouldEqual, 4)
+		})
+		Convey("Find where occupation does not exist", func() {
+			users := UserModel.Where("occupation").Exists(false).Exec().([]User)
+			So(len(users), ShouldEqual, 2)
+		})
 		Convey("Count users", func() {
 			count := UserModel.CountDocuments().Exec().(int64)
 			So(count, ShouldEqual, 6)
