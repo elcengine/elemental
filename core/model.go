@@ -20,10 +20,11 @@ type ModelSkeleton[T any] interface {
 }
 
 type Model[T any] struct {
-	Name     string
-	schema   Schema
-	pipeline mongo.Pipeline
-	executor func(ctx context.Context) any
+	Name       string
+	schema     Schema
+	pipeline   mongo.Pipeline
+	executor   func(ctx context.Context) any
+	whereField string
 }
 
 var models = make(map[string]Model[any])
@@ -61,11 +62,6 @@ func (m Model[T]) InsertMany(docs []T, ctx ...context.Context) []T {
 
 func (m Model[T]) Find(query ...primitive.M) Model[T] {
 	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}})
-	m.executor = func(ctx context.Context) any {
-		var results []T
-		e_utils.Must(qkit.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
-		return results
-	}
 	return m
 }
 
@@ -85,23 +81,58 @@ func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
 	return m
 }
 
-func (m Model[T]) FindByID (id primitive.ObjectID) Model[T] {
+func (m Model[T]) FindByID(id primitive.ObjectID) Model[T] {
 	return m.FindOne(primitive.M{"_id": id})
 }
 
 func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
-	m.pipeline = append(m.pipeline, bson.D{{Key: "$count", Value: "count"}})
+	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}}, bson.D{{Key: "$count", Value: "count"}})
 	m.executor = func(ctx context.Context) any {
 		var results []map[string]any
 		e_utils.Must(qkit.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
 		return int64(qkit.Cast[int32](results[0]["count"]))
 	}
-	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}})
 	return m
 }
 
 func (m Model[T]) Exec(ctx ...context.Context) any {
+	if m.executor == nil {
+		m.executor = func(ctx context.Context) any {
+			var results []T
+			e_utils.Must(qkit.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
+			return results
+		}
+	}
 	return m.executor(e_utils.DefaultCTX(ctx))
+}
+
+func (m Model[T]) Where(field string) Model[T] {
+	m.whereField = field
+	return m
+}
+
+func (m Model[T]) Equals(value any) Model[T] {
+	return m.addToPipeline("$match", "$eq", value)
+}
+
+func (m Model[T]) NotEquals(value any) Model[T] {
+	return m.addToPipeline("$match", "$ne", value)
+}
+
+func (m Model[T]) LessThan(value any) Model[T] {
+	return m.addToPipeline("$match", "$lt", value)
+}
+
+func (m Model[T]) GreaterThan(value any) Model[T] {
+	return m.addToPipeline("$match", "$gt", value)
+}
+
+func (m Model[T]) LessThanOrEquals(value any) Model[T] {
+	return m.addToPipeline("$match", "$lte", value)
+}
+
+func (m Model[T]) GreaterThanOrEquals(value any) Model[T] {
+	return m.addToPipeline("$match", "$gte", value)
 }
 
 func (m Model[T]) Collection() *mongo.Collection {
@@ -115,4 +146,26 @@ func (m Model[T]) CreateCollection(ctx ...context.Context) *mongo.Collection {
 
 func (m Model[T]) Validate(doc T) {
 	enforceSchema(m.schema, &doc, false)
+}
+
+func (m Model[T]) Schema() Schema {
+	return m.schema
+}
+
+func (m Model[T]) addToPipeline(stage, key string, value any) Model[T] {
+	foundMatchStage := false
+	m.pipeline = qkit.Map(func(stg bson.D) bson.D {
+		filters := qkit.Cast[primitive.M](e_utils.CastBSON[bson.M](stg)[stage])
+		if filters != nil {
+			foundMatchStage = true
+			filters[m.whereField] = primitive.M{key: value}
+			return bson.D{{Key: stage, Value: filters}}
+		}
+		return stg
+	}, m.pipeline)
+	if !foundMatchStage {
+		m.pipeline = append(m.pipeline, bson.D{{Key: stage, Value: primitive.M{m.whereField: primitive.M{key: value}}}})
+		return m
+	}
+	return m
 }

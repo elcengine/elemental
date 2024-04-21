@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func setField(field reflect.Value, defaultVal string) error {
@@ -37,13 +36,4 @@ func SetDefaults(ptr interface{},) error {
 		}
 	}
 	return nil
-}
-
-func ToBSON(v interface{}) (doc *bson.M) {
-    data, err := bson.Marshal(v)
-    if err != nil {
-        return nil
-    }
-	bson.Unmarshal(data, &doc)
-	return doc
 }
