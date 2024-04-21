@@ -4,12 +4,12 @@ import (
 	"context"
 	"elemental/connection"
 	"elemental/utils"
-	"reflect"
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
+	"reflect"
 )
 
 type Model[T any] struct {
@@ -87,7 +87,6 @@ func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
 	}
 	return m
 }
-
 
 func (m Model[T]) Where(field string) Model[T] {
 	m.whereField = field
