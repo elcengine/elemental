@@ -61,24 +61,24 @@ func TestCoreRead(t *testing.T) {
 			})
 		})
 		Convey("Find a user with a filter query", func() {
-			user := e_utils.Cast[User](UserModel.FindOne(primitive.M{"age": e_mocks.Geralt.Age}).Exec())
+			user := UserModel.FindOne(primitive.M{"age": e_mocks.Geralt.Age}).Exec()
 			So(user, ShouldNotBeNil)
-			So(user.Name, ShouldEqual, e_mocks.Geralt.Name)
+			So(e_utils.Cast[User](user).Name, ShouldEqual, e_mocks.Geralt.Name)
 		})
 		Convey("Find a user with a filter query which has no matching documents", func() {
 			user := UserModel.FindOne(primitive.M{"name": "Yarpen Zigrin"}).Exec()
 			So(user, ShouldBeNil)
 		})
 		Convey("Find first user", func() {
-			user := e_utils.Cast[User](UserModel.FindOne().Exec())
+			user := UserModel.FindOne().Exec()
 			So(user, ShouldNotBeNil)
-			So(user.Name, ShouldEqual, e_mocks.Ciri.Name)
+			So(e_utils.Cast[User](user).Name, ShouldEqual, e_mocks.Ciri.Name)
 		})
 		Convey("Find user by ID", func() {
 			user := e_utils.Cast[User](UserModel.FindOne().Exec())
-			user = e_utils.Cast[User](UserModel.FindByID(user.ID).Exec())
-			So(user, ShouldNotBeNil)
-			So(user.Name, ShouldEqual, e_mocks.Ciri.Name)
+			userById := UserModel.FindByID(user.ID).Exec()
+			So(userById, ShouldNotBeNil)
+			So(e_utils.Cast[User](userById).Name, ShouldEqual, e_mocks.Ciri.Name)
 		})
 		Convey("Count users", func() {
 			count := UserModel.CountDocuments().Exec().(int64)
