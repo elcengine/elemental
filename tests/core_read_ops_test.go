@@ -119,6 +119,11 @@ func TestCoreReadOps(t *testing.T) {
 				So(users[1].Name, ShouldEqual, e_mocks.Imlerith.Name)
 			})
 		})
+		Convey(fmt.Sprintf("Find where weapon count is %d", len(e_mocks.Geralt.Weapons)), func() {
+			users := UserModel.Where("weapons").Size(len(e_mocks.Geralt.Weapons)).Exec().([]User)
+			So(len(users), ShouldEqual, 1)
+			So(users[0].Name, ShouldEqual, e_mocks.Geralt.Name)
+		})
 		Convey("Find where occupation exists", func() {
 			users := UserModel.Where("occupation").Exists(true).Exec().([]User)
 			So(len(users), ShouldEqual, len(lo.Filter(e_mocks.Users, func(u User, _ int) bool {

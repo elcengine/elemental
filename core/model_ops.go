@@ -47,3 +47,7 @@ func (m Model[T]) NotIn(values ...any) Model[T] {
 func (m Model[T]) ElementMatches(query primitive.M) Model[T] {
 	return m.addToPipeline("$match", "$elemMatch", query)
 }
+
+func (m Model[T]) Size(value int) Model[T] {
+	return m.addToPipeline("$match", "$size", value)
+}
