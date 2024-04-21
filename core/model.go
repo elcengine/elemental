@@ -77,10 +77,18 @@ func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
 	m.executor = func(ctx context.Context) any {
 		var results []T
 		e_utils.Must(qkit.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
+		if len(results) == 0 {
+			return nil
+		}
 		return results[0]
 	}
 	return m
 }
+
+func (m Model[T]) FindByID (id primitive.ObjectID) Model[T] {
+	return m.FindOne(primitive.M{"_id": id})
+}
+
 func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
 	m.pipeline = append(m.pipeline, bson.D{{Key: "$count", Value: "count"}})
 	m.executor = func(ctx context.Context) any {

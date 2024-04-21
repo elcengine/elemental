@@ -94,9 +94,18 @@ func TestCore(t *testing.T) {
 			So(user, ShouldNotBeNil)
 			So(user.Name, ShouldEqual, "Ciri")
 		})
+		Convey("Find user by ID", func() {
+			name := "Yennefer of Vengerberg"
+			user := UserModel.Create(User{
+				Name: name,
+			})
+			found := qkit.Cast[User](UserModel.FindByID(user.ID).Exec())
+			So(found, ShouldNotBeNil)
+			So(found.Name, ShouldEqual, name)
+		})
 		Convey("Count users", func() {
 			count := UserModel.CountDocuments().Exec().(int64)
-			So(count, ShouldEqual, 3)
+			So(count, ShouldEqual, 4)
 		})
 	})
 }
