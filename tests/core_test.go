@@ -143,6 +143,26 @@ func TestCore(t *testing.T) {
 				So(users[0].Name, ShouldEqual, "Caranthir")
 			})
 		})
+		Convey("Find where age is between 90 and 110", func() {
+			Convey("In conjuntion with find", func() {
+				users := UserModel.Find(primitive.M{"$and": []primitive.M{
+					{"age": primitive.M{"$gte": 90}},
+					{"age": primitive.M{"$lte": 110}},
+				}}).Exec().([]User)
+				So(len(users), ShouldEqual, 1)
+				So(users[0].Name, ShouldEqual, "Geralt of Rivia")
+			})
+			Convey("In conjuntion with where", func() {
+				users := UserModel.Where("age").GreaterThanOrEquals(90).Where("age").LessThanOrEquals(110).Exec().([]User)
+				So(len(users), ShouldEqual, 1)
+				So(users[0].Name, ShouldEqual, "Geralt of Rivia")
+			})
+			Convey("In conjuntion with between", func() {
+				users := UserModel.Where("age").Between(90, 110).Exec().([]User)
+				So(len(users), ShouldEqual, 1)
+				So(users[0].Name, ShouldEqual, "Geralt of Rivia")
+			})
+		})
 		Convey("Count users", func() {
 			count := UserModel.CountDocuments().Exec().(int64)
 			So(count, ShouldEqual, 6)

@@ -135,6 +135,14 @@ func (m Model[T]) GreaterThanOrEquals(value any) Model[T] {
 	return m.addToPipeline("$match", "$gte", value)
 }
 
+func (m Model[T]) Between(min, max any) Model[T] {
+	return m.addToPipeline("$match", "$gte", min).addToPipeline("$match", "$lte", max)
+}
+
+func (m Model[T]) Exists(value bool) Model[T] {
+	return m.addToPipeline("$match", "$exists", value)
+}
+
 func (m Model[T]) Collection() *mongo.Collection {
 	return e_connection.Use(m.schema.Options.Database, m.schema.Options.Connection).Collection(m.schema.Options.Collection)
 }
