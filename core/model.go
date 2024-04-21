@@ -57,12 +57,13 @@ func (m Model[T]) InsertMany(docs []T) []T {
 }
 
 func (m Model[T]) Find(query *primitive.M) Model[T] {
-	m.pipeline = append(m.pipeline, bson.D{{"$match", query}})
+	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: qkit.Coalesce(query, &primitive.M{})}})
 	return m
 }
 
-func (m Model[T]) FindOne(query *primitive.M) *T {
-	return nil
+func (m Model[T]) FindOne(query *primitive.M) Model[T] {
+	m.returnSingleRecord = true
+	return m.Find(query)
 }
 
 func (m Model[T]) Exec() any {
