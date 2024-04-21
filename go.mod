@@ -10,10 +10,7 @@ require (
 	go.mongodb.org/mongo-driver v1.14.0
 )
 
-require (
-	github.com/google/go-cmp v0.5.9 // indirect
-	github.com/google/uuid v1.6.0 // indirect
-)
+require github.com/google/go-cmp v0.5.9 // indirect
 
 require (
 	github.com/golang/snappy v0.0.4 // indirect

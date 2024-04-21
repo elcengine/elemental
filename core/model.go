@@ -3,6 +3,7 @@ package elemental
 import (
 	"context"
 	"elemental/connection"
+	"elemental/utils"
 	"reflect"
 
 	"github.com/clubpay/qlubkit-go"
@@ -19,9 +20,11 @@ type ModelSkeleton[T any] interface {
 }
 
 type Model[T any] struct {
+	Name               string
 	schema             Schema
 	pipeline           mongo.Pipeline
 	returnSingleRecord bool
+	resultExtractor    func(docs []map[string]any) any
 }
 
 var models = make(map[string]Model[any])
@@ -31,7 +34,10 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 	if _, ok := models[name]; ok {
 		return qkit.Cast[Model[T]](models[name])
 	}
-	model := Model[T]{schema: schema}
+	model := Model[T]{
+		Name:   name,
+		schema: schema,
+	}
 	models[name] = qkit.Cast[Model[any]](model)
 	e_connection.On(event.ConnectionReady, func() {
 		schema.syncIndexes(reflect.TypeOf(sample).Elem())
@@ -51,32 +57,48 @@ func (m Model[T]) InsertMany(docs []T) []T {
 		documents = append(documents, enforceSchema(m.schema, &doc))
 	}
 	qkit.Must(m.Collection().InsertMany(context.TODO(), documents))
-	return qkit.Map(func(doc interface{}) T {
-		return doc.(T)
-	}, documents)
+	return e_utils.CastArray[T](documents)
 }
 
 func (m Model[T]) Find(query *primitive.M) Model[T] {
 	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: qkit.Coalesce(query, &primitive.M{})}})
+	m.resultExtractor = func(docs []map[string]any) any {
+		return e_utils.CastArrayFromMaps[T](docs)
+	}
 	return m
 }
 
 func (m Model[T]) FindOne(query *primitive.M) Model[T] {
 	m.returnSingleRecord = true
-	return m.Find(query)
+	m.resultExtractor = func(docs []map[string]any) any {
+		if len(docs) == 0 {
+			return nil
+		}
+		return qkit.CastJSON[T](docs[0])
+	}
+	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: qkit.Coalesce(query, &primitive.M{})}})
+	return m
+}
+func (m Model[T]) CountDocuments(query *primitive.M) Model[T] {
+	m.pipeline = append(m.pipeline, bson.D{{Key: "$count", Value: "count"}})
+	m.resultExtractor = func(docs []map[string]any) any {
+		if len(docs) == 0 {
+			return 0
+		}
+		return int64(qkit.Cast[int32](docs[0]["count"]))
+	}
+	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: qkit.Coalesce(query, &primitive.M{})}})
+	return m
 }
 
 func (m Model[T]) Exec() any {
 	cursor := qkit.Must(m.Collection().Aggregate(context.TODO(), m.pipeline))
-	var results []T
+	var results []map[string]any
 	if err := cursor.All(context.TODO(), &results); err != nil {
 		panic(err)
 	}
-	if m.returnSingleRecord {
-		if len(results) == 0 {
-			return nil
-		}
-		return results[0]
+	if m.resultExtractor != nil {
+		return m.resultExtractor(results)
 	}
 	return results
 }

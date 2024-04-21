@@ -16,11 +16,11 @@ import (
 )
 
 type User struct {
-	ID         primitive.ObjectID `json:"_id" bson:"_id"`
-	Name       string             `json:"name" bson:"name"`
-	Age        int                `json:"age" bson:"age"`
-	CreatedAt  time.Time          `json:"created_at" bson:"created_at"`
-	UpdatedAt  time.Time          `json:"updated_at" bson:"updated_at"`
+	ID        primitive.ObjectID `json:"_id" bson:"_id"`
+	Name      string             `json:"name" bson:"name"`
+	Age       int                `json:"age" bson:"age"`
+	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
+	UpdatedAt time.Time          `json:"updated_at" bson:"updated_at"`
 }
 
 var UserModel = elemental.NewModel[User]("User", elemental.NewSchema(map[string]elemental.Field{
@@ -43,7 +43,7 @@ func TestCore(t *testing.T) {
 
 	e_connection.ConnectURI(e_mocks.URI)
 
-	e_connection.UseDefault().Drop(context.TODO());
+	e_connection.UseDefault().Drop(context.TODO())
 
 	Convey("Test basic crud operations", t, func() {
 		Convey("Create a user", func() {
@@ -61,7 +61,7 @@ func TestCore(t *testing.T) {
 			users := UserModel.InsertMany([]User{
 				{
 					Name: "Geralt of Rivia",
-					Age: 100,
+					Age:  100,
 				},
 				{
 					Name: "Eredin Bréacc Glas",
@@ -88,6 +88,10 @@ func TestCore(t *testing.T) {
 			user := qkit.Cast[User](UserModel.FindOne(&primitive.M{"age": 18}).Exec())
 			So(user, ShouldNotBeNil)
 			So(user.Name, ShouldEqual, "Ciri")
-		})		
+		})
+		Convey("Count users", func() {
+			count := UserModel.CountDocuments(nil).Exec().(int64)
+			So(count, ShouldEqual, 3)
+		})
 	})
 }
