@@ -2,6 +2,8 @@ package e_mocks
 
 import (
 	"elemental/tests/base"
+
+	"github.com/samber/lo"
 )
 
 const (
@@ -17,6 +19,7 @@ var (
 		Age:        100,
 		Occupation: "Witcher",
 		Weapons:    []string{"Silver sword", "Mahakaman battle hammer", "Battle Axe", "Crossbow", "Steel sword"},
+		School:     lo.ToPtr("Wolf"),
 	}
 	Eredin = e_test_base.User{
 		Name: "Eredin",
@@ -43,6 +46,7 @@ var (
 		Age:        300,
 		Weapons:    []string{"Silver sword", "Steel sword", "Crossbow"},
 		Retired:    true,
+		School:    lo.ToPtr("Wolf"),
 	}
 )
 

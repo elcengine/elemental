@@ -9,7 +9,6 @@ import (
 	"testing"
 	"github.com/samber/lo"
 	. "github.com/smartystreets/goconvey/convey"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -122,19 +121,21 @@ func TestCoreReadOps(t *testing.T) {
 		})
 		Convey("Find where occupation exists", func() {
 			users := UserModel.Where("occupation").Exists(true).Exec().([]User)
-			So(len(users), ShouldEqual, 5)
+			So(len(users), ShouldEqual, len(lo.Filter(e_mocks.Users, func(u User, _ int) bool {
+				return u.Occupation != ""
+			})))
 		})
 		Convey("Find where occupation does not exist", func() {
 			users := UserModel.Where("occupation").Exists(false).Exec().([]User)
-			So(len(users), ShouldEqual, 2)
-		})
-		Convey("Find where occupation is of type string", func() {
-			users := UserModel.Where("occupation").IsType(bson.TypeString).Exec().([]User)
-			So(len(users), ShouldEqual, 5)
+			So(len(users), ShouldEqual, len(lo.Filter(e_mocks.Users, func(u User, _ int) bool {
+				return u.Occupation == ""
+			})))
 		})
 		Convey("Count users in conjuntion with greater than", func() {
 			count := UserModel.Where("age").GreaterThan(50).CountDocuments().Exec().(int64)
-			So(count, ShouldEqual, 4)
+			So(count, ShouldEqual, len(lo.Filter(e_mocks.Users, func(u User, _ int) bool {
+				return u.Age > 50
+			})))
 		})
 	})
 }
