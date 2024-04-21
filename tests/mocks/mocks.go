@@ -39,6 +39,7 @@ var (
 	Yennefer = e_test_base.User{
 		Name:       "Yennefer",
 		Occupation: "Mage",
+		Age:        100,
 	}
 	Vesemir = e_test_base.User{
 		Name:       "Vesemir",

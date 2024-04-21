@@ -84,5 +84,37 @@ func TestCoreRead(t *testing.T) {
 			count := UserModel.CountDocuments().Exec().(int64)
 			So(count, ShouldEqual, len(e_mocks.Users))
 		})
+		Convey("Find all users in descending order of age", func() {
+			Convey("In conjuntion with a primitive map", func() {
+				users := UserModel.Find().Sort(primitive.M{"age": -1}).Exec().([]User)
+				So(users[0].Name, ShouldEqual, e_mocks.Vesemir.Name)
+				So(users[1].Name, ShouldEqual, e_mocks.Imlerith.Name)
+				So(users[2].Name, ShouldEqual, e_mocks.Caranthir.Name)
+				So(users[3].Name, ShouldEqual, e_mocks.Geralt.Name)
+			})
+			Convey("In conjuntion with key-value args", func() {
+				users := UserModel.Find().Sort("age", -1).Exec().([]User)
+				So(users[0].Name, ShouldEqual, e_mocks.Vesemir.Name)
+				So(users[1].Name, ShouldEqual, e_mocks.Imlerith.Name)
+				So(users[2].Name, ShouldEqual, e_mocks.Caranthir.Name)
+				So(users[3].Name, ShouldEqual, e_mocks.Geralt.Name)
+			})
+		})
+		Convey("Find all users in descending order of age but ascending order of name", func() {
+			users := UserModel.Find().Sort("age", -1, "name", 1).Exec().([]User)
+			So(users[0].Name, ShouldEqual, e_mocks.Vesemir.Name)
+			So(users[1].Name, ShouldEqual, e_mocks.Imlerith.Name)
+			So(users[2].Name, ShouldEqual, e_mocks.Caranthir.Name)
+			So(users[3].Name, ShouldEqual, e_mocks.Geralt.Name)
+			So(users[4].Name, ShouldEqual, e_mocks.Yennefer.Name)
+		})
+		Convey("Find all users in descending order of age and name", func() {
+			users := UserModel.Find().Sort("age", -1, "name", -1).Exec().([]User)
+			So(users[0].Name, ShouldEqual, e_mocks.Vesemir.Name)
+			So(users[1].Name, ShouldEqual, e_mocks.Imlerith.Name)
+			So(users[2].Name, ShouldEqual, e_mocks.Caranthir.Name)
+			So(users[3].Name, ShouldEqual, e_mocks.Yennefer.Name)
+			So(users[4].Name, ShouldEqual, e_mocks.Geralt.Name)		
+		})
 	})
 }

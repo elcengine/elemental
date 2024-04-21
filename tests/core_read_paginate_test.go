@@ -17,7 +17,6 @@ func TestCoreReadPaginate(t *testing.T) {
 	defer e_test_setup.Teardown()
 
 	Convey("Find paginated users", t, func() {
-		
 		Convey("First page", func() {
 			result := UserModel.Find().Paginate(1, 2).Exec().(elemental.PaginateResult[User])
 			So(len(result.Docs), ShouldEqual, 2)

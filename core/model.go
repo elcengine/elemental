@@ -117,6 +117,22 @@ func (m Model[T]) Skip(skip int64) Model[T] {
 	return m
 }
 
+func (m Model[T]) Sort(args ...any) Model[T] {
+	if (len(args) == 1) {
+		for field, order := range e_utils.Cast[primitive.M](args[0]) {
+			m = m.addToPipeline("$sort", field, order)
+		}
+	} else {
+		if (len(args) % 2) != 0 {
+			panic("Sort arguments must be in pairs")
+		}
+		for i := 0; i < len(args); i += 2 {
+			m = m.addToPipeline("$sort", e_utils.Cast[string](args[i]), args[i+1])
+		}
+	}
+	return m
+}
+
 func (m Model[T]) OrFail(err ...error) Model[T] {
 	if len(err) > 0 {
 		m.failWith = &err[0]

@@ -21,7 +21,7 @@ func TestCoreReadOps(t *testing.T) {
 	Convey("Read users with operators", t, func() {
 		Convey(fmt.Sprintf("Find all where age is %d", e_mocks.Geralt.Age), func() {
 			users := UserModel.Where("age").Equals(e_mocks.Geralt.Age).Exec().([]User)
-			So(len(users), ShouldEqual, 1)
+			So(len(users), ShouldEqual, 2)
 			So(users[0].Name, ShouldEqual, e_mocks.Geralt.Name)
 		})
 		Convey("Find all where age is greater than 50", func() {
@@ -32,12 +32,13 @@ func TestCoreReadOps(t *testing.T) {
 			So(users[0].Name, ShouldEqual, e_mocks.Geralt.Name)
 			So(users[1].Name, ShouldEqual, e_mocks.Caranthir.Name)
 			So(users[2].Name, ShouldEqual, e_mocks.Imlerith.Name)
-			So(users[3].Name, ShouldEqual, e_mocks.Vesemir.Name)
+			So(users[3].Name, ShouldEqual, e_mocks.Yennefer.Name)
+			So(users[4].Name, ShouldEqual, e_mocks.Vesemir.Name)
 		})
 		Convey("Find a mage where age is greater than 50", func() {
 			Convey("In conjuntion with find", func() {
 				users := UserModel.Find(primitive.M{"occupation": "Mage"}).Where("age").GreaterThan(50).Exec().([]User)
-				So(len(users), ShouldEqual, 1)
+				So(len(users), ShouldEqual, 2)
 				So(users[0].Name, ShouldEqual, e_mocks.Caranthir.Name)
 			})
 			Convey("In conjuntion with find one", func() {
@@ -47,7 +48,7 @@ func TestCoreReadOps(t *testing.T) {
 			})
 			Convey("In conjuntion with equals", func() {
 				users := UserModel.Where("age").GreaterThan(50).Where("occupation").Equals("Mage").Exec().([]User)
-				So(len(users), ShouldEqual, 1)
+				So(len(users), ShouldEqual, 2)
 				So(users[0].Name, ShouldEqual, e_mocks.Caranthir.Name)
 			})
 		})
@@ -57,17 +58,17 @@ func TestCoreReadOps(t *testing.T) {
 					{"age": primitive.M{"$gte": 90}},
 					{"age": primitive.M{"$lte": 110}},
 				}}).Exec().([]User)
-				So(len(users), ShouldEqual, 1)
+				So(len(users), ShouldEqual, 2)
 				So(users[0].Name, ShouldEqual, e_mocks.Geralt.Name)
 			})
 			Convey("In conjuntion with where", func() {
 				users := UserModel.Where("age").GreaterThanOrEquals(90).Where("age").LessThanOrEquals(110).Exec().([]User)
-				So(len(users), ShouldEqual, 1)
+				So(len(users), ShouldEqual, 2)
 				So(users[0].Name, ShouldEqual, e_mocks.Geralt.Name)
 			})
 			Convey("In conjuntion with between", func() {
 				users := UserModel.Where("age").Between(90, 110).Exec().([]User)
-				So(len(users), ShouldEqual, 1)
+				So(len(users), ShouldEqual, 2)
 				So(users[0].Name, ShouldEqual, e_mocks.Geralt.Name)
 			})
 		})

@@ -2,12 +2,14 @@ package elemental
 
 import (
 	"elemental/utils"
+
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (m Model[T]) addToPipeline(stage, key string, value any) Model[T] {
+func (m Model[T]) addToFilters(key string, value any) Model[T] {
+	stage := "$match"
 	foundMatchStage := false
 	m.pipeline = lo.Map(m.pipeline, func(stg bson.D, _ int) bson.D {
 		filters := e_utils.Cast[primitive.M](e_utils.CastBSON[bson.M](stg)[stage])
@@ -43,6 +45,27 @@ func (m Model[T]) addToPipeline(stage, key string, value any) Model[T] {
 	}
 	return m
 }
+
+func (m Model[T]) addToPipeline(stage, key string, value any) Model[T] {
+	foundStage := false
+	m.pipeline = lo.Map(m.pipeline, func(stg bson.D, _ int) bson.D {
+		stageObject := e_utils.Cast[primitive.M](e_utils.CastBSON[bson.M](stg)[stage])
+		if stageObject != nil {
+			foundStage = true
+			if stageObject[key] == nil {
+				stageObject[key] = value
+			}
+			return bson.D{{Key: stage, Value: stageObject}}
+		}
+		return stg
+	})
+	if !foundStage {
+		m.pipeline = append(m.pipeline, bson.D{{Key: stage, Value: primitive.M{key: value}}})
+		return m
+	}
+	return m
+}
+
 
 func (m Model[T]) checkConditionsAndPanic(results []T) {
 	if m.failWith != nil && len(results) == 0 {
