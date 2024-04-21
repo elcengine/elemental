@@ -1,4 +1,4 @@
-package e_tests
+package e_test_base
 
 import (
 	"elemental/core"
@@ -20,6 +20,8 @@ type User struct {
 	UpdatedAt  time.Time          `json:"updated_at" bson:"updated_at"`
 }
 
+var DefaultAge = 18
+
 var UserModel = elemental.NewModel[User]("User", elemental.NewSchema(map[string]elemental.Field{
 	"Name": {
 		Type:     reflect.String,
@@ -30,7 +32,7 @@ var UserModel = elemental.NewModel[User]("User", elemental.NewSchema(map[string]
 	},
 	"Age": {
 		Type:    reflect.Int,
-		Default: 18,
+		Default: DefaultAge,
 	},
 	"Occupation": {
 		Type: reflect.String,
