@@ -1,7 +1,6 @@
 package elemental
 
 import (
-	"elemental/utils"
 	"fmt"
 	"reflect"
 
@@ -12,13 +11,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func enforceSchema[T any](schema Schema, doc *T) primitive.M {
+func enforceSchema[T any](schema Schema, doc *T) T {
 	reflectedEntity := reflect.ValueOf(doc)
 	if reflectedEntity.Kind() == reflect.Ptr {
 		reflectedEntity = reflect.Indirect(reflectedEntity)
 	}
 	for field, definition := range schema.Definitions {
-		reflectedField := reflect.Indirect(reflectedEntity.FieldByName("Base")).FieldByName(field)
+		reflectedField := reflectedEntity.FieldByName(field)
 		if !reflectedField.IsValid() || reflectedField.IsZero() {
 			if definition.Required {
 				panic(fmt.Sprintf("Field %s is required", field))
@@ -43,25 +42,19 @@ func enforceSchema[T any](schema Schema, doc *T) primitive.M {
 			panic(fmt.Sprintf("Field %s must match the regex pattern %s", field, definition.Regex))
 		}
 	}
-	extractBaseValueOrSetDefault(&reflectedEntity, "ID", primitive.NewObjectID())
-	extractBaseValueOrSetDefault(&reflectedEntity, "CreatedAt", time.Now())
-	extractBaseValueOrSetDefault(&reflectedEntity, "UpdatedAt", time.Now())
-	result := qkit.PtrVal(e_utils.ToBSON(reflectedEntity.FieldByName("Base").Interface()))
-	for k, v := range qkit.PtrVal(e_utils.ToBSON(reflectedEntity.Interface())) {
-		if (k != "base") {
-			result[k] = v
-		}
-	}
-	return result
+	SetDefault(&reflectedEntity, "ID", primitive.NewObjectID())
+	SetDefault(&reflectedEntity, "CreatedAt", time.Now())
+	SetDefault(&reflectedEntity, "UpdatedAt", time.Now())
+	return qkit.Cast[T](reflectedEntity.Interface())
 }
 
-func extractBaseValueOrSetDefault[T any](reflectedEntity *reflect.Value, fieldName string, defaultValue T) {
-	field := reflect.Indirect(reflectedEntity.FieldByName("Base")).FieldByName(fieldName)
-	if field.IsValid() && !field.IsZero() {
-		reflectedEntity.FieldByName(fieldName).Set(reflect.ValueOf(field))
-	}
-	field = reflectedEntity.FieldByName(fieldName)
+func SetDefault[T any](reflectedEntity *reflect.Value, fieldName string, defaultValue T) {
+	field := reflectedEntity.FieldByName(fieldName)
 	if field.IsValid() && field.IsZero() {
-		field.Set(reflect.ValueOf(qkit.ValPtr(defaultValue)))
+		if (field.Kind() == reflect.Ptr) {
+			field.Set(reflect.ValueOf(qkit.ValPtr(defaultValue)))
+		} else {
+			field.Set(reflect.ValueOf(defaultValue))
+		}
 	}
 }
