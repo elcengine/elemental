@@ -32,6 +32,14 @@ func (m Model[T]) Between(min, max any) Model[T] {
 	return m.addToPipeline("$match", "$gte", min).addToPipeline("$match", "$lte", max)
 }
 
+func (m Model[T]) Mod(divisor, remainder int) Model[T] {
+	return m.addToPipeline("$match", "$mod", []int{divisor, remainder})
+}
+
+func (m Model[T]) Regex(pattern string) Model[T] {
+	return m.addToPipeline("$match", "$regex", primitive.Regex{Pattern: pattern, Options: ""})
+}
+
 func (m Model[T]) Exists(value bool) Model[T] {
 	return m.addToPipeline("$match", "$exists", value)
 }

@@ -6,10 +6,10 @@ import (
 	"elemental/tests/setup"
 	"elemental/utils"
 	"fmt"
-	"testing"
 	"github.com/samber/lo"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"testing"
 )
 
 func TestCoreReadOps(t *testing.T) {
@@ -134,6 +134,17 @@ func TestCoreReadOps(t *testing.T) {
 			users := UserModel.Where("occupation").Exists(false).Exec().([]User)
 			So(len(users), ShouldEqual, len(lo.Filter(e_mocks.Users, func(u User, _ int) bool {
 				return u.Occupation == ""
+			})))
+		})
+		Convey("Find where name matches the pattern", func() {
+			users := UserModel.Where("name").Regex(".*alt").Exec().([]User)
+			So(len(users), ShouldEqual, 1)
+			So(users[0].Name, ShouldEqual, e_mocks.Geralt.Name)
+		})
+		Convey("Find where age is divisible by 5", func() {
+			users := UserModel.Where("age").Mod(5, 0).Exec().([]User)
+			So(len(users), ShouldEqual, len(lo.Filter(e_mocks.Users, func(u User, _ int) bool {
+				return u.Age > 0 && u.Age%5 == 0
 			})))
 		})
 		Convey("Count users in conjuntion with greater than", func() {
