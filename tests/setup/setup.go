@@ -9,7 +9,6 @@ import (
 
 func Connection() {
 	e_connection.ConnectURI(e_mocks.URI)
-	e_connection.UseDefault().Drop(context.TODO())
 }
 
 func Seed() {
@@ -19,4 +18,9 @@ func Seed() {
 func SeededConnection() {
 	Connection()
 	Seed()
+}
+
+func Teardown() {
+	e_connection.UseDefault().Drop(context.TODO())
+	e_connection.Disconnect()
 }

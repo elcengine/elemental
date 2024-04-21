@@ -14,6 +14,8 @@ func TestCoreCreate(t *testing.T) {
 
 	e_test_setup.Connection()
 
+	defer e_test_setup.Teardown()
+
 	Convey("Create users", t, func() {
 		Convey("Create a single user", func() {
 			user := UserModel.Create(e_mocks.Ciri)

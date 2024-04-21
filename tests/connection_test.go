@@ -4,6 +4,7 @@ import (
 	"elemental/connection"
 	"elemental/constants"
 	"elemental/tests/mocks"
+	"elemental/tests/setup"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -11,6 +12,9 @@ import (
 )
 
 func TestConnection(t *testing.T) {
+	
+	defer e_test_setup.Teardown()
+
 	Convey("Connect to a local database", t, func() {
 		Convey("Simplest form of connect with just a URI", func() {
 			client := e_connection.Connect(e_connection.ConnectionOptions{

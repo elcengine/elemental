@@ -17,6 +17,8 @@ func TestCoreReadOps(t *testing.T) {
 
 	e_test_setup.SeededConnection()
 
+	defer e_test_setup.Teardown()
+
 	Convey("Read users with operators", t, func() {
 		Convey(fmt.Sprintf("Find all where age is %d", e_mocks.Geralt.Age), func() {
 			users := UserModel.Where("age").Equals(e_mocks.Geralt.Age).Exec().([]User)
