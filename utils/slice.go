@@ -1,7 +1,7 @@
 package e_utils
 
 import (
-	qkit "github.com/clubpay/qlubkit-go"
+	"github.com/samber/lo"
 )
 
 func ElementAtIndex[T any](slice []T, index int) T {
@@ -24,15 +24,15 @@ func First[T any](slice []T) T {
 }
 
 func CastSlice[T any](slice []any) []T {
-	return qkit.Map(func(doc any) T {
-		return qkit.Cast[T](doc)
-	}, slice)
+	return lo.Map(slice, func(doc any, _ int) T {
+		return Cast[T](doc)
+	})
 }
 
 func CastSliceFromMaps[T any](slice []map[string]any) []T {
 	var result []T
 	for _, doc := range slice {
-		result = append(result, qkit.CastJSON[T](doc))
+		result = append(result, CastJSON[T](doc))
 	}
 	return result
 }

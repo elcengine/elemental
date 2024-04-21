@@ -3,9 +3,9 @@ package e_tests
 import (
 	"elemental/tests/mocks"
 	"elemental/tests/setup"
+	"elemental/utils"
 	"testing"
 
-	"github.com/clubpay/qlubkit-go"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -19,7 +19,7 @@ func TestCoreRead(t *testing.T) {
 	Convey("Read users", t, func() {
 		Convey("Find all users", func() {
 			users := UserModel.Find().Exec().([]User)
-			So(len(users), ShouldEqual, 6)
+			So(len(users), ShouldEqual, len(e_mocks.Users))
 		})
 		Convey("Find all with a limit of 2", func() {
 			users := UserModel.Find().Limit(2).Exec().([]User)
@@ -45,24 +45,24 @@ func TestCoreRead(t *testing.T) {
 			So(users[0].Name, ShouldEqual, e_mocks.Ciri.Name)
 		})
 		Convey("Find a user with a filter query", func() {
-			user := qkit.Cast[User](UserModel.FindOne(primitive.M{"age": e_mocks.Geralt.Age}).Exec())
+			user := e_utils.Cast[User](UserModel.FindOne(primitive.M{"age": e_mocks.Geralt.Age}).Exec())
 			So(user, ShouldNotBeNil)
 			So(user.Name, ShouldEqual, e_mocks.Geralt.Name)
 		})
 		Convey("Find first user", func() {
-			user := qkit.Cast[User](UserModel.FindOne().Exec())
+			user := e_utils.Cast[User](UserModel.FindOne().Exec())
 			So(user, ShouldNotBeNil)
 			So(user.Name, ShouldEqual, e_mocks.Ciri.Name)
 		})
 		Convey("Find user by ID", func() {
-			user := qkit.Cast[User](UserModel.FindOne().Exec())
-			user = qkit.Cast[User](UserModel.FindByID(user.ID).Exec())
+			user := e_utils.Cast[User](UserModel.FindOne().Exec())
+			user = e_utils.Cast[User](UserModel.FindByID(user.ID).Exec())
 			So(user, ShouldNotBeNil)
 			So(user.Name, ShouldEqual, e_mocks.Ciri.Name)
 		})
 		Convey("Count users", func() {
 			count := UserModel.CountDocuments().Exec().(int64)
-			So(count, ShouldEqual, 6)
+			So(count, ShouldEqual, len(e_mocks.Users))
 		})
 	})
 }

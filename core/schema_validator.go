@@ -1,13 +1,14 @@
 package elemental
 
 import (
+	e_utils "elemental/utils"
 	"fmt"
 	"reflect"
 
 	"regexp"
 	"time"
 
-	"github.com/clubpay/qlubkit-go"
+	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -38,7 +39,7 @@ func enforceSchema[T any](schema Schema, doc *T, defaults ...bool) T {
 		if definition.Length != 0 && int64(len(reflectedField.String())) > definition.Length {
 			panic(fmt.Sprintf("Field %s must be less than %d characters", field, definition.Length))
 		}
-		if definition.Regex != "" && qkit.Must(regexp.Match(definition.Regex, reflectedField.Bytes())) {
+		if definition.Regex != "" && lo.Must(regexp.Match(definition.Regex, reflectedField.Bytes())) {
 			panic(fmt.Sprintf("Field %s must match the regex pattern %s", field, definition.Regex))
 		}
 	}
@@ -47,14 +48,14 @@ func enforceSchema[T any](schema Schema, doc *T, defaults ...bool) T {
 		SetDefault(&reflectedEntity, "CreatedAt", time.Now())
 		SetDefault(&reflectedEntity, "UpdatedAt", time.Now())
 	}
-	return qkit.Cast[T](reflectedEntity.Interface())
+	return e_utils.Cast[T](reflectedEntity.Interface())
 }
 
 func SetDefault[T any](reflectedEntity *reflect.Value, fieldName string, defaultValue T) {
 	field := reflectedEntity.FieldByName(fieldName)
 	if field.IsValid() && field.IsZero() {
 		if (field.Kind() == reflect.Ptr) {
-			field.Set(reflect.ValueOf(qkit.ValPtr(defaultValue)))
+			field.Set(reflect.ValueOf(lo.ToPtr(defaultValue)))
 		} else {
 			field.Set(reflect.ValueOf(defaultValue))
 		}

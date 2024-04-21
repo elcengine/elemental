@@ -8,7 +8,7 @@ import (
 )
 
 func Connection() {
-	e_connection.ConnectURI(e_mocks.URI)
+	e_connection.ConnectURI(e_mocks.DB_URI)
 }
 
 func Seed() {

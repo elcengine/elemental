@@ -4,10 +4,10 @@ import (
 	"elemental/tests/base"
 	"elemental/tests/mocks"
 	"elemental/tests/setup"
+	"elemental/utils"
 	"fmt"
 	"testing"
-
-	"github.com/clubpay/qlubkit-go"
+	"github.com/samber/lo"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -27,10 +27,13 @@ func TestCoreReadOps(t *testing.T) {
 		})
 		Convey("Find all where age is greater than 50", func() {
 			users := UserModel.Where("age").GreaterThan(50).Exec().([]User)
-			So(len(users), ShouldEqual, 3)
+			So(len(users), ShouldEqual, len(lo.Filter(e_mocks.Users, func(u User, _ int) bool {
+				return u.Age > 50
+			})))
 			So(users[0].Name, ShouldEqual, e_mocks.Geralt.Name)
 			So(users[1].Name, ShouldEqual, e_mocks.Caranthir.Name)
 			So(users[2].Name, ShouldEqual, e_mocks.Imlerith.Name)
+			So(users[3].Name, ShouldEqual, e_mocks.Vesemir.Name)
 		})
 		Convey("Find a mage where age is greater than 50", func() {
 			Convey("In conjuntion with find", func() {
@@ -39,7 +42,7 @@ func TestCoreReadOps(t *testing.T) {
 				So(users[0].Name, ShouldEqual, e_mocks.Caranthir.Name)
 			})
 			Convey("In conjuntion with find one", func() {
-				user := qkit.Cast[User](UserModel.FindOne(primitive.M{"occupation": "Mage"}).Where("age").GreaterThan(50).Exec())
+				user := e_utils.Cast[User](UserModel.FindOne(primitive.M{"occupation": "Mage"}).Where("age").GreaterThan(50).Exec())
 				So(user, ShouldNotBeNil)
 				So(user.Name, ShouldEqual, e_mocks.Caranthir.Name)
 			})
@@ -87,17 +90,20 @@ func TestCoreReadOps(t *testing.T) {
 			})
 		})
 		Convey(fmt.Sprintf("Find where age is not %d", e_test_base.DefaultAge), func() {
+			expectedCount := len(lo.Filter(e_mocks.Users, func(u User, _ int) bool {
+				return u.Age > 0 && u.Age != e_test_base.DefaultAge
+			}))
 			Convey("In conjuntion with find", func() {
 				users := UserModel.Find(primitive.M{"age": primitive.M{"$ne": e_test_base.DefaultAge}}).Exec().([]User)
-				So(len(users), ShouldEqual, 3)
+				So(len(users), ShouldEqual, expectedCount)
 			})
 			Convey("In conjuntion with not equals", func() {
 				users := UserModel.Where("age").NotEquals(e_test_base.DefaultAge).Exec().([]User)
-				So(len(users), ShouldEqual, 3)
+				So(len(users), ShouldEqual, expectedCount)
 			})
 			Convey("In conjuntion with not in", func() {
 				users := UserModel.Where("age").NotIn(e_test_base.DefaultAge).Exec().([]User)
-				So(len(users), ShouldEqual, 3)
+				So(len(users), ShouldEqual, expectedCount)
 			})
 		})
 		Convey("Find where weapon list contains Battle Axe", func() {
@@ -116,7 +122,7 @@ func TestCoreReadOps(t *testing.T) {
 		})
 		Convey("Find where occupation exists", func() {
 			users := UserModel.Where("occupation").Exists(true).Exec().([]User)
-			So(len(users), ShouldEqual, 4)
+			So(len(users), ShouldEqual, 5)
 		})
 		Convey("Find where occupation does not exist", func() {
 			users := UserModel.Where("occupation").Exists(false).Exec().([]User)
@@ -124,11 +130,11 @@ func TestCoreReadOps(t *testing.T) {
 		})
 		Convey("Find where occupation is of type string", func() {
 			users := UserModel.Where("occupation").IsType(bson.TypeString).Exec().([]User)
-			So(len(users), ShouldEqual, 4)
+			So(len(users), ShouldEqual, 5)
 		})
 		Convey("Count users in conjuntion with greater than", func() {
 			count := UserModel.Where("age").GreaterThan(50).CountDocuments().Exec().(int64)
-			So(count, ShouldEqual, 3)
+			So(count, ShouldEqual, 4)
 		})
 	})
 }

@@ -3,9 +3,9 @@ module elemental
 go 1.21.3
 
 require (
-	github.com/clubpay/qlubkit-go v1.0.2
 	github.com/creasty/defaults v1.7.0
 	github.com/rxwycdh/rxhash v0.0.0-20230131062142-10b7a38b400d
+	github.com/samber/lo v1.39.0
 	github.com/smartystreets/goconvey v1.8.1
 	go.mongodb.org/mongo-driver v1.14.0
 )

@@ -12,18 +12,18 @@ import (
 )
 
 func TestConnection(t *testing.T) {
-	
+
 	defer e_test_setup.Teardown()
 
 	Convey("Connect to a local database", t, func() {
 		Convey("Simplest form of connect with just a URI", func() {
 			client := e_connection.Connect(e_connection.ConnectionOptions{
-				URI: e_mocks.URI,
+				URI: e_mocks.DB_URI,
 			})
 			So(client, ShouldNotBeNil)
 		})
 		Convey("Connect with a URI specified within client options", func() {
-			opts := options.Client().ApplyURI(e_mocks.URI)
+			opts := options.Client().ApplyURI(e_mocks.DB_URI)
 			client := e_connection.Connect(e_connection.ConnectionOptions{
 				ClientOptions: opts,
 			})

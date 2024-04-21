@@ -27,7 +27,7 @@ func TestCoreCreate(t *testing.T) {
 		})
 		Convey("Create many users", func() {
 			users := UserModel.InsertMany(e_mocks.Users[1:])
-			So(len(users), ShouldEqual, 5)
+			So(len(users), ShouldEqual, len(e_mocks.Users[1:]))
 			So(users[0].ID, ShouldNotBeNil)
 			So(users[1].ID, ShouldNotBeNil)
 			So(users[0].Name, ShouldEqual, e_mocks.Geralt.Name)

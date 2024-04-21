@@ -5,10 +5,8 @@ import (
 	"elemental/constants"
 	"elemental/utils"
 	"time"
-
 	"golang.org/x/exp/maps"
-
-	"github.com/clubpay/qlubkit-go"
+	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -29,19 +27,19 @@ type ConnectionOptions struct {
 }
 
 func Connect(opts ConnectionOptions) mongo.Client {
-	opts.Alias = qkit.Coalesce(opts.Alias, "default")
-	clientOpts := qkit.Coalesce(opts.ClientOptions, options.Client()).SetServerAPIOptions(options.ServerAPI(options.ServerAPIVersion1)).SetPoolMonitor(qkit.Coalesce(opts.PoolMonitor, poolMonitor(opts.Alias)))
+	opts.Alias = e_utils.Coalesce(opts.Alias, "default")
+	clientOpts := e_utils.Coalesce(opts.ClientOptions, options.Client()).SetServerAPIOptions(options.ServerAPI(options.ServerAPIVersion1)).SetPoolMonitor(e_utils.Coalesce(opts.PoolMonitor, poolMonitor(opts.Alias)))
 	if clientOpts.GetURI() == "" {
 		clientOpts = clientOpts.ApplyURI(opts.URI)
 		if clientOpts.GetURI() == "" {
 			panic(e_constants.ErrURIRequired)
 		}
 	}
-	cs := qkit.Must(connstring.ParseAndValidate(clientOpts.GetURI()))
+	cs := lo.Must(connstring.ParseAndValidate(clientOpts.GetURI()))
 	defaultDatabases[opts.Alias] = cs.Database
-	ctx, cancel := context.WithTimeout(context.Background(), *qkit.Coalesce(clientOpts.ConnectTimeout, qkit.ValPtr(connectionTimeout)))
+	ctx, cancel := context.WithTimeout(context.Background(), *e_utils.Coalesce(clientOpts.ConnectTimeout, lo.ToPtr(connectionTimeout)))
 	defer cancel()
-	client := qkit.Must(mongo.Connect(ctx, clientOpts))
+	client := lo.Must(mongo.Connect(ctx, clientOpts))
 	e_utils.Must(client.Ping(ctx, readpref.Primary()))
 	clients[opts.Alias] = *client
 	return *client
@@ -56,7 +54,7 @@ func ConnectURI(uri string) mongo.Client {
 //
 // @param alias - The alias of the connection to get
 func GetConnection(alias ...string) mongo.Client {
-	return clients[qkit.Coalesce(e_utils.First(alias), "default")]
+	return clients[e_utils.Coalesce(e_utils.First(alias), "default")]
 }
 
 // Disconnect a set of connections by alias or disconnect all connections if no alias is provided
@@ -67,7 +65,7 @@ func Disconnect(aliases ...string) error {
 		aliases = maps.Keys(clients)
 	}
 	for _, alias := range aliases {
-		err := qkit.ValPtr(clients[alias]).Disconnect(context.Background())
+		err := lo.ToPtr(clients[alias]).Disconnect(context.Background())
 		if err != nil {
 			return err
 		}
@@ -83,19 +81,19 @@ func Disconnect(aliases ...string) error {
 //
 // @param alias - The alias of the connection to use
 func Use(database string, alias ...string) *mongo.Database {
-	return qkit.ValPtr(clients[qkit.Coalesce(e_utils.First(alias), "default")]).Database(qkit.Coalesce(database, defaultDatabases[qkit.Coalesce(e_utils.First(alias), "default")]))
+	return lo.ToPtr(clients[e_utils.Coalesce(e_utils.First(alias), "default")]).Database(e_utils.Coalesce(database, defaultDatabases[e_utils.Coalesce(e_utils.First(alias), "default")]))
 }
 
 // Use the default database on a connection. Uses the default connection if no alias is provided
 //
 // @param alias - The alias of the connection to use
 func UseDefault(alias ...string) *mongo.Database {
-	return qkit.ValPtr(clients[qkit.Coalesce(e_utils.First(alias), "default")]).Database(qkit.Coalesce(defaultDatabases[qkit.Coalesce(e_utils.First(alias), "default")], "test"))
+	return lo.ToPtr(clients[e_utils.Coalesce(e_utils.First(alias), "default")]).Database(e_utils.Coalesce(defaultDatabases[e_utils.Coalesce(e_utils.First(alias), "default")], "test"))
 }
 
 // Get the client for a given alias or the default client if no alias is provided
 //
 // @param alias - The alias of the client to get
 func Client(alias ...string) *mongo.Client {
-	return qkit.ValPtr(clients[qkit.Coalesce(e_utils.First(alias), "default")])
+	return lo.ToPtr(clients[e_utils.Coalesce(e_utils.First(alias), "default")])
 }

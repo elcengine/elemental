@@ -3,13 +3,12 @@ package elemental
 import (
 	"context"
 	"elemental/connection"
-
-	"github.com/clubpay/qlubkit-go"
+	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func transaction(fn func(ctx mongo.SessionContext) (interface{}, error), alias *string) (interface{}, error) {
-	session := qkit.Must(e_connection.Client(qkit.PtrVal(alias)).StartSession())
+	session := lo.Must(e_connection.Client(lo.FromPtr(alias)).StartSession())
 	defer session.EndSession(context.TODO())
 	return session.WithTransaction(context.TODO(), fn)
 }

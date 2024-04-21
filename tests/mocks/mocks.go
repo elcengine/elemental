@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	URI = "mongodb+srv://akalankaperera128:pFAnQVXE6vrbcXNk@default.ynr156r.mongodb.net/elemental"
+	DB_URI = "mongodb+srv://akalankaperera128:pFAnQVXE6vrbcXNk@default.ynr156r.mongodb.net/elemental"
 )
 
 var (
@@ -37,6 +37,13 @@ var (
 		Name:       "Yennefer",
 		Occupation: "Mage",
 	}
+	Vesemir = e_test_base.User{
+		Name:       "Vesemir",
+		Occupation: "Witcher",
+		Age:        300,
+		Weapons:    []string{"Silver sword", "Steel sword", "Crossbow"},
+		Retired:    true,
+	}
 )
 
 var Users = []e_test_base.User{
@@ -46,4 +53,5 @@ var Users = []e_test_base.User{
 	Caranthir,
 	Imlerith,
 	Yennefer,
+	Vesemir,
 }

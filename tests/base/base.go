@@ -4,8 +4,7 @@ import (
 	"elemental/core"
 	"reflect"
 	"time"
-
-	"github.com/clubpay/qlubkit-go"
+	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -16,6 +15,7 @@ type User struct {
 	Age        int                `json:"age" bson:"age"`
 	Occupation string             `json:"occupation" bson:"occupation,omitempty"`
 	Weapons    []string           `json:"weapons" bson:"weapons"`
+	Retired    bool               `json:"retired" bson:"retired"`
 	CreatedAt  time.Time          `json:"created_at" bson:"created_at"`
 	UpdatedAt  time.Time          `json:"updated_at" bson:"updated_at"`
 }
@@ -27,7 +27,7 @@ var UserModel = elemental.NewModel[User]("User", elemental.NewSchema(map[string]
 		Type:     reflect.String,
 		Required: true,
 		Index: options.IndexOptions{
-			Unique: qkit.ValPtr(true),
+			Unique: lo.ToPtr(true),
 		},
 	},
 	"Age": {
@@ -40,6 +40,10 @@ var UserModel = elemental.NewModel[User]("User", elemental.NewSchema(map[string]
 	"Weapons": {
 		Type:    reflect.Slice,
 		Default: []string{},
+	},
+	"Retired": {
+		Type:    reflect.Bool,
+		Default: false,
 	},
 }, elemental.SchemaOptions{
 	Collection: "users",
