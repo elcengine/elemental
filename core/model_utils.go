@@ -43,3 +43,9 @@ func (m Model[T]) addToPipeline(stage, key string, value any) Model[T] {
 	}
 	return m
 }
+
+func (m Model[T]) checkConditionsAndPanic(results []T) {
+	if m.failWith != nil && len(results) == 0 {
+		panic(*m.failWith)
+	}
+}

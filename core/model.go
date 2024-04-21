@@ -4,12 +4,14 @@ import (
 	"context"
 	"elemental/connection"
 	"elemental/utils"
+	"errors"
+	"reflect"
+
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
-	"reflect"
 )
 
 type Model[T any] struct {
@@ -18,6 +20,7 @@ type Model[T any] struct {
 	pipeline   mongo.Pipeline
 	executor   func(ctx context.Context) any
 	whereField string
+	failWith   *error
 }
 
 var models = make(map[string]Model[any])
@@ -66,6 +69,7 @@ func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
 	m.executor = func(ctx context.Context) any {
 		var results []T
 		e_utils.Must(lo.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
+		m.checkConditionsAndPanic(results)
 		if len(results) == 0 {
 			return nil
 		}
@@ -113,11 +117,21 @@ func (m Model[T]) Skip(skip int64) Model[T] {
 	return m
 }
 
+func (m Model[T]) OrFail(err ...error) Model[T] {
+	if len(err) > 0 {
+		m.failWith = &err[0]
+	} else {
+		m.failWith = lo.ToPtr(errors.New("no results found matching the given query"))
+	}
+	return m
+}
+
 func (m Model[T]) Exec(ctx ...context.Context) any {
 	if m.executor == nil {
 		m.executor = func(ctx context.Context) any {
 			var results []T
 			e_utils.Must(lo.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
+			m.checkConditionsAndPanic(results)
 			return results
 		}
 	}

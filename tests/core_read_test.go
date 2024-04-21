@@ -4,6 +4,7 @@ import (
 	"elemental/tests/mocks"
 	"elemental/tests/setup"
 	"elemental/utils"
+	"errors"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -44,10 +45,29 @@ func TestCoreRead(t *testing.T) {
 			So(len(users), ShouldEqual, 1)
 			So(users[0].Name, ShouldEqual, e_mocks.Ciri.Name)
 		})
+		Convey("Find all users with a filter query which has no matching documents", func() {
+			users := UserModel.Find(primitive.M{"name": "Yarpen Zigrin"}).Exec().([]User)
+			So(len(users), ShouldEqual, 0)
+			Convey("With or fail", func() {
+				So(func () {
+					UserModel.Find(primitive.M{"name": "Yarpen Zigrin"}).OrFail().Exec()
+				}, ShouldPanicWith, errors.New("no results found matching the given query"))
+			})
+			Convey("With or fail and custom error", func() {
+				err := errors.New("no user found")
+				So(func () {
+					UserModel.Find(primitive.M{"name": "Yarpen Zigrin"}).OrFail(err).Exec()
+				}, ShouldPanicWith, err)
+			})
+		})
 		Convey("Find a user with a filter query", func() {
 			user := e_utils.Cast[User](UserModel.FindOne(primitive.M{"age": e_mocks.Geralt.Age}).Exec())
 			So(user, ShouldNotBeNil)
 			So(user.Name, ShouldEqual, e_mocks.Geralt.Name)
+		})
+		Convey("Find a user with a filter query which has no matching documents", func() {
+			user := UserModel.FindOne(primitive.M{"name": "Yarpen Zigrin"}).Exec()
+			So(user, ShouldBeNil)
 		})
 		Convey("Find first user", func() {
 			user := e_utils.Cast[User](UserModel.FindOne().Exec())
