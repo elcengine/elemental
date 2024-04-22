@@ -9,19 +9,23 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// Returns the underlying collection instance this model uses
 func (m Model[T]) Collection() *mongo.Collection {
 	return e_connection.Use(m.Schema.Options.Database, m.Schema.Options.Connection).Collection(m.Schema.Options.Collection)
 }
 
+// Returns the underlying database instance this model uses
 func (m Model[T]) Database() *mongo.Database {
 	return m.Collection().Database()
 }
 
+// Returns the count of all documents in a collection or view
 func (m Model[T]) EstimatedDocumentCount(ctx ...context.Context) int64 {
 	count, _ := m.Collection().EstimatedDocumentCount(e_utils.DefaultCTX(ctx))
 	return count
 }
 
+// Returns statistics about the model collection
 func (m Model[T]) Stats(ctx ...context.Context) CollectionStats {
 	result := m.Database().RunCommand(e_utils.DefaultCTX(ctx), bson.M{"collStats": m.Schema.Options.Collection})
 	var stats CollectionStats
@@ -29,18 +33,27 @@ func (m Model[T]) Stats(ctx ...context.Context) CollectionStats {
 	return stats
 }
 
+// The total amount of storage in bytes allocated to this collection for document storage
 func (m Model[T]) StorageSize(ctx ...context.Context) int64 {
 	return m.Stats(e_utils.DefaultCTX(ctx)).StorageSize
 }
 
+// The total size in bytes of the data in the collection plus the size of every index on the collection
 func (m Model[T]) TotalSize(ctx ...context.Context) int64 {
 	return m.Stats(e_utils.DefaultCTX(ctx)).Size
 }
 
+// The total size of all indexes for the collection
 func (m Model[T]) TotalIndexSize(ctx ...context.Context) int64 {
 	return m.Stats(e_utils.DefaultCTX(ctx)).TotalIndexSize
 }
 
+// The average size of each document in the collection
 func (m Model[T]) AvgObjSize(ctx ...context.Context) int64 {
 	return m.Stats(e_utils.DefaultCTX(ctx)).AvgObjSize
+}
+
+// Returns true if the model collection is a capped collection, otherwise returns false
+func (m Model[T]) IsCapped(ctx ...context.Context) bool {
+	return m.Stats(e_utils.DefaultCTX(ctx)).Capped
 }

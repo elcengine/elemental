@@ -46,7 +46,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 				CollectionOptions: collectionOptions,
 			}))
 			KingdomModel.Create(Kingdom{Name: "Nilfgaard"})
-			So(KingdomModel.Stats().Capped, ShouldBeTrue)
+			So(KingdomModel.IsCapped(), ShouldBeTrue)
 		})
 		Convey("Should use the specified database", func() {
 			var MonsterModel = elemental.NewModel[Monster]("Monster", elemental.NewSchema(map[string]elemental.Field{
