@@ -8,7 +8,7 @@ import (
 )
 
 func transaction(fn func(ctx mongo.SessionContext) (interface{}, error), alias *string) (interface{}, error) {
-	session := lo.Must(e_connection.Client(lo.FromPtr(alias)).StartSession())
+	session := lo.Must(lo.ToPtr(e_connection.GetConnection(lo.FromPtr(alias))).StartSession())
 	defer session.EndSession(context.TODO())
 	return session.WithTransaction(context.TODO(), fn)
 }

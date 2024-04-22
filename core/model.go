@@ -33,21 +33,25 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 	if _, ok := Models[name]; ok {
 		return e_utils.Cast[Model[T]](Models[name])
 	}
-	if (schema.Options.Collection == "") {
-		schema.Options.Collection =  pluralize.NewClient().Plural(strings.ToLower(name))
+	if schema.Options.Collection == "" {
+		schema.Options.Collection = pluralize.NewClient().Plural(strings.ToLower(name))
 	}
 	model := Model[T]{
 		Name:   name,
 		schema: schema,
 	}
 	Models[name] = e_utils.Cast[Model[any]](model)
-	e_connection.On(event.ConnectionReady, func() {
+	connectionReady := func() {
+		model.CreateCollection()
 		schema.syncIndexes(reflect.TypeOf(sample).Elem())
-	})
+	}
+	if model.Ping() != nil {
+		e_connection.On(event.ConnectionReady, connectionReady)
+	} else {
+		connectionReady()
+	}
 	return model
 }
-
-
 
 func (m Model[T]) Create(doc T, ctx ...context.Context) T {
 	document := enforceSchema(m.schema, &doc)
@@ -140,7 +144,7 @@ func (m Model[T]) Skip(skip int64) Model[T] {
 }
 
 func (m Model[T]) Sort(args ...any) Model[T] {
-	if (len(args) == 1) {
+	if len(args) == 1 {
 		for field, order := range e_utils.Cast[primitive.M](args[0]) {
 			m = m.addToPipeline("$sort", field, order)
 		}
@@ -176,7 +180,6 @@ func (m Model[T]) Exec(ctx ...context.Context) any {
 	return m.executor(e_utils.DefaultCTX(ctx))
 }
 
-
 func (m Model[T]) Validate(doc T) {
 	enforceSchema(m.schema, &doc, false)
 }
@@ -186,7 +189,7 @@ func (m Model[T]) Schema() Schema {
 }
 
 func (m Model[T]) CreateCollection(ctx ...context.Context) *mongo.Collection {
-	e_connection.Use(m.schema.Options.Database, m.schema.Options.Connection).CreateCollection(e_utils.DefaultCTX(ctx), m.schema.Options.Collection)
+	e_connection.Use(m.schema.Options.Database, m.schema.Options.Connection).CreateCollection(e_utils.DefaultCTX(ctx), m.schema.Options.Collection, &m.schema.Options.CollectionOptions)
 	return m.Collection()
 }
 

@@ -6,9 +6,10 @@ import (
 )
 
 type SchemaOptions struct {
-	Collection string
-	Database   string
-	Connection string
+	Collection        string
+	CollectionOptions options.CreateCollectionOptions
+	Database          string
+	Connection        string
 }
 
 type Field struct {

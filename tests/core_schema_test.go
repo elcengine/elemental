@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func TestCoreSchemaOptions(t *testing.T) {
@@ -32,8 +33,28 @@ func TestCoreSchemaOptions(t *testing.T) {
 			CastleModel.Create(Castle{Name: "Kaer Morhen"})
 			So(CastleModel.Collection().Name(), ShouldEqual, "castles")
 		})
+		Convey("Should create a capped collection", func() {
+			collectionOptions := options.CreateCollectionOptions{}
+			collectionOptions.SetCapped(true)
+			collectionOptions.SetSizeInBytes(1024)
+			var KingdomModel = elemental.NewModel[Kingdom]("Kingdom", elemental.NewSchema(map[string]elemental.Field{
+				"Name": {
+					Type:     reflect.String,
+					Required: true,
+				},
+			}, elemental.SchemaOptions{
+				CollectionOptions: collectionOptions,
+			}))
+			KingdomModel.Create(Kingdom{Name: "Nilfgaard"})
+			So(KingdomModel.Stats().Capped, ShouldBeTrue)
+		})
 		Convey("Should use the specified database", func() {
-			var MonsterModel = elemental.NewModel[Monster]("Monster", elemental.NewSchema(map[string]elemental.Field{}, elemental.SchemaOptions{
+			var MonsterModel = elemental.NewModel[Monster]("Monster", elemental.NewSchema(map[string]elemental.Field{
+				"Name": {
+					Type:     reflect.String,
+					Required: true,
+				},
+			}, elemental.SchemaOptions{
 				Database: e_mocks.SECONDARY_DB,
 			}))
 			MonsterModel.Create(Monster{Name: "Nekker"})

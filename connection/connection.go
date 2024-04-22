@@ -90,10 +90,3 @@ func Use(database string, alias ...string) *mongo.Database {
 func UseDefault(alias ...string) *mongo.Database {
 	return lo.ToPtr(clients[e_utils.Coalesce(e_utils.First(alias), "default")]).Database(e_utils.Coalesce(defaultDatabases[e_utils.Coalesce(e_utils.First(alias), "default")], "test"))
 }
-
-// Get the client for a given alias or the default client if no alias is provided
-//
-// @param alias - The alias of the client to get
-func Client(alias ...string) *mongo.Client {
-	return lo.ToPtr(clients[e_utils.Coalesce(e_utils.First(alias), "default")])
-}

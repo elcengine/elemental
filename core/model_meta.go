@@ -43,3 +43,8 @@ func (m Model[T]) TotalIndexSize(ctx ...context.Context) int64 {
 func (m Model[T]) AvgObjSize(ctx ...context.Context) int64 {
 	return m.Stats(e_utils.DefaultCTX(ctx)).AvgObjSize
 }
+
+// Sends out a ping to the underlying client connection used by this model.
+func (m Model[T]) Ping(ctx ...context.Context) error {
+	return m.Database().Client().Ping(e_utils.DefaultCTX(ctx), nil)
+}
