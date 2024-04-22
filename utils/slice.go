@@ -28,11 +28,3 @@ func CastSlice[T any](slice []any) []T {
 		return Cast[T](doc)
 	})
 }
-
-func CastSliceFromMaps[T any](slice []map[string]any) []T {
-	var result []T
-	for _, doc := range slice {
-		result = append(result, CastJSON[T](doc))
-	}
-	return result
-}

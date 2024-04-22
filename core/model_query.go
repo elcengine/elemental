@@ -8,14 +8,20 @@ import (
 	"github.com/samber/lo"
 )
 
-func (m Model[T]) Where(field string) Model[T] {
+func (m Model[T]) Where(field string, equals ...any) Model[T] {
 	m.whereField = field
+	if len(equals) > 0 {
+		m = m.Equals(equals[0])
+	}
 	return m
 }
 
-func (m Model[T]) OrWhere(field string) Model[T] {
+func (m Model[T]) OrWhere(field string, equals ...any) Model[T] {
 	m.whereField = field
 	m.orConditionActive = true
+	if len(equals) > 0 {
+		m = m.Equals(equals[0])
+	}
 	return m
 }
 
@@ -30,12 +36,12 @@ func (m Model[T]) OrFail(err ...error) Model[T] {
 
 func (m Model[T]) Exec(ctx ...context.Context) any {
 	if m.executor == nil {
-		m.executor = func(ctx context.Context) any {
+		m.executor = func(m Model[T], ctx context.Context) any {
 			var results []T
 			e_utils.Must(lo.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
 			m.checkConditionsAndPanic(results)
 			return results
 		}
 	}
-	return m.executor(e_utils.DefaultCTX(ctx))
+	return m.executor(m, e_utils.DefaultCTX(ctx))
 }

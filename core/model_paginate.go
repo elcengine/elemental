@@ -36,7 +36,7 @@ func (m Model[T]) Paginate(page, limit int64) Model[T] {
 			{"$count": "count"},
 		},
 	}}}}
-	m.executor = func(ctx context.Context) any {
+	m.executor = func(m Model[T], ctx context.Context) any {
 		var results []facetResult[T]
 		e_utils.Must(lo.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
 		totalDocs := results[0].Count[0]["count"]

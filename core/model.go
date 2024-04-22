@@ -20,10 +20,12 @@ type Model[T any] struct {
 	Name              string
 	Schema            Schema
 	pipeline          mongo.Pipeline
-	executor          func(ctx context.Context) any
+	executor          func(m Model[T], ctx context.Context) any
 	whereField        string
 	failWith          *error
 	orConditionActive bool
+	upsert            bool
+	returnNew  bool
 }
 
 var Models = make(map[string]Model[any])
@@ -75,7 +77,7 @@ func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
 		bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}},
 		bson.D{{Key: "$limit", Value: 1}},
 	)
-	m.executor = func(ctx context.Context) any {
+	m.executor = func(m Model[T], ctx context.Context) any {
 		var results []T
 		e_utils.Must(lo.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
 		m.checkConditionsAndPanic(results)
@@ -93,7 +95,7 @@ func (m Model[T]) FindByID(id primitive.ObjectID) Model[T] {
 
 func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
 	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}}, bson.D{{Key: "$count", Value: "count"}})
-	m.executor = func(ctx context.Context) any {
+	m.executor = func(m Model[T], ctx context.Context) any {
 		var results []map[string]any
 		e_utils.Must(lo.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
 		return int64(e_utils.Cast[int32](results[0]["count"]))
@@ -103,7 +105,7 @@ func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
 
 func (m Model[T]) Distinct(field string, query ...primitive.M) Model[T] {
 	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}}, bson.D{{Key: "$group", Value: primitive.M{"_id": "$" + field}}})
-	m.executor = func(ctx context.Context) any {
+	m.executor = func(m Model[T], ctx context.Context) any {
 		var results []map[string]any
 		e_utils.Must(lo.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
 		var distinct []string

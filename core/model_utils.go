@@ -2,10 +2,13 @@ package elemental
 
 import (
 	"elemental/utils"
+	"reflect"
 
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func (m Model[T]) addToFilters(key string, value any) Model[T] {
@@ -15,7 +18,7 @@ func (m Model[T]) addToFilters(key string, value any) Model[T] {
 		filters := e_utils.Cast[primitive.M](e_utils.CastBSON[bson.M](stg)[stage])
 		if filters != nil {
 			foundMatchStage = true
-			if (m.orConditionActive) {
+			if m.orConditionActive {
 				if filters["$or"] == nil {
 					filters["$or"] = []primitive.M{
 						{m.whereField: primitive.M{key: value}},
@@ -28,7 +31,7 @@ func (m Model[T]) addToFilters(key string, value any) Model[T] {
 						filters["$or"] = append(filters["$or"].([]primitive.M), primitive.M{k: v})
 						delete(filters, k)
 					}
-				}	
+				}
 				m.orConditionActive = false
 			} else {
 				filterExistsWithinAndOperator := false
@@ -87,4 +90,69 @@ func (m Model[T]) checkConditionsAndPanic(results []T) {
 	if m.failWith != nil && len(results) == 0 {
 		panic(*m.failWith)
 	}
+}
+
+func (m Model[T]) checkConditionsAndPanicForSingleResult(result *mongo.SingleResult) {
+	if result.Err() != nil {
+		if m.failWith != nil {
+			panic(*m.failWith)
+		}
+		panic(result.Err())
+	}
+}
+
+func (m Model[T]) checkConditionsAndPanicForErr(err error) {
+	if err != nil {
+		if m.failWith != nil {
+			panic(*m.failWith)
+		}
+		panic(err)
+	}
+}
+
+func (m Model[T]) findMatchStage() bson.D {
+	for i, stage := range m.pipeline {
+		if stage[0].Key == "$match" {
+			return m.pipeline[i]
+		}
+	}
+	return bson.D{}
+}
+
+func (m Model[T]) parseDocument(doc any) primitive.M {
+	if (reflect.TypeOf(doc).Kind() == reflect.Ptr) {
+		doc = reflect.ValueOf(doc).Elem().Interface()
+	}
+	if reflect.TypeOf(doc).Kind() == reflect.Map {
+		return e_utils.Cast[primitive.M](doc)
+	}
+	result := e_utils.ToBSONDoc(doc)
+	for k, v := range *result {
+		if !reflect.ValueOf(v).IsValid() || reflect.ValueOf(v).IsZero() {
+			delete(*result, k)
+		}
+	}
+	return *result
+}
+
+func parseUpdateOptions[T any, O any](m Model[T], opts []*O) []*O {
+	setOptions := func (option string, value any) {
+		if len(opts) == 0 {
+			var emptyOptionInstance *O
+			options := reflect.New(reflect.TypeOf(emptyOptionInstance).Elem())
+			options.MethodByName(option).Call([]reflect.Value{reflect.ValueOf(value)})
+			opts = append(opts, options.Interface().(*O))
+		} else {
+			options := reflect.ValueOf(opts[0]).Elem()
+			options.MethodByName(option).Call([]reflect.Value{reflect.ValueOf(value)})
+			opts[0] = options.Interface().(*O)
+		}
+	}
+	if m.upsert {
+		setOptions("SetUpsert", true)
+	}
+	if (m.returnNew) {
+		setOptions("SetReturnDocument", options.After)
+	}
+	return opts
 }
