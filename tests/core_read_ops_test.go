@@ -88,6 +88,18 @@ func TestCoreReadOps(t *testing.T) {
 				So(users[0].Name, ShouldEqual, e_mocks.Caranthir.Name)
 				So(users[1].Name, ShouldEqual, e_mocks.Imlerith.Name)
 			})
+			Convey("In conjuntion with or operator", func() {
+				users := UserModel.Where("age").Equals(120).Or().Where("age").Equals(150).Exec().([]User)
+				So(len(users), ShouldEqual, 2)
+				So(users[0].Name, ShouldEqual, e_mocks.Caranthir.Name)
+				So(users[1].Name, ShouldEqual, e_mocks.Imlerith.Name)
+			})
+			Convey("In conjuntion with or where operator", func() {
+				users := UserModel.Where("age").Equals(120).OrWhere("age").Equals(150).Exec().([]User)
+				So(len(users), ShouldEqual, 2)
+				So(users[0].Name, ShouldEqual, e_mocks.Caranthir.Name)
+				So(users[1].Name, ShouldEqual, e_mocks.Imlerith.Name)
+			})
 		})
 		Convey(fmt.Sprintf("Find where age is not %d", e_test_base.DefaultAge), func() {
 			expectedCount := len(lo.Filter(e_mocks.Users, func(u User, _ int) bool {

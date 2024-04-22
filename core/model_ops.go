@@ -59,3 +59,9 @@ func (m Model[T]) ElementMatches(query primitive.M) Model[T] {
 func (m Model[T]) Size(value int) Model[T] {
 	return m.addToFilters("$size", value)
 }
+
+func (m Model[T]) Or() Model[T] {
+	m.orConditionActive = true
+	return m
+}
+

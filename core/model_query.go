@@ -4,11 +4,18 @@ import (
 	"context"
 	"elemental/utils"
 	"errors"
+
 	"github.com/samber/lo"
 )
 
 func (m Model[T]) Where(field string) Model[T] {
 	m.whereField = field
+	return m
+}
+
+func (m Model[T]) OrWhere(field string) Model[T] {
+	m.whereField = field
+	m.orConditionActive = true
 	return m
 }
 

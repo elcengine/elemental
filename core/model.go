@@ -17,12 +17,13 @@ import (
 )
 
 type Model[T any] struct {
-	Name       string
-	Schema     Schema
-	pipeline   mongo.Pipeline
-	executor   func(ctx context.Context) any
-	whereField string
-	failWith   *error
+	Name              string
+	Schema            Schema
+	pipeline          mongo.Pipeline
+	executor          func(ctx context.Context) any
+	whereField        string
+	failWith          *error
+	orConditionActive bool
 }
 
 var Models = make(map[string]Model[any])
