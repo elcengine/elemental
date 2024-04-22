@@ -8,6 +8,26 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+func (m Model[T]) Limit(limit int64) Model[T] {
+	m.pipeline = append(m.pipeline, bson.D{{Key: "$limit", Value: limit}})
+	return m
+}
+
+func (m Model[T]) Skip(skip int64) Model[T] {
+	for i, stage := range m.pipeline {
+		if stage[0].Key == "$limit" {
+			newPipeline := make([]bson.D, len(m.pipeline)+1)
+			copy(newPipeline, m.pipeline[:i])
+			newPipeline[i] = bson.D{{Key: "$skip", Value: skip}}
+			copy(newPipeline[i+1:], m.pipeline[i:])
+			m.pipeline = newPipeline
+			return m
+		}
+	}
+	m.pipeline = append(m.pipeline, bson.D{{Key: "$skip", Value: skip}})
+	return m
+}
+
 func (m Model[T]) Paginate(page, limit int64) Model[T] {
 	m = m.Skip((page - 1) * limit).Limit(limit)
 	m.pipeline = []bson.D{{{Key: "$facet", Value: primitive.M{
