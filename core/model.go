@@ -29,7 +29,6 @@ type Model[T any] struct {
 var Models = make(map[string]Model[any])
 
 func NewModel[T any](name string, schema Schema) Model[T] {
-	var sample [0]T
 	if _, ok := Models[name]; ok {
 		return e_utils.Cast[Model[T]](Models[name])
 	}
@@ -43,7 +42,7 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 	Models[name] = e_utils.Cast[Model[any]](model)
 	connectionReady := func() {
 		model.CreateCollection()
-		schema.syncIndexes(reflect.TypeOf(sample).Elem())
+		model.SyncIndexes()
 	}
 	if model.Ping() != nil {
 		e_connection.On(event.ConnectionReady, connectionReady)
@@ -195,4 +194,9 @@ func (m Model[T]) CreateCollection(ctx ...context.Context) *mongo.Collection {
 
 func (m Model[T]) Drop(ctx ...context.Context) {
 	e_utils.Must(m.Collection().Drop(e_utils.DefaultCTX(ctx)))
+}
+
+func (m Model[T]) SyncIndexes(ctx ...context.Context) {
+	var sample [0]T
+	m.schema.syncIndexes(reflect.TypeOf(sample).Elem())
 }

@@ -38,7 +38,7 @@ type Kingdom struct {
 type Monster struct {
 	ID        primitive.ObjectID `json:"_id" bson:"_id"`
 	Name      string             `json:"name" bson:"name"`
-	Category  string             `json:"category" bson:"category"`
+	Category  string             `json:"category,omitempty" bson:"category,omitempty"`
 	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
 	UpdatedAt time.Time          `json:"updated_at" bson:"updated_at"`
 }
