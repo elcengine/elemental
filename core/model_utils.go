@@ -49,18 +49,18 @@ func (m Model[T]) addToFilters(key string, value any) Model[T] {
 func (m Model[T]) addToPipeline(stage, key string, value any) Model[T] {
 	foundStage := false
 	m.pipeline = lo.Map(m.pipeline, func(stg bson.D, _ int) bson.D {
-		stageObject := e_utils.Cast[primitive.M](e_utils.CastBSON[bson.M](stg)[stage])
+		stageObject := e_utils.Cast[bson.D](e_utils.CastBSON[bson.D](stg).Map()[stage])
 		if stageObject != nil {
 			foundStage = true
-			if stageObject[key] == nil {
-				stageObject[key] = value
+			if stageObject.Map()[key] == nil {
+				stageObject = append(stageObject, bson.E{Key: key, Value: value})
 			}
 			return bson.D{{Key: stage, Value: stageObject}}
 		}
 		return stg
 	})
 	if !foundStage {
-		m.pipeline = append(m.pipeline, bson.D{{Key: stage, Value: primitive.M{key: value}}})
+		m.pipeline = append(m.pipeline, bson.D{{Key: stage, Value: bson.D{{Key: key, Value: value}}}})
 		return m
 	}
 	return m

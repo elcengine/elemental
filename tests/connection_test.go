@@ -21,6 +21,12 @@ func TestConnection(t *testing.T) {
 				URI: e_mocks.DB_URI,
 			})
 			So(client, ShouldNotBeNil)
+			Convey("Should use the default database", func() {
+				So(e_connection.UseDefault().Name(), ShouldEqual, e_mocks.DEFAULT_DB)
+			})
+			Convey("Should use the specified database", func() {
+				So(e_connection.Use(e_mocks.SECONDARY_DB).Name(), ShouldEqual, e_mocks.SECONDARY_DB)
+			})
 		})
 		Convey("Connect with a URI specified within client options", func() {
 			opts := options.Client().ApplyURI(e_mocks.DB_URI)

@@ -8,6 +8,8 @@ import (
 
 const (
 	DB_URI = "mongodb+srv://akalankaperera128:pFAnQVXE6vrbcXNk@default.ynr156r.mongodb.net/elemental"
+	DEFAULT_DB = "elemental"
+	SECONDARY_DB = "elemental_secondary"
 )
 
 var (

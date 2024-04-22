@@ -4,6 +4,7 @@ go 1.21.3
 
 require (
 	github.com/creasty/defaults v1.7.0
+	github.com/gertd/go-pluralize v0.2.1
 	github.com/rxwycdh/rxhash v0.0.0-20230131062142-10b7a38b400d
 	github.com/samber/lo v1.39.0
 	github.com/smartystreets/goconvey v1.8.1

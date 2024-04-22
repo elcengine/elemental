@@ -3,10 +3,13 @@ package elemental
 import (
 	"context"
 	"elemental/connection"
+	"elemental/constants"
 	"elemental/utils"
 	"errors"
 	"reflect"
+	"strings"
 
+	"github.com/gertd/go-pluralize"
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -23,23 +26,28 @@ type Model[T any] struct {
 	failWith   *error
 }
 
-var models = make(map[string]Model[any])
+var Models = make(map[string]Model[any])
 
 func NewModel[T any](name string, schema Schema) Model[T] {
 	var sample [0]T
-	if _, ok := models[name]; ok {
-		return e_utils.Cast[Model[T]](models[name])
+	if _, ok := Models[name]; ok {
+		return e_utils.Cast[Model[T]](Models[name])
+	}
+	if (schema.Options.Collection == "") {
+		schema.Options.Collection =  pluralize.NewClient().Plural(strings.ToLower(name))
 	}
 	model := Model[T]{
 		Name:   name,
 		schema: schema,
 	}
-	models[name] = e_utils.Cast[Model[any]](model)
+	Models[name] = e_utils.Cast[Model[any]](model)
 	e_connection.On(event.ConnectionReady, func() {
 		schema.syncIndexes(reflect.TypeOf(sample).Elem())
 	})
 	return model
 }
+
+
 
 func (m Model[T]) Create(doc T, ctx ...context.Context) T {
 	document := enforceSchema(m.schema, &doc)
@@ -124,7 +132,7 @@ func (m Model[T]) Sort(args ...any) Model[T] {
 		}
 	} else {
 		if (len(args) % 2) != 0 {
-			panic("Sort arguments must be in pairs")
+			panic(e_constants.ErrMustPairSortArguments)
 		}
 		for i := 0; i < len(args); i += 2 {
 			m = m.addToPipeline("$sort", e_utils.Cast[string](args[i]), args[i+1])

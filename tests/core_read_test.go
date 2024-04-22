@@ -1,6 +1,7 @@
 package e_tests
 
 import (
+	e_constants "elemental/constants"
 	"elemental/tests/mocks"
 	"elemental/tests/setup"
 	"elemental/utils"
@@ -115,6 +116,11 @@ func TestCoreRead(t *testing.T) {
 			So(users[2].Name, ShouldEqual, e_mocks.Caranthir.Name)
 			So(users[3].Name, ShouldEqual, e_mocks.Yennefer.Name)
 			So(users[4].Name, ShouldEqual, e_mocks.Geralt.Name)		
+		})
+		Convey("Must panic when finding with invalid sort arguments", func() {
+			So(func () {
+				UserModel.Find().Sort("age", 1, "name").Exec()
+			}, ShouldPanicWith, e_constants.ErrMustPairSortArguments)
 		})
 	})
 }
