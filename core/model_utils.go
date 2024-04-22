@@ -1,6 +1,7 @@
 package elemental
 
 import (
+	"context"
 	"elemental/utils"
 	"reflect"
 
@@ -110,13 +111,13 @@ func (m Model[T]) checkConditionsAndPanicForErr(err error) {
 	}
 }
 
-func (m Model[T]) findMatchStage() bson.D {
+func (m Model[T]) findMatchStage() bson.M {
 	for i, stage := range m.pipeline {
 		if stage[0].Key == "$match" {
-			return m.pipeline[i]
+			return m.pipeline[i][0].Value.(bson.M)
 		}
 	}
-	return bson.D{}
+	return bson.M{}
 }
 
 func (m Model[T]) parseDocument(doc any) primitive.M {
@@ -155,4 +156,16 @@ func parseUpdateOptions[T any, O any](m Model[T], opts []*O) []*O {
 		setOptions("SetReturnDocument", options.After)
 	}
 	return opts
+}
+
+
+func (m Model[T]) setUpdateOperator(operator string, doc any) Model[T] {
+	m.executor = func(m Model[T], ctx context.Context) any {
+		return (func() any {
+			result, err := m.Collection().UpdateMany(ctx, m.findMatchStage(), primitive.M{operator: m.parseDocument(doc)})
+			m.checkConditionsAndPanicForErr(err)
+			return result
+		})()
+	}
+	return m
 }

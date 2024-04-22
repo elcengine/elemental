@@ -7,6 +7,7 @@ import (
 	"elemental/utils"
 	"testing"
 
+	"github.com/samber/lo"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -55,6 +56,14 @@ func TestCoreUpdate(t *testing.T) {
 			}).Upsert().Exec()
 			So(UserModel.Where("name", "Triss").Exec(), ShouldHaveLength, 1)
 		})
+		Convey("Update user by ID", func() {
+			user := e_utils.Cast[User](UserModel.FindOne().Where("name", "Triss").Exec())
+			UserModel.UpdateByID(user.ID, User{
+				Name: "Triss Merigold",
+			}).Exec()
+			updatedUser := e_utils.Cast[User](UserModel.FindByID(user.ID).Exec())
+			So(updatedUser.Name, ShouldEqual, "Triss Merigold")
+		})
 		Convey("Update a user document", func() {
 			user := e_utils.Cast[User](UserModel.FindOne().Where("name", e_mocks.Eredin.Name).Exec())
 			user.Age = 200
@@ -87,6 +96,78 @@ func TestCoreUpdate(t *testing.T) {
 			}).Exec()
 			users := UserModel.Where("weapons", "Dagger").Exec()
 			So(users, ShouldHaveLength, len(e_mocks.Users)+1)
+		})
+		Convey("Increment age of a user", func() {
+			UserModel.Where("name", e_mocks.Vesemir.Name).Inc("age", 1).Exec()
+			updatedUser := e_utils.Cast[User](UserModel.FindOne().Where("name", e_mocks.Vesemir.Name).Exec())
+			So(updatedUser.Age, ShouldEqual, e_mocks.Vesemir.Age+1)
+		})
+		Convey("Decrement age of a user", func() {
+			UserModel.Where("name", e_mocks.Vesemir.Name).Dec("age", 1).Exec()
+			updatedUser := e_utils.Cast[User](UserModel.FindOne().Where("name", e_mocks.Vesemir.Name).Exec())
+			So(updatedUser.Age, ShouldEqual, e_mocks.Vesemir.Age)
+		})
+		Convey("Multiply age of a user", func() {
+			UserModel.Where("name", e_mocks.Vesemir.Name).Mul("age", 2).Exec()
+			updatedUser := e_utils.Cast[User](UserModel.FindOne().Where("name", e_mocks.Vesemir.Name).Exec())
+			So(updatedUser.Age, ShouldEqual, e_mocks.Vesemir.Age*2)
+		})
+		Convey("Divide age of a user", func() {
+			UserModel.Where("name", e_mocks.Vesemir.Name).Div("age", 2).Exec()
+			updatedUser := e_utils.Cast[User](UserModel.FindOne().Where("name", e_mocks.Vesemir.Name).Exec())
+			So(updatedUser.Age, ShouldEqual, e_mocks.Vesemir.Age)
+		})
+		Convey("Rename occupation field to profession", func() {
+			UserModel.Rename("occupation", "profession").Exec()
+			user := e_utils.Cast[User](UserModel.FindOne().Where("name", e_mocks.Vesemir.Name).Exec())
+			So(user.Occupation, ShouldBeZeroValue)
+		})
+		Convey("Unset school of a user", func() {
+			UserModel.Where("name", e_mocks.Vesemir.Name).Unset("school").Exec()
+			updatedUser := e_utils.Cast[User](UserModel.FindOne().Where("name", e_mocks.Vesemir.Name).Exec())
+			So(updatedUser.School, ShouldBeZeroValue)
+		})
+		Convey("Add a weapon to a user", func() {
+			UserModel.Where("name", e_mocks.Vesemir.Name).Push("weapons", "Xiphos").Exec()
+			updatedUser := e_utils.Cast[User](UserModel.FindOne().Where("name", e_mocks.Vesemir.Name).Exec())
+			So(updatedUser.Weapons, ShouldContain, "Xiphos")
+		})
+		Convey("Add multiple weapons to a user", func() {
+			UserModel.Where("name", e_mocks.Vesemir.Name).Push("weapons", "Ulfberht", "Mace").Exec()
+			updatedUser := e_utils.Cast[User](UserModel.FindOne().Where("name", e_mocks.Vesemir.Name).Exec())
+			So(updatedUser.Weapons, ShouldContain, "Xiphos")
+			So(updatedUser.Weapons, ShouldContain, "Ulfberht")
+			So(updatedUser.Weapons, ShouldContain, "Mace")
+		})
+		Convey("Remove a weapon from a user", func() {
+			UserModel.Where("name", e_mocks.Vesemir.Name).Pull("weapons", "Xiphos").Exec()
+			updatedUser := e_utils.Cast[User](UserModel.FindOne().Where("name", e_mocks.Vesemir.Name).Exec())
+			So(updatedUser.Weapons, ShouldNotContain, "Xiphos")
+		})
+		Convey("Remove multiple weapons from a user", func() {
+			UserModel.Where("name", e_mocks.Vesemir.Name).PullAll("weapons", "Ulfberht", "Mace").Exec()
+			updatedUser := e_utils.Cast[User](UserModel.FindOne().Where("name", e_mocks.Vesemir.Name).Exec())
+			So(updatedUser.Weapons, ShouldNotContain, "Ulfberht")
+			So(updatedUser.Weapons, ShouldNotContain, "Mace")
+		})
+		Convey("Remove last weapon from a user", func() {
+			user := e_utils.Cast[User](UserModel.FindOne().Where("name", e_mocks.Vesemir.Name).Exec())
+			UserModel.Where("name", e_mocks.Vesemir.Name).Pop("weapons").Exec()
+			updatedUser := e_utils.Cast[User](UserModel.FindOne().Where("name", e_mocks.Vesemir.Name).Exec())
+			So(len(updatedUser.Weapons), ShouldEqual, len(user.Weapons)-1)
+		})
+		Convey("Try adding the same weapon multiple times to a user", func() {
+			UserModel.Where("name", e_mocks.Vesemir.Name).AddToSet("weapons", "Longsword", "Longsword", "Longsword").Exec()
+			updatedUser := e_utils.Cast[User](UserModel.FindOne().Where("name", e_mocks.Vesemir.Name).Exec())
+			So(len(lo.Filter(updatedUser.Weapons, func(w string, _ int) bool {
+				return w == "Longsword"
+			})), ShouldEqual, 1)
+		})
+		Convey("Remove first weapon from a user", func() {
+			user := e_utils.Cast[User](UserModel.FindOne().Where("name", e_mocks.Vesemir.Name).Exec())
+			UserModel.Where("name", e_mocks.Vesemir.Name).Shift("weapons").Exec()
+			updatedUser := e_utils.Cast[User](UserModel.FindOne().Where("name", e_mocks.Vesemir.Name).Exec())
+			So(len(updatedUser.Weapons), ShouldEqual, len(user.Weapons)-1)
 		})
 	})
 }
