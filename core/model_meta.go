@@ -4,12 +4,13 @@ import (
 	"context"
 	"elemental/connection"
 	"elemental/utils"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func (m Model[T]) Collection() *mongo.Collection {
-	return e_connection.Use(m.schema.Options.Database, m.schema.Options.Connection).Collection(m.schema.Options.Collection)
+	return e_connection.Use(m.Schema.Options.Database, m.Schema.Options.Connection).Collection(m.Schema.Options.Collection)
 }
 
 func (m Model[T]) Database() *mongo.Database {
@@ -22,18 +23,18 @@ func (m Model[T]) EstimatedDocumentCount(ctx ...context.Context) int64 {
 }
 
 func (m Model[T]) Stats(ctx ...context.Context) CollectionStats {
-	result := m.Database().RunCommand(e_utils.DefaultCTX(ctx), bson.M{"collStats": m.schema.Options.Collection})
+	result := m.Database().RunCommand(e_utils.DefaultCTX(ctx), bson.M{"collStats": m.Schema.Options.Collection})
 	var stats CollectionStats
 	e_utils.Must(result.Decode(&stats))
 	return stats
 }
 
-func (m Model[T]) TotalSize(ctx ...context.Context) int64 {
-	return m.Stats(e_utils.DefaultCTX(ctx)).Size
-}
-
 func (m Model[T]) StorageSize(ctx ...context.Context) int64 {
 	return m.Stats(e_utils.DefaultCTX(ctx)).StorageSize
+}
+
+func (m Model[T]) TotalSize(ctx ...context.Context) int64 {
+	return m.Stats(e_utils.DefaultCTX(ctx)).Size
 }
 
 func (m Model[T]) TotalIndexSize(ctx ...context.Context) int64 {
@@ -42,9 +43,4 @@ func (m Model[T]) TotalIndexSize(ctx ...context.Context) int64 {
 
 func (m Model[T]) AvgObjSize(ctx ...context.Context) int64 {
 	return m.Stats(e_utils.DefaultCTX(ctx)).AvgObjSize
-}
-
-// Sends out a ping to the underlying client connection used by this model.
-func (m Model[T]) Ping(ctx ...context.Context) error {
-	return m.Database().Client().Ping(e_utils.DefaultCTX(ctx), nil)
 }

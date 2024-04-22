@@ -1,7 +1,7 @@
 package elemental
 
 import (
-	e_utils "elemental/utils"
+	"elemental/utils"
 	"fmt"
 	"reflect"
 

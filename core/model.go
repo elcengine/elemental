@@ -6,7 +6,6 @@ import (
 	"elemental/constants"
 	"elemental/utils"
 	"errors"
-	"reflect"
 	"strings"
 
 	"github.com/gertd/go-pluralize"
@@ -19,7 +18,7 @@ import (
 
 type Model[T any] struct {
 	Name       string
-	schema     Schema
+	Schema     Schema
 	pipeline   mongo.Pipeline
 	executor   func(ctx context.Context) any
 	whereField string
@@ -37,7 +36,7 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 	}
 	model := Model[T]{
 		Name:   name,
-		schema: schema,
+		Schema: schema,
 	}
 	Models[name] = e_utils.Cast[Model[any]](model)
 	connectionReady := func() {
@@ -53,7 +52,7 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 }
 
 func (m Model[T]) Create(doc T, ctx ...context.Context) T {
-	document := enforceSchema(m.schema, &doc)
+	document := enforceSchema(m.Schema, &doc)
 	lo.Must(m.Collection().InsertOne(e_utils.DefaultCTX(ctx), document))
 	return document
 }
@@ -61,7 +60,7 @@ func (m Model[T]) Create(doc T, ctx ...context.Context) T {
 func (m Model[T]) InsertMany(docs []T, ctx ...context.Context) []T {
 	var documents []interface{}
 	for _, doc := range docs {
-		documents = append(documents, enforceSchema(m.schema, &doc))
+		documents = append(documents, enforceSchema(m.Schema, &doc))
 	}
 	lo.Must(m.Collection().InsertMany(e_utils.DefaultCTX(ctx), documents))
 	return e_utils.CastSlice[T](documents)
@@ -177,26 +176,4 @@ func (m Model[T]) Exec(ctx ...context.Context) any {
 		}
 	}
 	return m.executor(e_utils.DefaultCTX(ctx))
-}
-
-func (m Model[T]) Validate(doc T) {
-	enforceSchema(m.schema, &doc, false)
-}
-
-func (m Model[T]) Schema() Schema {
-	return m.schema
-}
-
-func (m Model[T]) CreateCollection(ctx ...context.Context) *mongo.Collection {
-	e_connection.Use(m.schema.Options.Database, m.schema.Options.Connection).CreateCollection(e_utils.DefaultCTX(ctx), m.schema.Options.Collection, &m.schema.Options.CollectionOptions)
-	return m.Collection()
-}
-
-func (m Model[T]) Drop(ctx ...context.Context) {
-	e_utils.Must(m.Collection().Drop(e_utils.DefaultCTX(ctx)))
-}
-
-func (m Model[T]) SyncIndexes(ctx ...context.Context) {
-	var sample [0]T
-	m.schema.syncIndexes(reflect.TypeOf(sample).Elem())
 }
