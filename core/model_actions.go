@@ -33,5 +33,5 @@ func (m Model[T]) DropIndexes(ctx ...context.Context) {
 }
 
 func (m Model[T]) Validate(doc T) {
-	enforceSchema(m.Schema, &doc, false)
+	enforceSchema(m.Schema, &doc, nil, false)
 }

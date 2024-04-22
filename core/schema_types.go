@@ -14,6 +14,7 @@ type SchemaOptions struct {
 
 type Field struct {
 	Type       reflect.Kind
+	Schema     *Schema
 	Required   bool
 	Default    any
 	Min        float64

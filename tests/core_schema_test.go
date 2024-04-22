@@ -60,5 +60,10 @@ func TestCoreSchemaOptions(t *testing.T) {
 			MonsterModel.Create(Monster{Name: "Nekker"})
 			So(MonsterModel.Collection().Database().Name(), ShouldEqual, e_mocks.SECONDARY_DB)
 		})
+		Convey("Should validate a document against the schema", func() {
+			So(func() {
+				UserModel.Validate(User{})
+			}, ShouldPanicWith, "Field Name is required")
+		})
 	})
 }

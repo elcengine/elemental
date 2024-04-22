@@ -36,11 +36,12 @@ type Kingdom struct {
 }
 
 type MonsterWeakness struct {
-	ID         primitive.ObjectID `json:"_id" bson:"_id"`
-	Oils       []string           `json:"oils" bson:"oils"`
-	Signs      []string           `json:"signs" bson:"signs"`
-	Decoctions []string           `json:"decoctions" bson:"decoctions"`
-	Bombs      []string           `json:"bombs" bson:"bombs"`
+	ID             primitive.ObjectID `json:"_id" bson:"_id"`
+	Oils           []string           `json:"oils" bson:"oils"`
+	Signs          []string           `json:"signs" bson:"signs"`
+	Decoctions     []string           `json:"decoctions" bson:"decoctions"`
+	Bombs          []string           `json:"bombs" bson:"bombs"`
+	InvulnerableTo []string           `json:"invulnerable_to" bson:"invulnerable_to"`
 }
 
 type Monster struct {
@@ -87,7 +88,6 @@ var UserModel = elemental.NewModel[User]("User", elemental.NewSchema(map[string]
 	Collection: "users",
 }))
 
-
 var MonsterModel = elemental.NewModel[Monster]("Monster", elemental.NewSchema(map[string]elemental.Field{
 	"Name": {
 		Type:     reflect.String,
@@ -98,6 +98,25 @@ var MonsterModel = elemental.NewModel[Monster]("Monster", elemental.NewSchema(ma
 	},
 	"Weaknesses": {
 		Type: reflect.Struct,
+		Schema: lo.ToPtr(elemental.NewSchema(map[string]elemental.Field{
+			"Oils": {
+				Type: reflect.Slice,
+			},
+			"Signs": {
+				Type:    reflect.Slice,
+				Default: []string{"Igni"},
+			},
+			"Decoctions": {
+				Type: reflect.Slice,
+			},
+			"Bombs": {
+				Type: reflect.Slice,
+			},
+			"InvulnerableTo": {
+				Type:    reflect.Slice,
+				Default: []string{"Steel"},
+			},
+		})),
 	},
 }, elemental.SchemaOptions{
 	Collection: "monsters",

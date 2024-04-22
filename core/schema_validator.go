@@ -12,10 +12,18 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func enforceSchema[T any](schema Schema, doc *T, defaults ...bool) T {
-	reflectedEntity := reflect.ValueOf(doc)
-	if reflectedEntity.Kind() == reflect.Ptr {
-		reflectedEntity = reflect.Indirect(reflectedEntity)
+func enforceSchema[T any](schema Schema, doc *T, subField *reflect.Value, defaults ...bool) T {
+	var reflectedEntity reflect.Value
+	if subField != nil {
+		reflectedEntity = *subField
+	} else {
+		reflectedEntity = reflect.ValueOf(doc)
+		if reflectedEntity.Kind() == reflect.Ptr {
+			reflectedEntity = reflect.Indirect(reflectedEntity)
+		}
+		if reflectedEntity.Kind() == reflect.Interface {
+			reflectedEntity = reflectedEntity.Elem()
+		}
 	}
 	for field, definition := range schema.Definitions {
 		reflectedField := reflectedEntity.FieldByName(field)
@@ -30,6 +38,11 @@ func enforceSchema[T any](schema Schema, doc *T, defaults ...bool) T {
 		if definition.Type != reflect.Invalid && reflectedField.Kind() != definition.Type {
 			panic(fmt.Sprintf("Field %s has an invalid type. It must be of type %s", field, definition.Type.String()))
 		}
+		if definition.Type == reflect.Struct && definition.Schema != nil {
+			subdocumentField := reflectedEntity.FieldByName(field)
+			reflectedField.Set(reflect.ValueOf(enforceSchema(*definition.Schema, lo.ToPtr(subdocumentField.Interface()), &subdocumentField, false)))
+			continue
+		}
 		if definition.Min != 0 && reflectedField.Float() < definition.Min {
 			panic(fmt.Sprintf("Field %s must be greater than %f", field, definition.Min))
 		}
@@ -43,7 +56,7 @@ func enforceSchema[T any](schema Schema, doc *T, defaults ...bool) T {
 			panic(fmt.Sprintf("Field %s must match the regex pattern %s", field, definition.Regex))
 		}
 	}
-	if (len(defaults) == 0 || defaults[0]) {
+	if len(defaults) == 0 || defaults[0] {
 		SetDefault(&reflectedEntity, "ID", primitive.NewObjectID())
 		SetDefault(&reflectedEntity, "CreatedAt", time.Now())
 		SetDefault(&reflectedEntity, "UpdatedAt", time.Now())
@@ -54,7 +67,7 @@ func enforceSchema[T any](schema Schema, doc *T, defaults ...bool) T {
 func SetDefault[T any](reflectedEntity *reflect.Value, fieldName string, defaultValue T) {
 	field := reflectedEntity.FieldByName(fieldName)
 	if field.IsValid() && field.IsZero() {
-		if (field.Kind() == reflect.Ptr) {
+		if field.Kind() == reflect.Ptr {
 			field.Set(reflect.ValueOf(lo.ToPtr(defaultValue)))
 		} else {
 			field.Set(reflect.ValueOf(defaultValue))

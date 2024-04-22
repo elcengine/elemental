@@ -36,4 +36,16 @@ func TestCoreCreate(t *testing.T) {
 			So(users[1].Age, ShouldEqual, e_test_base.DefaultAge)
 		})
 	})
+	Convey("Create a monster which has a sub schema with defaults", t, func() {
+		monster := MonsterModel.Create(Monster{
+			Name:   "Katakan",
+			Category: "Vampire",
+		})
+		So(monster.ID, ShouldNotBeNil)
+		So(monster.Name, ShouldEqual, "Katakan")
+		So(monster.CreatedAt.Unix(), ShouldBeBetweenOrEqual, time.Now().Add(-10*time.Second).Unix(), time.Now().Unix())
+		So(monster.UpdatedAt.Unix(), ShouldBeBetweenOrEqual, time.Now().Add(-10*time.Second).Unix(), time.Now().Unix())
+		So(monster.Weaknesses.Signs, ShouldContain, "Igni")
+		So(monster.Weaknesses.InvulnerableTo, ShouldContain, "Steel")
+	})
 }

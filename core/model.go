@@ -53,7 +53,7 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 }
 
 func (m Model[T]) Create(doc T, ctx ...context.Context) T {
-	document := enforceSchema(m.Schema, &doc)
+	document := enforceSchema(m.Schema, &doc, nil)
 	lo.Must(m.Collection().InsertOne(e_utils.DefaultCTX(ctx), document))
 	return document
 }
@@ -61,7 +61,7 @@ func (m Model[T]) Create(doc T, ctx ...context.Context) T {
 func (m Model[T]) InsertMany(docs []T, ctx ...context.Context) []T {
 	var documents []interface{}
 	for _, doc := range docs {
-		documents = append(documents, enforceSchema(m.Schema, &doc))
+		documents = append(documents, enforceSchema(m.Schema, &doc, nil))
 	}
 	lo.Must(m.Collection().InsertMany(e_utils.DefaultCTX(ctx), documents))
 	return e_utils.CastSlice[T](documents)
