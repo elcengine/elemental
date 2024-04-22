@@ -1,7 +1,7 @@
 package e_tests
 
 import (
-	e_constants "elemental/constants"
+	"elemental/constants"
 	"elemental/tests/mocks"
 	"elemental/tests/setup"
 	"elemental/utils"
@@ -21,34 +21,34 @@ func TestCoreRead(t *testing.T) {
 	Convey("Read users", t, func() {
 		Convey("Find all users", func() {
 			users := UserModel.Find().Exec().([]User)
-			So(len(users), ShouldEqual, len(e_mocks.Users))
+			So(users, ShouldHaveLength, len(e_mocks.Users))
 		})
 		Convey("Find all with a limit of 2", func() {
 			users := UserModel.Find().Limit(2).Exec().([]User)
-			So(len(users), ShouldEqual, 2)
+			So(users, ShouldHaveLength, 2)
 		})
 		Convey("Find all with a limit of 2 and skip 2", func() {
 			Convey("In order of skip -> limit", func() {
 				users := UserModel.Find().Skip(2).Limit(2).Exec().([]User)
-				So(len(users), ShouldEqual, 2)
+				So(users, ShouldHaveLength, 2)
 				So(users[0].Name, ShouldEqual, e_mocks.Eredin.Name)
 				So(users[1].Name, ShouldEqual, e_mocks.Caranthir.Name)
 			})
 			Convey("In order of limit -> skip", func() {
 				users := UserModel.Find().Limit(2).Skip(2).Exec().([]User)
-				So(len(users), ShouldEqual, 2)
+				So(users, ShouldHaveLength, 2)
 				So(users[0].Name, ShouldEqual, e_mocks.Eredin.Name)
 				So(users[1].Name, ShouldEqual, e_mocks.Caranthir.Name)
 			})
 		})
 		Convey("Find all users with a filter query", func() {
 			users := UserModel.Find(primitive.M{"name": e_mocks.Ciri.Name}).Exec().([]User)
-			So(len(users), ShouldEqual, 1)
+			So(users, ShouldHaveLength, 1)
 			So(users[0].Name, ShouldEqual, e_mocks.Ciri.Name)
 		})
 		Convey("Find all users with a filter query which has no matching documents", func() {
 			users := UserModel.Find(primitive.M{"name": "Yarpen Zigrin"}).Exec().([]User)
-			So(len(users), ShouldEqual, 0)
+			So(users, ShouldHaveLength, 0)
 			Convey("With or fail", func() {
 				So(func () {
 					UserModel.Find(primitive.M{"name": "Yarpen Zigrin"}).OrFail().Exec()
@@ -121,6 +121,12 @@ func TestCoreRead(t *testing.T) {
 			So(func () {
 				UserModel.Find().Sort("age", 1, "name").Exec()
 			}, ShouldPanicWith, e_constants.ErrMustPairSortArguments)
+		})
+		Convey("Find all distinct witcher schools", func() {
+			schools := UserModel.Distinct("school").Exec().([]string)
+			So(schools, ShouldHaveLength, 2)
+			So(schools, ShouldContain, e_mocks.WolfSchool)
+			So(schools, ShouldContain, "")
 		})
 	})
 }

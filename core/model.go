@@ -100,6 +100,20 @@ func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
 	return m
 }
 
+func (m Model[T]) Distinct(field string, query ...primitive.M) Model[T] {
+	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}}, bson.D{{Key: "$group", Value: primitive.M{"_id": "$" + field}}})
+	m.executor = func(ctx context.Context) any {
+		var results []map[string]any
+		e_utils.Must(lo.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
+		var distinct []string
+		for _, result := range results {
+			distinct = append(distinct, e_utils.Cast[string](result["_id"]))
+		}
+		return distinct
+	}
+	return m
+}
+
 func (m Model[T]) Where(field string) Model[T] {
 	m.whereField = field
 	return m
@@ -162,14 +176,6 @@ func (m Model[T]) Exec(ctx ...context.Context) any {
 	return m.executor(e_utils.DefaultCTX(ctx))
 }
 
-func (m Model[T]) Collection() *mongo.Collection {
-	return e_connection.Use(m.schema.Options.Database, m.schema.Options.Connection).Collection(m.schema.Options.Collection)
-}
-
-func (m Model[T]) CreateCollection(ctx ...context.Context) *mongo.Collection {
-	e_connection.Use(m.schema.Options.Database, m.schema.Options.Connection).CreateCollection(e_utils.DefaultCTX(ctx), m.schema.Options.Collection)
-	return m.Collection()
-}
 
 func (m Model[T]) Validate(doc T) {
 	enforceSchema(m.schema, &doc, false)
@@ -177,4 +183,13 @@ func (m Model[T]) Validate(doc T) {
 
 func (m Model[T]) Schema() Schema {
 	return m.schema
+}
+
+func (m Model[T]) CreateCollection(ctx ...context.Context) *mongo.Collection {
+	e_connection.Use(m.schema.Options.Database, m.schema.Options.Connection).CreateCollection(e_utils.DefaultCTX(ctx), m.schema.Options.Collection)
+	return m.Collection()
+}
+
+func (m Model[T]) Drop(ctx ...context.Context) {
+	e_utils.Must(m.Collection().Drop(e_utils.DefaultCTX(ctx)))
 }

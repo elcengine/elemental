@@ -2,14 +2,19 @@ package e_mocks
 
 import (
 	"elemental/tests/base"
-
-	"github.com/samber/lo"
 )
 
 const (
 	DB_URI = "mongodb+srv://akalankaperera128:pFAnQVXE6vrbcXNk@default.ynr156r.mongodb.net/elemental"
 	DEFAULT_DB = "elemental"
 	SECONDARY_DB = "elemental_secondary"
+)
+
+var (
+	WolfSchool = "Wolf"
+	BearSchool = "Bear"
+	GriffinSchool = "Griffin"
+	ManticoreSchool = "Manticore"
 )
 
 var (
@@ -21,7 +26,7 @@ var (
 		Age:        100,
 		Occupation: "Witcher",
 		Weapons:    []string{"Silver sword", "Mahakaman battle hammer", "Battle Axe", "Crossbow", "Steel sword"},
-		School:     lo.ToPtr("Wolf"),
+		School:     &WolfSchool,
 	}
 	Eredin = e_test_base.User{
 		Name: "Eredin",
@@ -49,7 +54,7 @@ var (
 		Age:        300,
 		Weapons:    []string{"Silver sword", "Steel sword", "Crossbow"},
 		Retired:    true,
-		School:    lo.ToPtr("Wolf"),
+		School:    &WolfSchool,
 	}
 )
 

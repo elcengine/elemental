@@ -22,5 +22,6 @@ func SeededConnection() {
 
 func Teardown() {
 	e_connection.UseDefault().Drop(context.TODO())
+	e_connection.Use(e_mocks.SECONDARY_DB).Drop(context.TODO())
 	e_connection.Disconnect()
 }
