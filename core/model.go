@@ -5,6 +5,7 @@ import (
 	"elemental/connection"
 	"elemental/constants"
 	"elemental/utils"
+	"reflect"
 	"strings"
 
 	"github.com/gertd/go-pluralize"
@@ -124,6 +125,33 @@ func (m Model[T]) Sort(args ...any) Model[T] {
 		}
 		for i := 0; i < len(args); i += 2 {
 			m = m.addToPipeline("$sort", e_utils.Cast[string](args[i]), args[i+1])
+		}
+	}
+	return m
+}
+
+func (m Model[T]) Select(fields ...any) Model[T] {
+	var selection []string
+	if len(fields) == 1 && reflect.TypeOf(fields[0]).Kind() == reflect.String {
+		selection = strings.FieldsFunc(fields[0].(string), func(r rune) bool {
+			return r == ',' || r == ' '
+		})
+	} else if len(fields) > 1 {
+		selection = e_utils.CastSlice[string](fields)
+	} else if reflect.TypeOf(fields[0]).Kind() == reflect.Slice {
+		selection = fields[0].([]string)
+	}
+	if len(selection) > 0 {
+		for _, field := range selection {
+			if strings.HasPrefix(field, "-") {
+				m = m.addToPipeline("$project", field[1:], 0)
+			} else {
+				m = m.addToPipeline("$project", field, 1)
+			}
+		}
+	} else if reflect.TypeOf(fields[0]).Kind() == reflect.Map {
+		for field, value := range e_utils.Cast[primitive.M](fields[0]) {
+			m = m.addToPipeline("$project", field, value)
 		}
 	}
 	return m
