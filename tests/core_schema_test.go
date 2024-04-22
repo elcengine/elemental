@@ -29,7 +29,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 					Type:     reflect.String,
 					Required: true,
 				},
-			}, elemental.SchemaOptions{}))
+			}))
 			CastleModel.Create(Castle{Name: "Kaer Morhen"})
 			So(CastleModel.Collection().Name(), ShouldEqual, "castles")
 		})
@@ -49,7 +49,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 			So(KingdomModel.IsCapped(), ShouldBeTrue)
 		})
 		Convey("Should use the specified database", func() {
-			var MonsterModel = elemental.NewModel[Monster]("Monster", elemental.NewSchema(map[string]elemental.Field{
+			var MonsterModel = elemental.NewModel[Monster]("Monster-Secondary", elemental.NewSchema(map[string]elemental.Field{
 				"Name": {
 					Type:     reflect.String,
 					Required: true,

@@ -16,11 +16,13 @@ type Schema struct {
 	Options     SchemaOptions
 }
 
-func NewSchema(definitions map[string]Field, opts SchemaOptions) Schema {
-	defaults.Set(opts)
+func NewSchema(definitions map[string]Field, opts ...SchemaOptions) Schema {
 	schema := Schema{
 		Definitions: definitions,
-		Options:     opts,
+	}
+	if (len(opts) > 0) {
+		defaults.Set(opts[0])
+		schema.Options = opts[0]
 	}
 	return schema
 }
