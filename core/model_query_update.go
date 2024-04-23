@@ -68,7 +68,9 @@ func (m Model[T]) UpdateByID(id primitive.ObjectID, doc any, opts ...*options.Up
 }
 
 func (m Model[T]) Save(doc T) {
+	m.middleware.pre.save.run(doc)
 	m.UpdateByID(reflect.ValueOf(doc).FieldByName("ID").Interface().(primitive.ObjectID), doc).Exec()
+	m.middleware.post.save.run(doc)
 }
 
 func (m Model[T]) UpdateMany(query *primitive.M, doc any, opts ...*options.UpdateOptions) Model[T] {

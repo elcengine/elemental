@@ -26,6 +26,7 @@ type Model[T any] struct {
 	orConditionActive bool
 	upsert            bool
 	returnNew         bool
+	middleware        *middleware[T]
 }
 
 var Models = make(map[string]any)
@@ -35,9 +36,11 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 		return e_utils.Cast[Model[T]](Models[name])
 	}
 	schema.Options.Collection, _ = lo.Coalesce(schema.Options.Collection, pluralize.NewClient().Plural(strings.ToLower(name)))
+	middleware := newMiddleware[T]()
 	model := Model[T]{
-		Name:   name,
-		Schema: schema,
+		Name:       name,
+		Schema:     schema,
+		middleware: &middleware,
 	}
 	Models[name] = model
 	connectionReady := func() {
@@ -54,8 +57,11 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 
 func (m Model[T]) Create(doc T, ctx ...context.Context) T {
 	documentToInsert, detailedDocument := enforceSchema(m.Schema, &doc, nil)
+	detailedDocumentEntity := e_utils.CastBSON[T](detailedDocument)
+	m.middleware.pre.save.run(detailedDocumentEntity)
 	lo.Must(m.Collection().InsertOne(e_utils.DefaultCTX(ctx), documentToInsert))
-	return e_utils.CastBSON[T](detailedDocument)
+	m.middleware.post.save.run(detailedDocumentEntity)
+	return detailedDocumentEntity
 }
 
 func (m Model[T]) InsertMany(docs []T, ctx ...context.Context) []T {
