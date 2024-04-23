@@ -26,7 +26,7 @@ func TestCoreReadPopulate(t *testing.T) {
 			Name:     "Nekker",
 			Category: "Nekker",
 		},
-	})
+	}).Exec().([]Monster)
 
 	kingdoms := KingdomModel.InsertMany([]Kingdom{
 		{
@@ -38,7 +38,7 @@ func TestCoreReadPopulate(t *testing.T) {
 		{
 			Name: "Skellige",
 		},
-	})
+	}).Exec().([]Kingdom)
 
 	BestiaryModel.InsertMany([]Bestiary{
 		{
@@ -53,7 +53,7 @@ func TestCoreReadPopulate(t *testing.T) {
 			Monster: monsters[2],
 			Kingdom: kingdoms[2],
 		},
-	})
+	}).Exec()
 
 	Convey("Find with populated fields", t, func() {
 		Convey("Populate a with multiple calls", func() {

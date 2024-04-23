@@ -5,13 +5,17 @@ import (
 	"elemental/connection"
 	"elemental/utils"
 
+	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// Returns the underlying collection instance this model uses
+// Returns the underlying collection instance this model uses.
 func (m Model[T]) Collection() *mongo.Collection {
-	return e_connection.Use(m.Schema.Options.Database, m.Schema.Options.Connection).Collection(m.Schema.Options.Collection)
+	connection := lo.FromPtr(e_utils.Coalesce(m.temporaryConnection, &m.Schema.Options.Connection))
+	database := lo.FromPtr(e_utils.Coalesce(m.temporaryDatabase, &m.Schema.Options.Database))
+	collection := lo.FromPtr(e_utils.Coalesce(m.temporaryCollection, &m.Schema.Options.Collection))
+	return e_connection.Use(database, connection).Collection(collection)
 }
 
 // Returns the underlying database instance this model uses

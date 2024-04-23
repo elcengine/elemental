@@ -12,7 +12,7 @@ func Connection() {
 }
 
 func Seed() {
-	e_test_base.UserModel.InsertMany(e_mocks.Users)
+	e_test_base.UserModel.InsertMany(e_mocks.Users).Exec()
 }
 
 func SeededConnection() {
@@ -23,5 +23,9 @@ func SeededConnection() {
 func Teardown() {
 	e_connection.UseDefault().Drop(context.TODO())
 	e_connection.Use(e_mocks.SECONDARY_DB).Drop(context.TODO())
+	e_connection.Use(e_mocks.TERTIARY_DB).Drop(context.TODO())
+	e_connection.Use(e_mocks.TEMPORARY_DB_1).Drop(context.TODO())
+	e_connection.Use(e_mocks.TEMPORARY_DB_2).Drop(context.TODO())
+	e_connection.Use(e_mocks.TEMPORARY_DB_3).Drop(context.TODO())
 	e_connection.Disconnect()
 }

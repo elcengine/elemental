@@ -67,7 +67,7 @@ func TestCoreUpdate(t *testing.T) {
 		Convey("Update a user document", func() {
 			user := e_utils.Cast[User](UserModel.FindOne().Where("name", e_mocks.Eredin.Name).Exec())
 			user.Age = 200
-			UserModel.Save(user)
+			UserModel.Save(user).Exec()
 			updatedUser := e_utils.Cast[User](UserModel.FindByID(user.ID).Exec())
 			So(updatedUser.Age, ShouldEqual, 200)
 		})

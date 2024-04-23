@@ -67,10 +67,14 @@ func (m Model[T]) UpdateByID(id primitive.ObjectID, doc any, opts ...*options.Up
 	return m
 }
 
-func (m Model[T]) Save(doc T) {
-	m.middleware.pre.save.run(doc)
-	m.UpdateByID(reflect.ValueOf(doc).FieldByName("ID").Interface().(primitive.ObjectID), doc).Exec()
-	m.middleware.post.save.run(doc)
+func (m Model[T]) Save(doc T) Model[T] {
+	m.executor = func(m Model[T], ctx context.Context) any {
+		m.middleware.pre.save.run(doc)
+		m.UpdateByID(reflect.ValueOf(doc).FieldByName("ID").Interface().(primitive.ObjectID), doc).Exec()
+		m.middleware.post.save.run(doc)
+		return doc
+	}
+	return m
 }
 
 func (m Model[T]) UpdateMany(query *primitive.M, doc any, opts ...*options.UpdateOptions) Model[T] {
@@ -89,7 +93,7 @@ func (m Model[T]) UpdateMany(query *primitive.M, doc any, opts ...*options.Updat
 func (m Model[T]) ReplaceOne(query *primitive.M, doc any, opts ...*options.ReplaceOptions) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
 		filters := lo.FromPtr(query)
-		for k, v := range m.findMatchStage(){
+		for k, v := range m.findMatchStage() {
 			filters[k] = v
 		}
 		result, err := m.Collection().ReplaceOne(ctx, filters, m.parseDocument(doc), parseUpdateOptions(m, opts)...)
@@ -178,7 +182,7 @@ func (m Model[T]) CurrentDate(doc any) Model[T] {
 }
 
 func (m Model[T]) AddToSet(field string, values ...any) Model[T] {
-	if (len(values) == 1) {
+	if len(values) == 1 {
 		return m.setUpdateOperator("$addToSet", primitive.M{field: values[0]})
 	}
 	return m.setUpdateOperator("$addToSet", primitive.M{field: primitive.M{"$each": values}})
@@ -204,7 +208,7 @@ func (m Model[T]) PullAll(field string, values ...any) Model[T] {
 }
 
 func (m Model[T]) Push(field string, values ...any) Model[T] {
-	if (len(values) == 1) {
+	if len(values) == 1 {
 		return m.setUpdateOperator("$push", primitive.M{field: values[0]})
 	}
 	return m.setUpdateOperator("$push", primitive.M{field: primitive.M{"$each": values}})

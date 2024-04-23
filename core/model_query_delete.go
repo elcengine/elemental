@@ -36,8 +36,12 @@ func (m Model[T]) DeleteByID(id primitive.ObjectID) Model[T] {
 	return m.DeleteOne(primitive.M{"_id": id})
 }
 
-func (m Model[T]) Delete(doc T) {
-	m.DeleteByID(reflect.ValueOf(doc).FieldByName("ID").Interface().(primitive.ObjectID)).Exec()
+func (m Model[T]) Delete(doc T) Model[T] {
+	m.executor = func(m Model[T], ctx context.Context) any {
+		m.DeleteByID(reflect.ValueOf(doc).FieldByName("ID").Interface().(primitive.ObjectID)).Exec()
+		return nil
+	}
+	return m
 }
 
 func (m Model[T]) DeleteMany(query ...primitive.M) Model[T] {

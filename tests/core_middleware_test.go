@@ -32,7 +32,7 @@ func TestCoreMiddleware(t *testing.T) {
 		return true
 	})
 
-	CastleModel.Create(Castle{Name: "Aretuza"})
+	CastleModel.Create(Castle{Name: "Aretuza"}).Exec()
 
 	Convey("Pre hooks", t, func() {
 		Convey("Save", func() {

@@ -31,7 +31,7 @@ func TestCoreDelete(t *testing.T) {
 		Convey("Delete a user document", func() {
 			user := e_utils.Cast[User](UserModel.FindOne().Exec())
 			So(user.Name, ShouldEqual, e_mocks.Eredin.Name)
-			UserModel.Delete(user)
+			UserModel.Delete(user).Exec()
 			So(UserModel.FindByID(user.ID).Exec(), ShouldBeNil)
 		})
 		Convey("Delete a user by ID", func() {

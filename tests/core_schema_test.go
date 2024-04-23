@@ -30,7 +30,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 					Required: true,
 				},
 			}))
-			CastleModel.Create(Castle{Name: "Kaer Morhen"})
+			CastleModel.Create(Castle{Name: "Kaer Morhen"}).Exec()
 			So(CastleModel.Collection().Name(), ShouldEqual, "castles")
 		})
 		Convey("Should create a capped collection", func() {
@@ -45,7 +45,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 			}, elemental.SchemaOptions{
 				CollectionOptions: collectionOptions,
 			}))
-			KingdomModel.Create(Kingdom{Name: "Nilfgaard"})
+			KingdomModel.Create(Kingdom{Name: "Nilfgaard"}).Exec()
 			So(KingdomModel.IsCapped(), ShouldBeTrue)
 		})
 		Convey("Should use the specified database", func() {
@@ -57,7 +57,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 			}, elemental.SchemaOptions{
 				Database: e_mocks.SECONDARY_DB,
 			}))
-			MonsterModel.Create(Monster{Name: "Nekker"})
+			MonsterModel.Create(Monster{Name: "Nekker"}).Exec()
 			So(MonsterModel.Collection().Database().Name(), ShouldEqual, e_mocks.SECONDARY_DB)
 		})
 		Convey("Should validate a document against the schema", func() {

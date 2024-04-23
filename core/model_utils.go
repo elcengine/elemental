@@ -121,7 +121,7 @@ func (m Model[T]) findMatchStage() bson.M {
 }
 
 func (m Model[T]) parseDocument(doc any) primitive.M {
-	if (reflect.TypeOf(doc).Kind() == reflect.Ptr) {
+	if reflect.TypeOf(doc).Kind() == reflect.Ptr {
 		doc = reflect.ValueOf(doc).Elem().Interface()
 	}
 	if reflect.TypeOf(doc).Kind() == reflect.Map {
@@ -137,7 +137,7 @@ func (m Model[T]) parseDocument(doc any) primitive.M {
 }
 
 func parseUpdateOptions[T any, O any](m Model[T], opts []*O) []*O {
-	setOptions := func (option string, value any) {
+	setOptions := func(option string, value any) {
 		if len(opts) == 0 {
 			var emptyOptionInstance *O
 			options := reflect.New(reflect.TypeOf(emptyOptionInstance).Elem())
@@ -152,12 +152,11 @@ func parseUpdateOptions[T any, O any](m Model[T], opts []*O) []*O {
 	if m.upsert {
 		setOptions("SetUpsert", true)
 	}
-	if (m.returnNew) {
+	if m.returnNew {
 		setOptions("SetReturnDocument", options.After)
 	}
 	return opts
 }
-
 
 func (m Model[T]) setUpdateOperator(operator string, doc any) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {

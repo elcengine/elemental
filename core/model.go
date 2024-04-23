@@ -17,16 +17,19 @@ import (
 )
 
 type Model[T any] struct {
-	Name              string
-	Schema            Schema
-	pipeline          mongo.Pipeline
-	executor          func(m Model[T], ctx context.Context) any
-	whereField        string
-	failWith          *error
-	orConditionActive bool
-	upsert            bool
-	returnNew         bool
-	middleware        *middleware[T]
+	Name                string
+	Schema              Schema
+	pipeline            mongo.Pipeline
+	executor            func(m Model[T], ctx context.Context) any
+	whereField          string
+	failWith            *error
+	orConditionActive   bool
+	upsert              bool
+	returnNew           bool
+	middleware          *middleware[T]
+	temporaryConnection *string
+	temporaryDatabase   *string
+	temporaryCollection *string
 }
 
 var Models = make(map[string]any)
@@ -55,24 +58,30 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 	return model
 }
 
-func (m Model[T]) Create(doc T, ctx ...context.Context) T {
-	documentToInsert, detailedDocument := enforceSchema(m.Schema, &doc, nil)
-	detailedDocumentEntity := e_utils.CastBSON[T](detailedDocument)
-	m.middleware.pre.save.run(detailedDocumentEntity)
-	lo.Must(m.Collection().InsertOne(e_utils.DefaultCTX(ctx), documentToInsert))
-	m.middleware.post.save.run(detailedDocumentEntity)
-	return detailedDocumentEntity
+func (m Model[T]) Create(doc T) Model[T] {
+	m.executor = func(m Model[T], ctx context.Context) any {
+		documentToInsert, detailedDocument := enforceSchema(m.Schema, &doc, nil)
+		detailedDocumentEntity := e_utils.CastBSON[T](detailedDocument)
+		m.middleware.pre.save.run(detailedDocumentEntity)
+		lo.Must(m.Collection().InsertOne(ctx, documentToInsert))
+		m.middleware.post.save.run(detailedDocumentEntity)
+		return detailedDocumentEntity
+	}
+	return m
 }
 
-func (m Model[T]) InsertMany(docs []T, ctx ...context.Context) []T {
-	var documentsToInsert, detailedDocuments []interface{}
-	for _, doc := range docs {
-		documentToInsert, detailedDocument := enforceSchema(m.Schema, &doc, nil)
-		documentsToInsert = append(documentsToInsert, documentToInsert)
-		detailedDocuments = append(detailedDocuments, detailedDocument)
+func (m Model[T]) InsertMany(docs []T) Model[T] {
+	m.executor = func(m Model[T], ctx context.Context) any {
+		var documentsToInsert, detailedDocuments []interface{}
+		for _, doc := range docs {
+			documentToInsert, detailedDocument := enforceSchema(m.Schema, &doc, nil)
+			documentsToInsert = append(documentsToInsert, documentToInsert)
+			detailedDocuments = append(detailedDocuments, detailedDocument)
+		}
+		lo.Must(m.Collection().InsertMany(ctx, documentsToInsert))
+		return e_utils.CastBSONSlice[T](detailedDocuments)
 	}
-	lo.Must(m.Collection().InsertMany(e_utils.DefaultCTX(ctx), documentsToInsert))
-	return e_utils.CastBSONSlice[T](detailedDocuments)
+	return m
 }
 
 func (m Model[T]) Find(query ...primitive.M) Model[T] {
