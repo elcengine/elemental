@@ -1,7 +1,7 @@
 package e_tests
 
 import (
-	e_connection "elemental/connection"
+	"elemental/connection"
 	"elemental/tests/base"
 	"elemental/tests/mocks"
 	"elemental/tests/setup"
