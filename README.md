@@ -22,4 +22,3 @@ go mod download # Download dependencies
 
 git config core.hooksPath .commitlint/hooks  # Configure git hooks
 ```
-q
