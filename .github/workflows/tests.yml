@@ -1,4 +1,5 @@
-name: Run tests
+name: run-tests
+run-name: Run tests
 on:
   pull_request:
     branches:
