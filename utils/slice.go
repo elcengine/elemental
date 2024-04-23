@@ -28,3 +28,9 @@ func CastSlice[T any](slice []any) []T {
 		return Cast[T](doc)
 	})
 }
+
+func CastBSONSlice[T any](slice []interface{}) []T {
+	return lo.Map(slice, func(doc interface{}, _ int) T {
+		return CastBSON[T](doc)
+	})
+}

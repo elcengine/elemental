@@ -44,6 +44,10 @@ func TestCoreMeta(t *testing.T) {
 				size := UserModel.AvgObjSize()
 				So(size, ShouldBeGreaterThan, 0)
 			})
+			Convey("Just the index count", func() {
+				size := UserModel.NumberOfIndexes()
+				So(size, ShouldBeGreaterThanOrEqualTo, 1)
+			})
 		})
 	})
 }

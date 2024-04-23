@@ -27,6 +27,15 @@ func NewSchema(definitions map[string]Field, opts ...SchemaOptions) Schema {
 	return schema
 }
 
+
+func (s Schema) Field(path string) *Field {
+	definition := s.Definitions[path]
+	if (definition != (Field{})) {
+		return &definition
+	}
+	return nil
+}
+
 func (s Schema) syncIndexes(reflectedBaseType reflect.Type) {
 	collection := e_connection.Use(s.Options.Database, s.Options.Connection).Collection(s.Options.Collection)
 	collection.Indexes().DropAll(context.Background())

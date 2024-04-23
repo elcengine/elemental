@@ -23,4 +23,6 @@ type Field struct {
 	Regex      string
 	Index      options.IndexOptions
 	IndexOrder int
+	Ref        string
+	Collection string
 }

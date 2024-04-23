@@ -37,7 +37,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 			collectionOptions := options.CreateCollectionOptions{}
 			collectionOptions.SetCapped(true)
 			collectionOptions.SetSizeInBytes(1024)
-			var KingdomModel = elemental.NewModel[Kingdom]("Kingdom", elemental.NewSchema(map[string]elemental.Field{
+			var KingdomModel = elemental.NewModel[Kingdom]("Kingdom-Temporary", elemental.NewSchema(map[string]elemental.Field{
 				"Name": {
 					Type:     reflect.String,
 					Required: true,
@@ -49,7 +49,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 			So(KingdomModel.IsCapped(), ShouldBeTrue)
 		})
 		Convey("Should use the specified database", func() {
-			var MonsterModel = elemental.NewModel[Monster]("Monster-Secondary", elemental.NewSchema(map[string]elemental.Field{
+			var MonsterModel = elemental.NewModel[Monster]("Monster-Temporary", elemental.NewSchema(map[string]elemental.Field{
 				"Name": {
 					Type:     reflect.String,
 					Required: true,

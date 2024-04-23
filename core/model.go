@@ -25,10 +25,10 @@ type Model[T any] struct {
 	failWith          *error
 	orConditionActive bool
 	upsert            bool
-	returnNew  bool
+	returnNew         bool
 }
 
-var Models = make(map[string]Model[any])
+var Models = make(map[string]any)
 
 func NewModel[T any](name string, schema Schema) Model[T] {
 	if _, ok := Models[name]; ok {
@@ -39,7 +39,7 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 		Name:   name,
 		Schema: schema,
 	}
-	Models[name] = e_utils.Cast[Model[any]](model)
+	Models[name] = model
 	connectionReady := func() {
 		model.CreateCollection()
 		model.SyncIndexes()
@@ -53,18 +53,20 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 }
 
 func (m Model[T]) Create(doc T, ctx ...context.Context) T {
-	document := enforceSchema(m.Schema, &doc, nil)
-	lo.Must(m.Collection().InsertOne(e_utils.DefaultCTX(ctx), document))
-	return document
+	documentToInsert, detailedDocument := enforceSchema(m.Schema, &doc, nil)
+	lo.Must(m.Collection().InsertOne(e_utils.DefaultCTX(ctx), documentToInsert))
+	return e_utils.CastBSON[T](detailedDocument)
 }
 
 func (m Model[T]) InsertMany(docs []T, ctx ...context.Context) []T {
-	var documents []interface{}
+	var documentsToInsert, detailedDocuments []interface{}
 	for _, doc := range docs {
-		documents = append(documents, enforceSchema(m.Schema, &doc, nil))
+		documentToInsert, detailedDocument := enforceSchema(m.Schema, &doc, nil)
+		documentsToInsert = append(documentsToInsert, documentToInsert)
+		detailedDocuments = append(detailedDocuments, detailedDocument)
 	}
-	lo.Must(m.Collection().InsertMany(e_utils.DefaultCTX(ctx), documents))
-	return e_utils.CastSlice[T](documents)
+	lo.Must(m.Collection().InsertMany(e_utils.DefaultCTX(ctx), documentsToInsert))
+	return e_utils.CastBSONSlice[T](detailedDocuments)
 }
 
 func (m Model[T]) Find(query ...primitive.M) Model[T] {

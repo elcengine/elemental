@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"github.com/samber/lo"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func setField(field reflect.Value, defaultVal string) error {
@@ -36,4 +38,27 @@ func SetDefaults(ptr interface{},) error {
 		}
 	}
 	return nil
+}
+
+func IsEmpty (value interface{}) bool {
+	if value == nil {
+		return true
+	}
+	if (lo.IsEmpty(value)) {
+		return true
+	}
+	reflectedValue := reflect.ValueOf(value)
+	if (!reflectedValue.IsValid() || reflectedValue.IsZero()) {
+		return true
+	}
+	reflectedValueType := reflect.TypeOf(value)
+	var dateTime primitive.DateTime
+	var objectId primitive.ObjectID
+	if (reflectedValueType == reflect.TypeOf(&dateTime) || reflectedValueType ==  reflect.TypeOf(dateTime)) {
+		return value.(primitive.DateTime).Time().IsZero()
+	}
+	if (reflectedValueType == reflect.TypeOf(&objectId) || reflectedValueType ==  reflect.TypeOf(objectId)) {
+		return value.(primitive.ObjectID).IsZero()
+	}
+	return false
 }

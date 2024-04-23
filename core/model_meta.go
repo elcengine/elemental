@@ -57,3 +57,8 @@ func (m Model[T]) AvgObjSize(ctx ...context.Context) int64 {
 func (m Model[T]) IsCapped(ctx ...context.Context) bool {
 	return m.Stats(e_utils.DefaultCTX(ctx)).Capped
 }
+
+// Returns the number of indexes in the model collection
+func (m Model[T]) NumberOfIndexes(ctx ...context.Context) int64 {
+	return m.Stats(e_utils.DefaultCTX(ctx)).NumberOfIndexes
+}

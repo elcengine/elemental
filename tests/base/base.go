@@ -53,10 +53,10 @@ type Monster struct {
 	UpdatedAt  time.Time          `json:"updated_at" bson:"updated_at"`
 }
 
-type BestiaryEntry struct {
-	ID        primitive.ObjectID `json:"_id" bson:"_id"`
-	MonsterID primitive.ObjectID `json:"monster_id" bson:"monster_id"`
-	KingdomID primitive.ObjectID `json:"kingdom_id" bson:"kingdom_id"`
+type Bestiary struct {
+	ID      primitive.ObjectID `json:"_id" bson:"_id"`
+	Monster Monster            `json:"monster" bson:"monster"`
+	Kingdom Kingdom            `json:"kingdom" bson:"kingdom"`
 }
 
 var DefaultAge = 18
@@ -120,4 +120,26 @@ var MonsterModel = elemental.NewModel[Monster]("Monster", elemental.NewSchema(ma
 	},
 }, elemental.SchemaOptions{
 	Collection: "monsters",
+}))
+
+var KingdomModel = elemental.NewModel[Kingdom]("Kingdom", elemental.NewSchema(map[string]elemental.Field{
+	"Name": {
+		Type:     reflect.String,
+		Required: true,
+	},
+}, elemental.SchemaOptions{
+	Collection: "kingdoms",
+}))
+
+var BestiaryModel = elemental.NewModel[Bestiary]("Bestiary", elemental.NewSchema(map[string]elemental.Field{
+	"Monster": {
+		Type:   reflect.Struct,
+		Ref:   "Monster",
+	},
+	"Kingdom": {
+		Type:   reflect.Struct,
+		Ref:   "Kingdom",
+	},
+}, elemental.SchemaOptions{
+	Collection: "bestiary",
 }))
