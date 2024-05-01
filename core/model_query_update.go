@@ -51,7 +51,9 @@ func (m Model[T]) UpdateOne(query *primitive.M, doc any, opts ...*options.Update
 				opts[0].SetUpsert(true)
 			}
 		}
+		m.middleware.pre.updateOne.run(doc)
 		result, err := m.Collection().UpdateOne(ctx, filters, primitive.M{"$set": m.parseDocument(doc)}, opts...)
+		m.middleware.post.updateOne.run(result, err)
 		m.checkConditionsAndPanicForErr(err)
 		return result
 	}
