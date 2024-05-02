@@ -3,6 +3,7 @@ package elemental
 import (
 	e_utils "elemental/utils"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -15,11 +16,18 @@ type listener[T any] struct {
 type pre[T any] struct {
 	save listener[T]
 	updateOne listener[T]
+	deleteOne listener[T]
+	deleteMany listener[T]
+	findOneAndUpdate listener[T]
 }
 
 type post[T any] struct {
 	save listener[T]
 	updateOne listener[T]
+	deleteOne listener[T]
+	deleteMany listener[T]
+	find listener[T]
+	findOneAndUpdate listener[T]
 }
 
 type middleware[T any] struct {
@@ -61,5 +69,47 @@ func (m Model[T]) PreUpdateOne(f func(doc any) bool) {
 func (m Model[T]) PostUpdateOne(f func(result *mongo.UpdateResult, err error) bool) {
 	m.middleware.post.updateOne.functions = append(m.middleware.post.updateOne.functions, func(args ...interface{}) bool {
 		return f(args[0].(*mongo.UpdateResult), e_utils.Cast[error](args[1]))
+	})
+}
+
+func (m Model[T]) PreDeleteOne(f func(filters primitive.M ) bool) {
+	m.middleware.pre.deleteOne.functions = append(m.middleware.pre.deleteOne.functions, func(args ...interface{}) bool {
+		return f(args[0].(primitive.M))
+	})
+}
+
+func (m Model[T]) PostDeleteOne(f func(result *mongo.DeleteResult, err error) bool) {
+	m.middleware.post.deleteOne.functions = append(m.middleware.post.deleteOne.functions, func(args ...interface{}) bool {
+		return f(args[0].(*mongo.DeleteResult), e_utils.Cast[error](args[1]))
+	})
+}
+
+func (m Model[T]) PreDeleteMany(f func(filters primitive.M ) bool) {
+	m.middleware.pre.deleteMany.functions = append(m.middleware.pre.deleteMany.functions, func(args ...interface{}) bool {
+		return f(args[0].(primitive.M))
+	})
+}
+
+func (m Model[T]) PostDeleteMany(f func(result *mongo.DeleteResult, err error) bool) {
+	m.middleware.post.deleteMany.functions = append(m.middleware.post.deleteMany.functions, func(args ...interface{}) bool {
+		return f(args[0].(*mongo.DeleteResult), e_utils.Cast[error](args[1]))
+	})
+}
+
+func(m Model[T]) PostFind(f func(doc []T) bool) {
+	m.middleware.post.find.functions = append(m.middleware.post.find.functions, func(args ...interface{}) bool {
+		return f(args[0].([]T))
+	})
+}
+
+func(m Model[T]) PostFindOneAndUpdate(f func(doc *T) bool) {
+	m.middleware.post.findOneAndUpdate.functions = append(m.middleware.post.findOneAndUpdate.functions, func(args ...interface{}) bool {
+		return f(args[0].(*T))
+	})
+}
+
+func (m Model[T]) PreFindOneAndUpdate(f func(filters primitive.M ) bool) {
+	m.middleware.pre.findOneAndUpdate.functions = append(m.middleware.pre.findOneAndUpdate.functions, func(args ...interface{}) bool {
+		return f(args[0].(primitive.M))
 	})
 }

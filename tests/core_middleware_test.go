@@ -44,9 +44,54 @@ func TestCoreMiddleware(t *testing.T) {
 		return true
 	})
 
+	CastleModel.PreDeleteOne(func(filters primitive.M) bool {
+		invokedHooks["preDeleteOne"] = true
+		return true
+	})
+
+	CastleModel.PostDeleteOne(func(result *mongo.DeleteResult, err error) bool{
+		invokedHooks["postDeleteOne"]= true
+		return true
+	})
+
+	CastleModel.PreDeleteMany(func(filters primitive.M) bool {
+		invokedHooks["preDeleteMany"] = true
+		return true
+	})
+
+	CastleModel.PostDeleteMany(func(result *mongo.DeleteResult, err error) bool {
+		invokedHooks["postDeleteMany"] = true
+		return true
+	})
+
+	CastleModel.PostFind(func(castle []Castle) bool {
+		invokedHooks["postFind"] = true
+		return true
+	})
+
+	CastleModel.PreFindOneAndUpdate(func(filter primitive.M) bool {
+		invokedHooks["preFindOneAndUpdate"] = true
+		return true
+	})
+
+	CastleModel.PostFindOneAndUpdate(func(castle *Castle) bool {
+		invokedHooks["postFindOneAndUpdate"] = true
+		return true
+	})
+
+
 	CastleModel.Create(Castle{Name: "Aretuza"}).Exec()
 
+	CastleModel.Create(Castle{Name: "Maverick"}).Exec()
+
 	CastleModel.UpdateOne(&primitive.M{"name": "Aretuza"}, Castle{Name: "Kaer Morhen"}).Exec()
+	CastleModel.Find().Exec()
+	CastleModel.FindOneAndUpdate(&primitive.M{"name": "Maverick"}, primitive.M{"name": "Maverickk"}).Exec()
+	CastleModel.DeleteOne(primitive.M{"name": "Kaer Morhen"}).Exec()
+
+	CastleModel.DeleteMany(primitive.M{"name": primitive.M{"$in": []string{"Aretuza", "Maverick"}}}).Exec()
+
+	
 
 	Convey("Pre hooks", t, func() {
 		Convey("Save", func() {
@@ -54,6 +99,15 @@ func TestCoreMiddleware(t *testing.T) {
 		})
 		Convey("UpdateOne", func() {
 			So(invokedHooks["preUpdateOne"], ShouldBeTrue)
+		})
+		Convey("DeleteOne", func(){
+			So(invokedHooks["preDeleteOne"], ShouldBeTrue)
+		})
+		Convey("DeleteMany", func () {
+			So(invokedHooks["preDeleteMany"], ShouldBeTrue)
+		})
+		Convey("FindOneAndUpdate", func () {
+			So(invokedHooks["preFindOneAndUpdate"], ShouldBeTrue)
 		})
 	})
 	Convey("Post hooks", t, func() {
@@ -63,5 +117,18 @@ func TestCoreMiddleware(t *testing.T) {
 		Convey("UpdateOne", func() {
 			So(invokedHooks["postUpdateOne"], ShouldBeTrue)
 		})
+		Convey("DeleteOne", func(){
+			So(invokedHooks["postDeleteOne"], ShouldBeTrue)
+		})
+		Convey("DeleteMany", func () {
+			So(invokedHooks["postDeleteMany"], ShouldBeTrue)
+		})
+		Convey("Find", func () {
+			So(invokedHooks["postFind"], ShouldBeTrue)
+		})
+		Convey("FindOneAndUpdate", func () {
+			So(invokedHooks["postFindOneAndUpdate"], ShouldBeTrue)
+		})
+		
 	})
 }

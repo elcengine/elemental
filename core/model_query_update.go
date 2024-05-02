@@ -12,6 +12,7 @@ import (
 
 func (m Model[T]) FindOneAndUpdate(query *primitive.M, doc any, opts ...*options.FindOneAndUpdateOptions) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
+		m.middleware.pre.findOneAndUpdate.run(doc)
 		return (func() any {
 			var resultDoc T
 			filters := lo.FromPtr(query)
@@ -19,6 +20,7 @@ func (m Model[T]) FindOneAndUpdate(query *primitive.M, doc any, opts ...*options
 				filters[k] = v
 			}
 			result := m.Collection().FindOneAndUpdate(ctx, filters, primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
+			m.middleware.post.findOneAndUpdate.run(&resultDoc)
 			m.checkConditionsAndPanicForSingleResult(result)
 			e_utils.Must(result.Decode(&resultDoc))
 			return resultDoc
