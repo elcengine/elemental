@@ -42,7 +42,10 @@ func (m Model[T]) FindByIDAndUpdate(id primitive.ObjectID, doc any, opts ...*opt
 
 func (m Model[T]) UpdateOne(query *primitive.M, doc any, opts ...*options.UpdateOptions) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
-		filters := lo.FromPtr(query)
+		filters := make(primitive.M)
+		if (query != nil) {
+			filters = lo.FromPtr(query)
+		}
 		for k, v := range m.findMatchStage() {
 			filters[k] = v
 		}
@@ -83,7 +86,10 @@ func (m Model[T]) Save(doc T) Model[T] {
 
 func (m Model[T]) UpdateMany(query *primitive.M, doc any, opts ...*options.UpdateOptions) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
-		filters := lo.FromPtr(query)
+		filters := make(primitive.M)
+		if (query != nil) {
+			filters = lo.FromPtr(query)
+		}
 		for k, v := range m.findMatchStage() {
 			filters[k] = v
 		}
@@ -96,7 +102,10 @@ func (m Model[T]) UpdateMany(query *primitive.M, doc any, opts ...*options.Updat
 
 func (m Model[T]) ReplaceOne(query *primitive.M, doc any, opts ...*options.ReplaceOptions) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
-		filters := lo.FromPtr(query)
+		filters := make(primitive.M)
+		if (query != nil) {
+			filters = lo.FromPtr(query)
+		}
 		for k, v := range m.findMatchStage() {
 			filters[k] = v
 		}
@@ -119,7 +128,10 @@ func (m Model[T]) ReplaceByID(id primitive.ObjectID, doc any, opts ...*options.R
 func (m Model[T]) FindOneAndReplace(query *primitive.M, doc any, opts ...*options.FindOneAndReplaceOptions) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var resultDoc T
-		filters := lo.FromPtr(query)
+		filters := make(primitive.M)
+		if (query != nil) {
+			filters = lo.FromPtr(query)
+		}
 		for k, v := range m.findMatchStage() {
 			filters[k] = v
 		}
