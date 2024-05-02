@@ -54,7 +54,7 @@ func TestCoreCreate(t *testing.T) {
 	})
 	Convey("Create a monster which has a sub schema with defaults", t, func() {
 		monster := MonsterModel.Create(Monster{
-			Name:   "Katakan",
+			Name:     "Katakan",
 			Category: "Vampire",
 		}).Exec().(Monster)
 		So(monster.ID, ShouldNotBeNil)

@@ -33,6 +33,7 @@ func ProtectWithCallback(f func(), onError func(err interface{})) {
 	}()
 	f()
 }
+
 // Extracts and returns the context from an optional slice of contexts. If the slice is empty, it returns a new context.
 func DefaultCTX(slice []context.Context) context.Context {
 	if len(slice) == 0 {

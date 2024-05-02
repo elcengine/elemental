@@ -25,7 +25,7 @@ func TestCoreTriggers(t *testing.T) {
 
 	var insertedCastle Castle
 	var updatedCastle Castle
-	var replacedCastle Castle	
+	var replacedCastle Castle
 	var deletedCastleID primitive.ObjectID
 	var collectionDropped bool
 

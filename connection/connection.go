@@ -4,14 +4,14 @@ import (
 	"context"
 	"elemental/constants"
 	"elemental/utils"
-	"time"
-	"golang.org/x/exp/maps"
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
+	"golang.org/x/exp/maps"
+	"time"
 )
 
 const connectionTimeout = 30 * time.Second
