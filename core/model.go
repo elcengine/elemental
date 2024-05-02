@@ -85,6 +85,13 @@ func (m Model[T]) InsertMany(docs []T) Model[T] {
 }
 
 func (m Model[T]) Find(query ...primitive.M) Model[T] {
+	m.executor = func(m Model[T], ctx context.Context) any {
+			var results []T
+			e_utils.Must(lo.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
+			m.middleware.post.find.run(results)
+			m.checkConditionsAndPanic(results)
+			return results
+		}
 	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}})
 	return m
 }
