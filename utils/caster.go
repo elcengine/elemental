@@ -39,7 +39,6 @@ func ToMap(s any) map[string]interface{} {
 	return m
 }
 
-
 // Converts any type to a given type based on their bson representation. It partially fills the target in case they are not directly compatible.
 func CastBSON[T any](val any) T {
 	return FromBSON[T](ToBSON(val))
@@ -60,10 +59,10 @@ func FromBSON[T any](bytes []byte) T {
 
 // Converts an interface to a bson document
 func ToBSONDoc(v interface{}) (doc *bson.M) {
-    data, err := bson.Marshal(v)
-    if err != nil {
-        return nil
-    }
+	data, err := bson.Marshal(v)
+	if err != nil {
+		return nil
+	}
 	bson.Unmarshal(data, &doc)
 	return doc
 }

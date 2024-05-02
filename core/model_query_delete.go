@@ -11,7 +11,9 @@ import (
 func (m Model[T]) FindOneAndDelete(query ...primitive.M) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var doc T
+		m.middleware.pre.findOneAndDelete.run(query[0])
 		result := m.Collection().FindOneAndDelete(ctx, e_utils.DefaultQuery(query...))
+		m.middleware.post.findOneAndDelete.run(&doc)
 		m.checkConditionsAndPanicForSingleResult(result)
 		e_utils.Must(result.Decode(&doc))
 		return doc
