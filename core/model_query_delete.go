@@ -11,7 +11,7 @@ import (
 func (m Model[T]) FindOneAndDelete(query ...primitive.M) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var doc T
-		m.middleware.pre.findOneAndDelete.run(query[0])
+		m.middleware.pre.findOneAndDelete.run(e_utils.First(query))
 		result := m.Collection().FindOneAndDelete(ctx, e_utils.DefaultQuery(query...))
 		m.middleware.post.findOneAndDelete.run(&doc)
 		m.checkConditionsAndPanicForSingleResult(result)
@@ -27,7 +27,7 @@ func (m Model[T]) FindByIdAndDelete(id primitive.ObjectID) Model[T] {
 
 func (m Model[T]) DeleteOne(query ...primitive.M) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
-		m.middleware.pre.deleteOne.run(query[0])
+		m.middleware.pre.deleteOne.run(e_utils.First(query))
 		result, err := m.Collection().DeleteOne(ctx, e_utils.DefaultQuery(query...))
 		m.middleware.post.deleteOne.run(result, err)
 		m.checkConditionsAndPanicForErr(err)
@@ -50,7 +50,7 @@ func (m Model[T]) Delete(doc T) Model[T] {
 
 func (m Model[T]) DeleteMany(query ...primitive.M) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
-		m.middleware.pre.deleteMany.run(query[0])
+		m.middleware.pre.deleteMany.run(e_utils.First(query))
 		result, err := m.Collection().DeleteMany(ctx, e_utils.DefaultQuery(query...))
 		m.checkConditionsAndPanicForErr(err)
 		m.middleware.post.deleteMany.run(result, err)
