@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"strings"
 	"strconv"
-	"./plugins/queryfilter"
-	
 )
 
 
