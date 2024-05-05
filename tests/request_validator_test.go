@@ -7,17 +7,24 @@ import (
 	"elemental/plugins/request-validator"
 )
 
+type UserValidation struct {
+	ID       int    `validate:"exists=user_table,UserId"`
+	Name     string `validate:"exists=user_table,Name"`
+	Age      int    `validate:"IsGreater=20"`
+	IsActive bool   `validate:"isTrue"`
+}
+
 
 func TestValidateStructWithDB(t *testing.T) {
 	// Define test cases
 	tests := []struct {
 		name          string
-		input         request_validator.User // User struct to validate
+		input         UserValidation // User struct to validate
 		expectedError error                   // Expected validation error
 	}{
 		{
 			name: "ValidUser",
-			input: request_validator.User{
+			input: UserValidation{
 				ID:       6,
 				Name:     "Emily Watson",
 				Age:      20,
@@ -27,7 +34,7 @@ func TestValidateStructWithDB(t *testing.T) {
 		},
 		{
 			name: "DuplicateID",
-			input: request_validator.User{
+			input: UserValidation{
 				ID:       1, 
 				Age:      25,
 				IsActive: true,
@@ -36,7 +43,7 @@ func TestValidateStructWithDB(t *testing.T) {
 		},
 		{
 			name: "InvalidAge",
-			input: request_validator.User{
+			input: UserValidation{
 				ID:       7,
 				Name:     "Invalid Age User",
 				Age:      10, 
@@ -46,7 +53,7 @@ func TestValidateStructWithDB(t *testing.T) {
 		},
 		{
 			name: "InvalidIsActive",
-			input: request_validator.User{
+			input: UserValidation{
 				ID:       8,
 				Name:     "Invalid IsActive User",
 				Age:      20,
