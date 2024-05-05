@@ -6,12 +6,6 @@ import (
 	"strconv"
 	"strings"
 )
-type User struct {
-	ID       int    `validate:"exists=user_table,UserId"`
-	Name     string `validate:"exists=user_table,Name"`
-	Age      int    `validate:"IsGreater=20"`
-	IsActive bool   `validate:"isTrue"`
-}
 
 // check object tags and validate agaist database
 
