@@ -5,7 +5,6 @@ import (
 	"elemental/core"
 	"elemental/tests/setup"
 	"elemental/utils"
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -43,7 +42,6 @@ func TestCoreTriggers(t *testing.T) {
 	})
 
 	CastleModel.OnDelete(func(castleId primitive.ObjectID) {
-		fmt.Println("Deleted castle ID: ", castleId)
 		deletedCastleID = castleId
 	})
 
