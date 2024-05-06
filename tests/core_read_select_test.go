@@ -65,8 +65,8 @@ func TestCoreReadSelect(t *testing.T) {
 			Convey("In conjunction with a string input (commas)", func() {
 				users := UserModel.Find().Select("name, -_id").Limit(limit).Exec().([]User)
 				assert(users)
-			})	
-		})	
+			})
+		})
 		Convey(fmt.Sprintf("%d user names and ages", limit), func() {
 			assert := func(users []User) {
 				So(users, ShouldHaveLength, limit)

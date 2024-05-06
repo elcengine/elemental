@@ -50,13 +50,13 @@ func TestCoreRead(t *testing.T) {
 			users := UserModel.Find(primitive.M{"name": "Yarpen Zigrin"}).Exec().([]User)
 			So(users, ShouldHaveLength, 0)
 			Convey("With or fail", func() {
-				So(func () {
+				So(func() {
 					UserModel.Find(primitive.M{"name": "Yarpen Zigrin"}).OrFail().Exec()
 				}, ShouldPanicWith, errors.New("no results found matching the given query"))
 			})
 			Convey("With or fail and custom error", func() {
 				err := errors.New("no user found")
-				So(func () {
+				So(func() {
 					UserModel.Find(primitive.M{"name": "Yarpen Zigrin"}).OrFail(err).Exec()
 				}, ShouldPanicWith, err)
 			})
@@ -115,10 +115,10 @@ func TestCoreRead(t *testing.T) {
 			So(users[1].Name, ShouldEqual, e_mocks.Imlerith.Name)
 			So(users[2].Name, ShouldEqual, e_mocks.Caranthir.Name)
 			So(users[3].Name, ShouldEqual, e_mocks.Yennefer.Name)
-			So(users[4].Name, ShouldEqual, e_mocks.Geralt.Name)		
+			So(users[4].Name, ShouldEqual, e_mocks.Geralt.Name)
 		})
 		Convey("Must panic when finding with invalid sort arguments", func() {
-			So(func () {
+			So(func() {
 				UserModel.Find().Sort("age", 1, "name").Exec()
 			}, ShouldPanicWith, e_constants.ErrMustPairSortArguments)
 		})

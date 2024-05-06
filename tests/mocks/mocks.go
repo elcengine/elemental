@@ -5,20 +5,19 @@ import (
 )
 
 const (
-	DB_URI = "mongodb+srv://akalankaperera128:pFAnQVXE6vrbcXNk@default.ynr156r.mongodb.net/elemental"
-	// DB_URI = "mongodb+srv://shifan:VTt559)ks^#rm5+@myatlasclusteredu.edy0gtm.mongodb.net/elemental"
-	DEFAULT_DB = "elemental"
-	SECONDARY_DB = "elemental_secondary"
-	TERTIARY_DB = "elemental_tertiary"
+	DB_URI         = "mongodb+srv://akalankaperera128:pFAnQVXE6vrbcXNk@default.ynr156r.mongodb.net/elemental"
+	DEFAULT_DB     = "elemental"
+	SECONDARY_DB   = "elemental_secondary"
+	TERTIARY_DB    = "elemental_tertiary"
 	TEMPORARY_DB_1 = "elemental_temporary_1"
 	TEMPORARY_DB_2 = "elemental_temporary_2"
 	TEMPORARY_DB_3 = "elemental_temporary_3"
 )
 
 var (
-	WolfSchool = "Wolf"
-	BearSchool = "Bear"
-	GriffinSchool = "Griffin"
+	WolfSchool      = "Wolf"
+	BearSchool      = "Bear"
+	GriffinSchool   = "Griffin"
 	ManticoreSchool = "Manticore"
 )
 
@@ -59,7 +58,7 @@ var (
 		Age:        300,
 		Weapons:    []string{"Silver sword", "Steel sword", "Crossbow"},
 		Retired:    true,
-		School:    &WolfSchool,
+		School:     &WolfSchool,
 	}
 )
 

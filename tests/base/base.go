@@ -133,12 +133,12 @@ var KingdomModel = elemental.NewModel[Kingdom]("Kingdom", elemental.NewSchema(ma
 
 var BestiaryModel = elemental.NewModel[Bestiary]("Bestiary", elemental.NewSchema(map[string]elemental.Field{
 	"Monster": {
-		Type:   reflect.Struct,
-		Ref:   "Monster",
+		Type: reflect.Struct,
+		Ref:  "Monster",
 	},
 	"Kingdom": {
-		Type:   reflect.Struct,
-		Ref:   "Kingdom",
+		Type: reflect.Struct,
+		Ref:  "Kingdom",
 	},
 }, elemental.SchemaOptions{
 	Collection: "bestiary",

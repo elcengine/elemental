@@ -29,7 +29,7 @@ func (m Model[T]) GreaterThanOrEquals(value any) Model[T] {
 }
 
 func (m Model[T]) Between(min, max any) Model[T] {
-	return m.addToFilters( "$gte", min).addToFilters("$lte", max)
+	return m.addToFilters("$gte", min).addToFilters("$lte", max)
 }
 
 func (m Model[T]) Mod(divisor, remainder int) Model[T] {
@@ -64,4 +64,3 @@ func (m Model[T]) Or() Model[T] {
 	m.orConditionActive = true
 	return m
 }
-

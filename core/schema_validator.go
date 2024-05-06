@@ -15,9 +15,9 @@ import (
 
 func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Type, defaults ...bool) (bson.M, bson.M) {
 	var entityToInsert bson.M
-	if (reflectedEntityType != nil) {
+	if reflectedEntityType != nil {
 		entityToInsert = e_utils.Cast[bson.M](doc)
-		if (entityToInsert == nil) {
+		if entityToInsert == nil {
 			entityToInsert = make(bson.M)
 		}
 	} else {
@@ -28,13 +28,13 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 		id, _ := (*reflectedEntityType).FieldByName("ID")
 		createdAt, _ := (*reflectedEntityType).FieldByName("CreatedAt")
 		updatedAt, _ := (*reflectedEntityType).FieldByName("UpdatedAt")
-		if (id.Type != nil) {
+		if id.Type != nil {
 			SetDefault(&entityToInsert, id.Tag.Get("bson"), primitive.NewObjectID())
 		}
-		if (createdAt.Type != nil) {
+		if createdAt.Type != nil {
 			SetDefault(&entityToInsert, createdAt.Tag.Get("bson"), time.Now())
 		}
-		if (updatedAt.Type != nil) {
+		if updatedAt.Type != nil {
 			SetDefault(&entityToInsert, updatedAt.Tag.Get("bson"), time.Now())
 		}
 	}
@@ -59,7 +59,7 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 			entityToInsert[fieldBsonName], detailedEntity[fieldBsonName] = enforceSchema(*definition.Schema, e_utils.Cast[*bson.M](entityToInsert[fieldBsonName]), &subdocumentField.Type, false)
 			continue
 		}
-		if (definition.Type == reflect.Struct && (definition.Ref != "" || definition.Collection != "") && entityToInsert[fieldBsonName]!= nil) {
+		if definition.Type == reflect.Struct && (definition.Ref != "" || definition.Collection != "") && entityToInsert[fieldBsonName] != nil {
 			subdocumentField, _ := (*reflectedEntityType).FieldByName(field)
 			subdocumentIdField, _ := subdocumentField.Type.FieldByName("ID")
 			entityToInsert = lo.Assign(

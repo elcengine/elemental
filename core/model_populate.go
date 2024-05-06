@@ -69,7 +69,7 @@ func (m Model[T]) populate(value any) Model[T] {
 }
 
 func (m Model[T]) Populate(values ...any) Model[T] {
-	if (len(values) == 1 && reflect.ValueOf(values[0]).Kind() == reflect.String && (strings.Contains(values[0].(string), ",") || strings.Contains(values[0].(string), " "))) {
+	if len(values) == 1 && reflect.ValueOf(values[0]).Kind() == reflect.String && (strings.Contains(values[0].(string), ",") || strings.Contains(values[0].(string), " ")) {
 		values := strings.FieldsFunc(values[0].(string), func(r rune) bool {
 			return r == ',' || r == ' '
 		})
