@@ -114,7 +114,7 @@ func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
 	return m
 }
 
-func (m Model[T]) UseCluster(connection *string, op Operation[T]) Model[T] {
+func (m Model[T]) UseCluster(connection string) Model[T] {
 	return m
 }
 
