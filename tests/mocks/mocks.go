@@ -1,11 +1,12 @@
 package e_mocks
 
 import (
-	"elemental/tests/base"
+	e_test_base "elemental/tests/base"
 )
 
 const (
 	DB_URI = "mongodb+srv://akalankaperera128:pFAnQVXE6vrbcXNk@default.ynr156r.mongodb.net/elemental"
+	// DB_URI = "mongodb+srv://shifan:VTt559)ks^#rm5+@myatlasclusteredu.edy0gtm.mongodb.net/elemental"
 	DEFAULT_DB = "elemental"
 	SECONDARY_DB = "elemental_secondary"
 	TERTIARY_DB = "elemental_tertiary"
