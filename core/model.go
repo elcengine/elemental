@@ -2,9 +2,9 @@ package elemental
 
 import (
 	"context"
-	"elemental/connection"
-	"elemental/constants"
-	"elemental/utils"
+	e_connection "elemental/connection"
+	e_constants "elemental/constants"
+	e_utils "elemental/utils"
 	"reflect"
 	"strings"
 
@@ -27,6 +27,7 @@ type Model[T any] struct {
 	upsert              bool
 	returnNew           bool
 	middleware          *middleware[T]
+	clusterOps             *ClusterOp[T]
 	temporaryConnection *string
 	temporaryDatabase   *string
 	temporaryCollection *string
@@ -106,6 +107,10 @@ func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
 	return m
 }
 
+func (m Model[T]) UseCluster(connection *string, op Operation[T]) Model[T] {
+	return m
+}
+
 func (m Model[T]) FindByID(id primitive.ObjectID) Model[T] {
 	return m.FindOne(primitive.M{"_id": id})
 }
@@ -175,4 +180,8 @@ func (m Model[T]) Select(fields ...any) Model[T] {
 		}
 	}
 	return m
+}
+
+func (m Model[T]) useCluster(connection *string, op Operation[T]) ClusterOp[T] {
+	return Cluster(&m, connection, &op)
 }
