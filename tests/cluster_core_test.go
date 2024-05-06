@@ -2,7 +2,7 @@ package e_tests
 
 import (
 	"elemental/connection"
-	// "elemental/tests/setup"
+	"elemental/tests/setup"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -19,7 +19,7 @@ func TestCoreReadPopulateOnMultipleClusters(t *testing.T) {
 	})
 	seed()
 
-	// defer e_test_setup.Teardown()
+	defer e_test_setup.Teardown()
 	
 
 	Convey("Find with populated fields on multiple clusters", t, func() {
