@@ -3,6 +3,7 @@ package e_cmd
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -51,20 +52,17 @@ func readConfigFile() config {
 	configFilePath := dir + "/elemental.json"
 	var conf config
 	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
-		fmt.Println("Config file not found. Please create a file named elemental.json in the root of your project")
-		os.Exit(1)
+		log.Fatal("Config file not found. Please create a file named elemental.json in the root of your project")
 	}
 	file, _ := os.Open(configFilePath)
 	defer file.Close()
 	decoder := json.NewDecoder(file)
 	err := decoder.Decode(&conf)
 	if err != nil {
-		fmt.Println("Failed to read config file with error:", err)
-		os.Exit(1)
+		log.Fatal("Failed to read config file with error:", err)
 	}
 	if conf.ConnectionStr == "" {
-		fmt.Println("Connection string is required in the config file")
-		os.Exit(1)
+		log.Fatal("Connection string is required in the config file")
 	}
 	if conf.MigrationsDir == "" {
 		conf.MigrationsDir = "database/migrations"
