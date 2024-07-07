@@ -37,8 +37,8 @@ func parseOperatorValue(value any, operator string) interface{} {
 		if err == nil {
 			value = time
 		} else if regexp.MustCompile(`^[0-9a-fA-F]{24}$`).MatchString(cast.ToString(value)) {
-			value, _ = primitive.ObjectIDFromHex(cast.ToString(value))
-			if value == nil {
+			value, err = primitive.ObjectIDFromHex(cast.ToString(value))
+			if err != nil {
 				value = cast.ToString(value)
 			}
 		} else {
