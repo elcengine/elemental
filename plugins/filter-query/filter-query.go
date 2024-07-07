@@ -8,12 +8,15 @@ type FilterQueryResult struct {
 	Filters     map[string]interface{}
 	Sorts       map[string]interface{}
 	Include     []string
-	Select      []string
+	Select      map[string]interface{}
 	Prepaginate bool
 }
 
 func Parse(queryString string) FilterQueryResult {
 	result := FilterQueryResult{}
+	result.Filters = make(map[string]interface{})
+	result.Sorts = make(map[string]interface{})
+	result.Select = make(map[string]interface{})
 	queries := strings.Split(queryString, "&")
 	for _, query := range queries {
 		if query == "" {
@@ -38,7 +41,13 @@ func Parse(queryString string) FilterQueryResult {
 			result.Include = append(result.Include, strings.Split(value, ",")...)
 		}
 		if strings.Contains(key, "select") {
-			result.Select = append(result.Select, strings.Split(value, ",")...)
+			for _, field := range strings.Split(value, ",") {
+				if (strings.HasPrefix(field, "-")) {
+					result.Select[field[1:]] = 0
+				} else {
+					result.Select[field] = 1
+				}
+			}
 		}
 		if strings.Contains(key, "prepaginate") {
 			result.Prepaginate = value == "true"
