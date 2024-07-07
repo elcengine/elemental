@@ -17,6 +17,9 @@ func (m Model[T]) QS(query string) Model[T] {
 	if (len(result.Include) > 0) {
 		m = m.Populate(result.Include)
 	}
+	if (len(result.SecondaryFilters) > 0) {
+		m = m.Find(result.SecondaryFilters)
+	}
 	if (len(result.Sorts) > 0) {
 		m = m.Sort(result.Sorts)
 	}

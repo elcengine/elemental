@@ -2,21 +2,25 @@ package filter_query
 
 import (
 	"strings"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type FilterQueryResult struct {
-	Filters     map[string]interface{}
-	Sorts       map[string]interface{}
-	Include     []string
-	Select      map[string]interface{}
-	Prepaginate bool
+	Filters          bson.M
+	SecondaryFilters bson.M
+	Sorts            bson.M
+	Include          []string
+	Select           bson.M
+	Prepaginate      bool
 }
 
 func Parse(queryString string) FilterQueryResult {
 	result := FilterQueryResult{}
-	result.Filters = make(map[string]interface{})
-	result.Sorts = make(map[string]interface{})
-	result.Select = make(map[string]interface{})
+	result.Filters = bson.M{}
+	result.SecondaryFilters = bson.M{}
+	result.Sorts = bson.M{}
+	result.Select = bson.M{}
 	queries := strings.Split(queryString, "&")
 	for _, query := range queries {
 		if query == "" {
@@ -28,6 +32,10 @@ func Parse(queryString string) FilterQueryResult {
 		if strings.Contains(key, "filter") {
 			filterKey := extractFieldName(key)
 			result.Filters[filterKey] = value
+		}
+		if strings.Contains(key, "secondaryFilter") {
+			filterKey := extractFieldName(key)
+			result.SecondaryFilters[filterKey] = value
 		}
 		if strings.Contains(key, "sort") {
 			sortKey := extractFieldName(key)
@@ -42,7 +50,7 @@ func Parse(queryString string) FilterQueryResult {
 		}
 		if strings.Contains(key, "select") {
 			for _, field := range strings.Split(value, ",") {
-				if (strings.HasPrefix(field, "-")) {
+				if strings.HasPrefix(field, "-") {
 					result.Select[field[1:]] = 0
 				} else {
 					result.Select[field] = 1
@@ -53,5 +61,7 @@ func Parse(queryString string) FilterQueryResult {
 			result.Prepaginate = value == "true"
 		}
 	}
+	result.Filters = mapFilters(result.Filters)
+	result.SecondaryFilters = mapFilters(result.SecondaryFilters)
 	return result
 }
