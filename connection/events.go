@@ -60,3 +60,17 @@ func On(event string, handler func(), alias ...string) {
 	}
 	eventListeners[alias[0]][event] = handler
 }
+
+// Remove a listener from a connection
+//
+// @param event - The event to remove the listener from
+//
+// @param alias - The alias of the connection to remove the listener from
+func RemoveListener(event string, alias ...string) {
+	if len(alias) == 0 {
+		alias = []string{"default"}
+	}
+	if eventListeners[alias[0]] != nil {
+		eventListeners[alias[0]][event] = nil
+	}
+}
