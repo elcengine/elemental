@@ -19,6 +19,6 @@ func Transaction(fn func(ctx mongo.SessionContext) (interface{}, error)) (interf
 }
 
 // Essentially the same as Transaction, but with an alias which points to the connection to use
-func ClientTransaction(fn func(ctx mongo.SessionContext) (interface{}, error), alias ...string) (interface{}, error) {
-	return transaction(fn, &alias[0])
+func ClientTransaction(alias string, fn func(ctx mongo.SessionContext) (interface{}, error)) (interface{}, error) {
+	return transaction(fn, &alias)
 }
