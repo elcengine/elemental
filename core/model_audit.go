@@ -47,13 +47,12 @@ var AuditModel = NewModel[Audit]("Audit", NewSchema(map[string]Field{
 
 func (m Model[T]) EnableAuditing(ctx ...context.Context) {
 	context := e_utils.DefaultCTX(ctx)
-	user := e_utils.Cast[string](context.Value(e_constants.CTXUser))
 	m.OnInsert(func(doc T) {
 		AuditModel.Create(Audit{
 			Entity:   m.Name,
 			Type:     AuditTypeInsert,
 			Document: *e_utils.ToBSONDoc(doc),
-			User:     user,
+			User:     e_utils.Cast[string](context.Value(e_constants.CTXUser)),
 		}).Exec(context)
 	}, TriggerOptions{Context: &context, Filter: &primitive.M{"ns.coll": primitive.M{"$eq": m.Collection().Name()}}})
 	m.OnUpdate(func(doc T) {
@@ -61,7 +60,7 @@ func (m Model[T]) EnableAuditing(ctx ...context.Context) {
 			Entity:   m.Name,
 			Type:     AuditTypeUpdate,
 			Document: *e_utils.ToBSONDoc(doc),
-			User:     user,
+			User:     e_utils.Cast[string](context.Value(e_constants.CTXUser)),
 		}).Exec(context)
 	}, TriggerOptions{Context: &context, Filter: &primitive.M{"ns.coll": primitive.M{"$eq": m.Collection().Name()}}})
 	m.OnDelete(func(id primitive.ObjectID) {
@@ -69,7 +68,7 @@ func (m Model[T]) EnableAuditing(ctx ...context.Context) {
 			Entity:   m.Name,
 			Type:     AuditTypeDelete,
 			Document: map[string]interface{}{"_id": id},
-			User:     user,
+			User:     e_utils.Cast[string](context.Value(e_constants.CTXUser)),
 		}).Exec(context)
 	}, TriggerOptions{Context: &context, Filter: &primitive.M{"ns.coll": primitive.M{"$eq": m.Collection().Name()}}})
 }
