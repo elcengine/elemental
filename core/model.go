@@ -70,6 +70,10 @@ func (m Model[T]) Create(doc T) Model[T] {
 	return m
 }
 
+func (m Model[T]) CreateMany(docs []T) Model[T] {
+	return m.InsertMany(docs)
+}
+
 func (m Model[T]) InsertMany(docs []T) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var documentsToInsert, detailedDocuments []interface{}
