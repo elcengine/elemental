@@ -194,8 +194,8 @@ func (m Model[T]) Max(field string, value int) Model[T] {
 	return m.setUpdateOperator("$max", primitive.M{field: value})
 }
 
-func (m Model[T]) CurrentDate(doc any) Model[T] {
-	return m.setUpdateOperator("$currentDate", doc)
+func (m Model[T]) CurrentDate(field string) Model[T] {
+	return m.setUpdateOperator("$currentDate", primitive.M{field: true})
 }
 
 func (m Model[T]) AddToSet(field string, values ...any) Model[T] {

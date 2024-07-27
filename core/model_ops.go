@@ -56,6 +56,11 @@ func (m Model[T]) ElementMatches(query primitive.M) Model[T] {
 	return m.addToFilters("$elemMatch", query)
 }
 
+func (m Model[T]) Has(value string) Model[T] {
+	query := primitive.M{"$eq": value}
+	return m.addToFilters("$elemMatch", query)
+}
+
 func (m Model[T]) Size(value int) Model[T] {
 	return m.addToFilters("$size", value)
 }
