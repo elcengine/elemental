@@ -43,5 +43,15 @@ func (m Model[T]) Exec(ctx ...context.Context) any {
 			return results
 		}
 	}
+	if m.schedule != nil {
+		id, err := cron.AddFunc(*m.schedule, func() {
+			m.executor(m, e_utils.DefaultCTX(ctx))
+		})
+		if err != nil {
+			panic(errors.New("failed to schedule query"))
+		}
+		cron.Start()
+		return id
+	}
 	return m.executor(m, e_utils.DefaultCTX(ctx))
 }

@@ -30,6 +30,7 @@ type Model[T any] struct {
 	temporaryConnection *string
 	temporaryDatabase   *string
 	temporaryCollection *string
+	schedule            *string
 }
 
 var Models = make(map[string]any)
