@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/samber/lo"
+	"github.com/spf13/cast"
 )
 
 func (m Model[T]) Where(field string, equals ...any) Model[T] {
@@ -51,7 +52,7 @@ func (m Model[T]) Exec(ctx ...context.Context) any {
 			panic(errors.New("failed to schedule query"))
 		}
 		cron.Start()
-		return id
+		return cast.ToInt(id)
 	}
 	return m.executor(m, e_utils.DefaultCTX(ctx))
 }
