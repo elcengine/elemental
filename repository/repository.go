@@ -2,7 +2,7 @@ package e_repository
 
 import (
 	"context"
-	"elemental/connection"
+	"github.com/elcengine/elemental/connection"
 	"errors"
 	"fmt"
 	"log"

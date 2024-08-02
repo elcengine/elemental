@@ -1,7 +1,7 @@
 package e_tests
 
 import (
-	"elemental/tests/setup"
+	"github.com/elcengine/elemental/tests/setup"
 	"fmt"
 	"testing"
 

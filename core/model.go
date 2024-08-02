@@ -2,9 +2,9 @@ package elemental
 
 import (
 	"context"
-	"elemental/connection"
-	"elemental/constants"
-	"elemental/utils"
+	"github.com/elcengine/elemental/connection"
+	"github.com/elcengine/elemental/constants"
+	"github.com/elcengine/elemental/utils"
 	"reflect"
 	"strings"
 

@@ -2,7 +2,7 @@ package elemental
 
 import (
 	"context"
-	"elemental/utils"
+	"github.com/elcengine/elemental/utils"
 	"reflect"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"

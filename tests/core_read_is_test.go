@@ -1,8 +1,8 @@
 package e_tests
 
 import (
-	"elemental/tests/mocks"
-	"elemental/tests/setup"
+	"github.com/elcengine/elemental/tests/mocks"
+	"github.com/elcengine/elemental/tests/setup"
 	"testing"
 
 	"github.com/samber/lo"

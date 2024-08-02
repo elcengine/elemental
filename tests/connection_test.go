@@ -1,10 +1,10 @@
 package e_tests
 
 import (
-	"elemental/connection"
-	"elemental/constants"
-	"elemental/tests/mocks"
-	"elemental/tests/setup"
+	"github.com/elcengine/elemental/connection"
+	"github.com/elcengine/elemental/constants"
+	"github.com/elcengine/elemental/tests/mocks"
+	"github.com/elcengine/elemental/tests/setup"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"

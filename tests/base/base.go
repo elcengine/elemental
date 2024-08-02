@@ -1,7 +1,7 @@
 package e_test_base
 
 import (
-	"elemental/core"
+	"github.com/elcengine/elemental/core"
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"

@@ -1,7 +1,7 @@
 package main
 
 import (
-  "elemental/cmd"
+  "github.com/elcengine/elemental/cmd"
 )
 
 func main() {

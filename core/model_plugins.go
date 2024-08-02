@@ -1,6 +1,6 @@
 package elemental
 
-import filter_query "elemental/plugins/filter-query"
+import filter_query "github.com/elcengine/elemental/plugins/filter-query"
 
 // QS allows you to construct a MongoDB query directly from the params in a request.
 //

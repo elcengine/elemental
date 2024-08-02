@@ -1,9 +1,9 @@
 package e_tests
 
 import (
-	"elemental/core"
-	"elemental/tests/mocks"
-	"elemental/tests/setup"
+	"github.com/elcengine/elemental/core"
+	"github.com/elcengine/elemental/tests/mocks"
+	"github.com/elcengine/elemental/tests/setup"
 	"fmt"
 	"reflect"
 	"testing"

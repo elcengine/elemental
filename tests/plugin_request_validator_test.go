@@ -4,7 +4,7 @@ import (
 	// "errors"
 	"testing"
 
-	"elemental/plugins/request-validator"
+	"github.com/elcengine/elemental/plugins/request-validator"
 )
 
 type UserValidation struct {

@@ -1,21 +1,20 @@
-module elemental
+module github.com/elcengine/elemental
 
 go 1.21.3
 
 require (
 	github.com/creasty/defaults v1.7.0
 	github.com/gertd/go-pluralize v0.2.1
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/samber/lo v1.39.0
 	github.com/smartystreets/goconvey v1.8.1
+	github.com/spf13/cast v1.6.0
 	github.com/spf13/cobra v1.8.0
 	go.mongodb.org/mongo-driver v1.14.0
 )
 
 require (
-	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/robfig/cron/v3 v3.0.1 // indirect
-	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 )
 

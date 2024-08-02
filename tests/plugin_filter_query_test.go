@@ -1,7 +1,7 @@
 package e_tests
 
 import (
-	filter_query "elemental/plugins/filter-query"
+	filter_query "github.com/elcengine/elemental/plugins/filter-query"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"

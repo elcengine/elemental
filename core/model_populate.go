@@ -1,7 +1,7 @@
 package elemental
 
 import (
-	"elemental/utils"
+	"github.com/elcengine/elemental/utils"
 	"reflect"
 	"strings"
 

@@ -1,7 +1,7 @@
 package elemental
 
 import (
-	e_utils "elemental/utils"
+	e_utils "github.com/elcengine/elemental/utils"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

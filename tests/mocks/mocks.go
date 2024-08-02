@@ -1,7 +1,7 @@
 package e_mocks
 
 import (
-	"elemental/tests/base"
+	"github.com/elcengine/elemental/tests/base"
 )
 
 const (

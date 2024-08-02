@@ -2,8 +2,8 @@ package elemental
 
 import (
 	"context"
-	"elemental/constants"
-	"elemental/utils"
+	"github.com/elcengine/elemental/constants"
+	"github.com/elcengine/elemental/utils"
 	"reflect"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"

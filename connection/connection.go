@@ -2,8 +2,8 @@ package e_connection
 
 import (
 	"context"
-	"elemental/constants"
-	"elemental/utils"
+	"github.com/elcengine/elemental/constants"
+	"github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"

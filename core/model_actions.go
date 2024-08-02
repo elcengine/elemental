@@ -2,8 +2,8 @@ package elemental
 
 import (
 	"context"
-	"elemental/connection"
-	"elemental/utils"
+	"github.com/elcengine/elemental/connection"
+	"github.com/elcengine/elemental/utils"
 	"reflect"
 
 	"go.mongodb.org/mongo-driver/mongo"

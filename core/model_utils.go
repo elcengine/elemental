@@ -2,7 +2,7 @@ package elemental
 
 import (
 	"context"
-	"elemental/utils"
+	"github.com/elcengine/elemental/utils"
 	"reflect"
 
 	"github.com/samber/lo"

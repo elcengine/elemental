@@ -2,8 +2,8 @@ package elemental
 
 import (
 	"context"
-	"elemental/connection"
-	"elemental/utils"
+	"github.com/elcengine/elemental/connection"
+	"github.com/elcengine/elemental/utils"
 	"github.com/creasty/defaults"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

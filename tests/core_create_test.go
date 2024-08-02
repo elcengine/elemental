@@ -1,10 +1,10 @@
 package e_tests
 
 import (
-	"elemental/connection"
-	"elemental/tests/base"
-	"elemental/tests/mocks"
-	"elemental/tests/setup"
+	"github.com/elcengine/elemental/connection"
+	"github.com/elcengine/elemental/tests/base"
+	"github.com/elcengine/elemental/tests/mocks"
+	"github.com/elcengine/elemental/tests/setup"
 	"testing"
 	"time"
 

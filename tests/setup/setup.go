@@ -2,9 +2,9 @@ package e_test_setup
 
 import (
 	"context"
-	"elemental/connection"
-	"elemental/tests/base"
-	"elemental/tests/mocks"
+	"github.com/elcengine/elemental/connection"
+	"github.com/elcengine/elemental/tests/base"
+	"github.com/elcengine/elemental/tests/mocks"
 )
 
 func Connection() {

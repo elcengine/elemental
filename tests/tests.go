@@ -1,7 +1,7 @@
 package e_tests
 
 import (
-	"elemental/tests/base"
+	"github.com/elcengine/elemental/tests/base"
 	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 	"time"

@@ -2,7 +2,7 @@ package elemental
 
 import (
 	"context"
-	"elemental/connection"
+	"github.com/elcengine/elemental/connection"
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/mongo"
 )
