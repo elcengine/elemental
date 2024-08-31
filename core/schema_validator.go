@@ -1,9 +1,11 @@
 package elemental
 
 import (
-	"github.com/elcengine/elemental/utils"
 	"fmt"
 	"reflect"
+	"strings"
+
+	"github.com/elcengine/elemental/utils"
 
 	"regexp"
 	"time"
@@ -42,6 +44,7 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 	for field, definition := range schema.Definitions {
 		reflectedField, _ := (*reflectedEntityType).FieldByName(field)
 		fieldBsonName := reflectedField.Tag.Get("bson")
+		fieldBsonName = strings.Replace(fieldBsonName, ",omitempty", "", -1)
 		if e_utils.IsEmpty(entityToInsert[fieldBsonName]) {
 			if definition.Required {
 				panic(fmt.Sprintf("Field %s is required", field))
@@ -51,7 +54,7 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 				detailedEntity[fieldBsonName] = definition.Default
 			}
 		}
-		if definition.Type != reflect.Invalid && reflectedField.Type.Kind() != definition.Type {
+		if definition.Type != reflect.Invalid && ((reflectedField.Type.Kind() == reflect.Ptr && reflectedField.Type.Elem().Kind() != definition.Type) || (reflectedField.Type.Kind() != reflect.Ptr && reflectedField.Type.Kind() != definition.Type)) {
 			panic(fmt.Sprintf("Field %s has an invalid type. It must be of type %s", field, definition.Type.String()))
 		}
 		if definition.Type == reflect.Struct && definition.Schema != nil {
