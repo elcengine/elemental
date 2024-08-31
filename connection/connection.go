@@ -35,11 +35,17 @@ func Connect(opts ConnectionOptions) mongo.Client {
 			panic(e_constants.ErrURIRequired)
 		}
 	}
-	cs := lo.Must(connstring.ParseAndValidate(clientOpts.GetURI()))
+	cs, err := connstring.ParseAndValidate(clientOpts.GetURI())
+	if err != nil {
+		panic(err)
+	}
 	defaultDatabases[opts.Alias] = cs.Database
 	ctx, cancel := context.WithTimeout(context.Background(), *e_utils.Coalesce(clientOpts.ConnectTimeout, lo.ToPtr(connectionTimeout)))
 	defer cancel()
-	client := lo.Must(mongo.Connect(ctx, clientOpts))
+	client, err := mongo.Connect(ctx, clientOpts)
+	if err != nil {
+		panic(err)
+	}
 	e_utils.Must(client.Ping(ctx, readpref.Primary()))
 	clients[opts.Alias] = *client
 	return *client

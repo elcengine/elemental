@@ -40,9 +40,12 @@ func (m Model[T]) on(event triggerType, f func(change primitive.M), opts ...Trig
 			}
 		}
 		filters["operationType"] = event
-		cs := lo.Must(m.Collection().Watch(ctx, mongo.Pipeline{
+		cs, err := m.Collection().Watch(ctx, mongo.Pipeline{
 			bson.D{{Key: "$match", Value: filters}},
-		}, options.ChangeStream().SetFullDocument(options.UpdateLookup)))
+		}, options.ChangeStream().SetFullDocument(options.UpdateLookup))
+		if err != nil {
+			panic(err)
+		}
 		defer cs.Close(ctx)
 		for cs.Next(ctx) {
 			var changeDoc bson.M

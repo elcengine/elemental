@@ -39,7 +39,14 @@ func (m Model[T]) Exec(ctx ...context.Context) any {
 	if m.executor == nil {
 		m.executor = func(m Model[T], ctx context.Context) any {
 			var results []T
-			e_utils.Must(lo.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
+			cursor, err := m.Collection().Aggregate(ctx, m.pipeline)
+			if err != nil {
+				panic(err)
+			}
+			err = cursor.All(ctx, &results)
+			if err != nil {
+				panic(err)
+			}
 			m.checkConditionsAndPanic(results)
 			return results
 		}

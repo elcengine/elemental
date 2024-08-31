@@ -2,8 +2,6 @@ package elemental
 
 import (
 	"context"
-	"github.com/elcengine/elemental/utils"
-
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -39,7 +37,14 @@ func (m Model[T]) Paginate(page, limit int64) Model[T] {
 	}}}}
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var results []facetResult[T]
-		e_utils.Must(lo.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
+		cursor, err := m.Collection().Aggregate(ctx, m.pipeline)
+		if err != nil {
+			panic(err)
+		}
+		err = cursor.All(ctx, &results)
+		if err != nil {
+			panic(err)
+		}
 		totalDocs := results[0].Count[0]["count"]
 		totalPages := (totalDocs + limit - 1) / limit
 		var prevPage, nextPage *int64
