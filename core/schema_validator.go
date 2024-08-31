@@ -44,7 +44,7 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 	for field, definition := range schema.Definitions {
 		reflectedField, _ := (*reflectedEntityType).FieldByName(field)
 		fieldBsonName := reflectedField.Tag.Get("bson")
-		fieldBsonName = strings.Replace(fieldBsonName, ",omitempty", "", -1)
+		fieldBsonName = cleanBSONTag(fieldBsonName)
 		if e_utils.IsEmpty(entityToInsert[fieldBsonName]) {
 			if definition.Required {
 				panic(fmt.Sprintf("Field %s is required", field))
@@ -87,6 +87,10 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 		}
 	}
 	return entityToInsert, detailedEntity
+}
+
+func cleanBSONTag(tag string) string {
+	return strings.Replace(tag, ",omitempty", "", -1)
 }
 
 func SetDefault[T any](entity *bson.M, field string, defaultValue T) {

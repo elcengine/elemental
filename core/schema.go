@@ -42,7 +42,7 @@ func (s Schema) syncIndexes(reflectedBaseType reflect.Type) {
 		if (definition.Index != options.IndexOptions{}) {
 			reflectedField, _ := reflectedBaseType.FieldByName(field)
 			indexModel := mongo.IndexModel{
-				Keys:    bson.D{{Key: reflectedField.Tag.Get("bson"), Value: e_utils.Coalesce(definition.IndexOrder, 1)}},
+				Keys:    bson.D{{Key: cleanBSONTag(reflectedField.Tag.Get("bson")), Value: e_utils.Coalesce(definition.IndexOrder, 1)}},
 				Options: &definition.Index,
 			}
 			collection.Indexes().CreateOne(context.TODO(), indexModel)

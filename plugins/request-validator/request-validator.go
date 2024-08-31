@@ -15,7 +15,7 @@ type User struct {
 
 // check object tags and validate agaist database
 
-func ValidateStructWithDB(input interface{}) error {
+func Validate(input interface{}) error {
 	v := reflect.ValueOf(input)
 	for i := 0; i < v.NumField(); i++ {
 		field := v.Type().Field(i)
