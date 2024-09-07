@@ -35,6 +35,9 @@ type Model[T any] struct {
 
 var Models = make(map[string]any)
 
+// A Predefined model with type any which can be used to access the Elemental APIs if you don't want to define a schema.
+var NativeModel = NewModel[any]("ElementalNativeModel", NewSchema(map[string]Field{}))
+
 func NewModel[T any](name string, schema Schema) Model[T] {
 	if _, ok := Models[name]; ok {
 		return e_utils.Cast[Model[T]](Models[name])
