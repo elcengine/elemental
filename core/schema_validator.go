@@ -16,6 +16,9 @@ import (
 )
 
 func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Type, defaults ...bool) (bson.M, bson.M) {
+	if doc != nil && reflect.TypeOf(doc).Elem().Kind() != reflect.Struct {
+		return *e_utils.ToBSONDoc(doc), *e_utils.ToBSONDoc(doc)
+	}
 	var entityToInsert bson.M
 	if reflectedEntityType != nil {
 		entityToInsert = e_utils.Cast[bson.M](doc)

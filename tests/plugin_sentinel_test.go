@@ -2,6 +2,8 @@ package e_tests
 
 import (
 	"testing"
+
+	elemental "github.com/elcengine/elemental/core"
 	sentinel "github.com/elcengine/elemental/plugins/sentinel"
 	e_mocks "github.com/elcengine/elemental/tests/mocks"
 	e_test_setup "github.com/elcengine/elemental/tests/setup"
@@ -16,12 +18,11 @@ func TestRequestValidator(t *testing.T) {
 
 	Convey("Basic validations", t, func() {
 
-		type CreateUserDTO struct {
-			Name string `augmented_validate:"unique=users" json:"name"`
-			Age  int    `validate:"max=150,min=18" json:"age"`
-		}
-
 		Convey("Inherited validations", func() {
+			type CreateUserDTO struct {
+				Name string `augmented_validate:"unique=users" json:"name"`
+				Age  int    `validate:"max=150,min=18" json:"age"`
+			}
 			request := CreateUserDTO{
 				Name: e_mocks.Eredin.Name,
 				Age:  10,
@@ -31,6 +32,10 @@ func TestRequestValidator(t *testing.T) {
 		})
 
 		Convey("Unique document validation", func() {
+			type CreateUserDTO struct {
+				Name string `augmented_validate:"unique=users" json:"name"`
+				Age  int    `validate:"max=150,min=18" json:"age"`
+			}
 			Convey("Should return error if document already exists", func() {
 				request := CreateUserDTO{
 					Name: e_mocks.Caranthir.Name,
@@ -86,6 +91,42 @@ func TestRequestValidator(t *testing.T) {
 				}).Exec()
 				err := sentinel.Legitimize(request)
 				So(err.Error(), ShouldEqual, "Key: 'CreateUserDTOWithCustomDatabase.Name' Error:Field validation for 'Name' failed on the 'unique' tag")
+			})
+		})
+
+		Convey("Exists document validation", func() {
+			type CreateUserDTO struct {
+				Name       string `json:"name"`
+				Age        int    `validate:"max=150,min=18" json:"age"`
+				Occupation string `augmented_validate:"exists=occupations" json:"occupation"`
+			}
+			elemental.NativeModel.SetCollection("occupations").InsertMany([]any{
+				map[string]any{
+					"occupation": "Witcher",
+					"income":     "High",
+				},
+				map[string]any{
+					"occupation": "Mage",
+					"income":     "High",
+				},
+			}).Exec()
+			Convey("Should return error if document doesn't already exist", func() {
+				request := CreateUserDTO{
+					Name:       e_mocks.Caranthir.Name,
+					Age:        100,
+					Occupation: "Druid",
+				}
+				err := sentinel.Legitimize(request)
+				So(err.Error(), ShouldEqual, "Key: 'CreateUserDTO.Occupation' Error:Field validation for 'Occupation' failed on the 'exists' tag")
+			})
+			Convey("Should not return error if document exists", func() {
+				request := CreateUserDTO{
+					Name: "Foltest",
+					Age:  30,
+					Occupation: "Witcher",
+				}
+				err := sentinel.Legitimize(request)
+				So(err, ShouldBeNil)
 			})
 		})
 	})
