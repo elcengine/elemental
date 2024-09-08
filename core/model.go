@@ -2,11 +2,12 @@ package elemental
 
 import (
 	"context"
-	"github.com/elcengine/elemental/connection"
-	"github.com/elcengine/elemental/constants"
-	"github.com/elcengine/elemental/utils"
 	"reflect"
 	"strings"
+
+	e_connection "github.com/elcengine/elemental/connection"
+	e_constants "github.com/elcengine/elemental/constants"
+	e_utils "github.com/elcengine/elemental/utils"
 
 	"github.com/gertd/go-pluralize"
 	"github.com/samber/lo"
@@ -31,6 +32,8 @@ type Model[T any] struct {
 	temporaryDatabase   *string
 	temporaryCollection *string
 	schedule            *string
+	softDeleteEnabled   bool
+	deletedAtFieldName  string
 }
 
 var Models = make(map[string]any)
@@ -113,13 +116,21 @@ func (m Model[T]) Find(query ...primitive.M) Model[T] {
 		m.checkConditionsAndPanic(results)
 		return results
 	}
-	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}})
+	q := e_utils.DefaultQuery(query...)
+	if m.softDeleteEnabled {
+		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
+	}
+	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: q}})
 	return m
 }
 
 func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
+	q := e_utils.DefaultQuery(query...)
+	if m.softDeleteEnabled {
+		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
+	}
 	m.pipeline = append(m.pipeline,
-		bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}},
+		bson.D{{Key: "$match", Value: q}},
 		bson.D{{Key: "$limit", Value: 1}},
 	)
 	m.executor = func(m Model[T], ctx context.Context) any {
@@ -142,11 +153,19 @@ func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
 }
 
 func (m Model[T]) FindByID(id primitive.ObjectID) Model[T] {
-	return m.FindOne(primitive.M{"_id": id})
+	q := primitive.M{"_id": id}
+	if m.softDeleteEnabled {
+		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
+	}
+	return m.FindOne(q)
 }
 
 func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
-	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}}, bson.D{{Key: "$count", Value: "count"}})
+	q := e_utils.DefaultQuery(query...)
+	if m.softDeleteEnabled {
+		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
+	}
+	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: q}}, bson.D{{Key: "$count", Value: "count"}})
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var results []map[string]any
 		cursor, err := m.Collection().Aggregate(ctx, m.pipeline)
@@ -163,7 +182,11 @@ func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
 }
 
 func (m Model[T]) Distinct(field string, query ...primitive.M) Model[T] {
-	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: e_utils.DefaultQuery(query...)}}, bson.D{{Key: "$group", Value: primitive.M{"_id": "$" + field}}})
+	q := e_utils.DefaultQuery(query...)
+	if m.softDeleteEnabled {
+		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
+	}
+	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: q}}, bson.D{{Key: "$group", Value: primitive.M{"_id": "$" + field}}})
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var results []map[string]any
 		cursor, err := m.Collection().Aggregate(ctx, m.pipeline)
