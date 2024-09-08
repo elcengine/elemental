@@ -178,6 +178,6 @@ func (m Model[T]) Select(fields ...any) Model[T] {
 	return m
 }
 
-func (m Model[T]) UseCluster(connection *string, op Operation[T]) ClusterOp[T] {
-	return Cluster(&m, connection, &op)
+func (m Model[T]) UseCluster(connection *string) ClusterOp[T] {
+	return Cluster(&m, connection)
 }
