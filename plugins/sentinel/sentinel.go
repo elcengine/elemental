@@ -3,11 +3,13 @@ package sentinel
 import (
 	"fmt"
 	"reflect"
+	"strings"
+
 	elemental "github.com/elcengine/elemental/core"
+	e_utils "github.com/elcengine/elemental/utils"
 	"github.com/go-playground/validator/v10"
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"strings"
 )
 
 var validate = validator.New()
@@ -19,6 +21,9 @@ func Legitimize(input interface{}) error {
 		return err
 	}
 	v := reflect.ValueOf(input)
+
+	inputMap := e_utils.ToMap(input)
+
 	for i := 0; i < v.NumField(); i++ {
 		field := v.Type().Field(i)
 		value := v.Field(i).Interface()
@@ -35,7 +40,9 @@ func Legitimize(input interface{}) error {
 			if len(definitionSections) > 1 {
 				fieldName = definitionSections[1]
 			}
-			augmentedQuery := func(q elemental.Model[any]) elemental.Model[any] {
+			reference := field.Tag.Get("ref")
+
+			augmentedQuery := func(q elemental.Model[map[string]any]) elemental.Model[map[string]any] {
 				database := field.Tag.Get("database")
 				if database != "" {
 					q = q.SetDatabase(database)
@@ -54,6 +61,20 @@ func Legitimize(input interface{}) error {
 				return q
 			}
 
+			getReferenceField := func() string {
+				if reference != "" {
+					return reference
+				}
+				return fieldName
+			}
+
+			getReferenceFieldValue := func() interface{} {
+				if reference != "" {
+					return inputMap[reference]
+				}
+				return value
+			}
+
 			switch tag {
 			case "unique":
 				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{fieldName: value})).Exec()
@@ -65,10 +86,39 @@ func Legitimize(input interface{}) error {
 				if doc == nil {
 					return fmt.Errorf("Key: '%s.%s' Error:Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
 				}
+			case "greater_than":
+				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{getReferenceField(): getReferenceFieldValue()})).Exec()
+				if doc == nil || e_utils.LTE(value, e_utils.Cast[map[string]any](doc)[fieldName]) {
+					return fmt.Errorf("Key: '%s.%s' Error:Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+				}
+			case "greater_than_or_equal_to":
+				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{getReferenceField(): getReferenceFieldValue()})).Exec()
+				if doc == nil || e_utils.LT(value, e_utils.Cast[map[string]any](doc)[fieldName]) {
+					return fmt.Errorf("Key: '%s.%s' Error:Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+				}
+			case "less_than":
+				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{getReferenceField(): getReferenceFieldValue()})).Exec()
+				if doc == nil || e_utils.GTE(value, e_utils.Cast[map[string]any](doc)[fieldName]) {
+					return fmt.Errorf("Key: '%s.%s' Error:Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+				}
+			case "less_than_or_equal_to":
+				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{getReferenceField(): getReferenceFieldValue()})).Exec()
+				if doc == nil || e_utils.GT(value, e_utils.Cast[map[string]any](doc)[fieldName]) {
+					return fmt.Errorf("Key: '%s.%s' Error:Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+				}
+			case "equals":
+				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{getReferenceField(): getReferenceFieldValue()})).Exec()
+				if doc == nil || !e_utils.EQ(value, e_utils.Cast[map[string]any](doc)[fieldName]) {
+					return fmt.Errorf("Key: '%s.%s' Error:Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+				}
+			case "not_equals":
+				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{getReferenceField(): getReferenceFieldValue()})).Exec()
+				if doc != nil && e_utils.EQ(value, e_utils.Cast[map[string]any](doc)[fieldName]) {
+					return fmt.Errorf("Key: '%s.%s' Error:Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+				}
 			default:
 				return fmt.Errorf("Unknown augmented validation tag: %s", tag)
 			}
-
 		}
 	}
 	return nil
