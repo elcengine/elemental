@@ -3,6 +3,7 @@ package e_tests
 import (
 	// "fmt"
 	"fmt"
+	"reflect"
 	"testing"
 
 	e_connection "elemental/connection"
@@ -66,15 +67,6 @@ func TestCluster(t *testing.T) {
 			},
 		}).Exec()
 
-		// elemental.UseCluster(BestiaryModel, lo.ToPtr("second"), func(c *elemental.ClusterOp[e_test_base.Bestiary]) {
-		// 	c.Populate("second", []string{"monster", "kingdom"})
-		// }).Exec()
-		// (lo.ToPtr("second"),
-		// 	func(c *elemental.ClusterOp[e_test_base.Bestiary]) {
-		// 		c.Populate("second", )
-		// 	},
-		// ).Exec()
-
 		Convey("Populate a with multiple calls", func() {
 			bestiary := BestiaryModel.UseCluster(lo.ToPtr("second")).Exec().([]any)
 			So(bestiary, ShouldHaveLength, 3)
@@ -128,8 +120,13 @@ func TestClusterWithID(t *testing.T) {
 			},
 		}).Exec().([]Monster)
 
+		fmt.Printf("Monster ID's set inside TestClusterWithID\n")
+		for i, monster := range monsters {
+			fmt.Printf("Monster %d ID: %s\n", i, monster.ID)
+		}
+
 		BestiaryWithIDModel.SetConnection("second")
-		BestiaryWithIDModel.InsertMany([]BestiaryWithID{
+		beasts := BestiaryWithIDModel.InsertMany([]BestiaryWithID{
 			{
 				MonsterID: string(monsters[0].ID.String()),
 			},
@@ -139,24 +136,26 @@ func TestClusterWithID(t *testing.T) {
 			{
 				MonsterID: string(monsters[2].ID.String()),
 			},
-		}).Exec()
+		}).Exec().([]BestiaryWithID)
 
-		// elemental.UseCluster(BestiaryModel, lo.ToPtr("second"), func(c *elemental.ClusterOp[e_test_base.Bestiary]) {
-		// 	c.Populate("second", []string{"monster", "kingdom"})
-		// }).Exec()
-		// (lo.ToPtr("second"),
-		// 	func(c *elemental.ClusterOp[e_test_base.Bestiary]) {
-		// 		c.Populate("second", )
-		// 	},
-		// ).Exec()
+		// fmt.Printf("Monster ID's set inside TestClusterWithID\n")
+		for i, beast := range beasts {
+			fmt.Printf("Beast %d ID: %s\n", i, beast.ID)
+		}
 
 		Convey("Populate a with multiple calls", func() {
-			bestiary := BestiaryWithIDModel.UseCluster(lo.ToPtr("second")).PopulateOp(MonsterModel).Exec().([]BestiaryWithID)
-			So(bestiary, ShouldHaveLength, 3)
-			fmt.Printf("\nMonsterID: %s\n",bestiary[0].MonsterID)
-			fmt.Printf("\nMonsterID: %s\n",bestiary[1].MonsterID)
-			fmt.Printf("\nMonsterID: %s\n",bestiary[2].MonsterID)
-			// So(bestiary[0].MonsterID, ShouldEqual, "Katakan")
+			bestiary := BestiaryWithIDModel.FindByID(beasts[0].ID).UseCluster(lo.ToPtr("second")).PopulateOp(MonsterModel).Exec()
+			So(bestiary, ShouldNotBeNil)
+			// fmt.Printf("\nMonsterID: %s\n",bestiary[0].MonsterID)
+			// fmt.Printf("\nMonsterID: %s\n",bestiary[1].MonsterID)
+			// fmt.Printf("\nMonsterID: %s\n",bestiary[2].MonsterID)
+
+			v := reflect.ValueOf(bestiary)
+			m := v.FieldByName("Monster")
+			fmt.Printf("Monster: %v\n",m)
+
+			fmt.Println()
+			// fmt.Printf("Monster Name: %s\n",bestiary.Monster.Name)
 		})
 	})
 }

@@ -62,7 +62,7 @@ type Bestiary struct {
 type BestiaryWithID struct {
 	ID        primitive.ObjectID `json:"_id" bson:"_id"`
 	MonsterID string             `json:"monster_id" bson:"monster_id"`
-	Monster   *Monster           `json:"monster" bson:"monster"`
+	Monster   *Monster           `json:"monster,omitempty" bson:"monster,omitempty"`
 }
 
 var DefaultAge = 18
