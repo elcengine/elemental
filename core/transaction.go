@@ -2,9 +2,6 @@ package elemental
 
 import (
 	"context"
-	"fmt"
-	"sync"
-
 	"github.com/elcengine/elemental/connection"
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -29,16 +26,11 @@ func ClientTransaction(alias string, fn func(ctx mongo.SessionContext) (interfac
 	return transaction(fn, &alias)
 }
 
-func TransactionBatch(queries ...Model[any]) []interface{} {
-	var wg sync.WaitGroup
-	var mu sync.Mutex
-	var sessions []mongo.Session
+func TransactionBatch(queries ...Model[any]) []interface{} {	var sessions []mongo.Session
 	var results []interface{}
 	var errCount int
 	for _, query := range queries {
-		wg.Add(1)
-		go func(q Model[any]) {
-			defer wg.Done()
+		 func(q Model[any]) {
 			connection, _ := lo.Coalesce(lo.FromPtr(q.temporaryConnection), q.Schema.Options.Connection)
 			session, err := lo.ToPtr(e_connection.GetConnection(connection)).StartSession()
 			if err != nil {
@@ -47,16 +39,13 @@ func TransactionBatch(queries ...Model[any]) []interface{} {
 			sessions = append(sessions, session)
 			session.StartTransaction()
 			err = mongo.WithSession(context.Background(), session, func(sessionCtx mongo.SessionContext) error {
-				mu.Lock()
 				lo.TryCatch(func() error {
 					result := q.Exec(sessionCtx)
 					results = append(results, result)
 					return nil
 				}, func() {
-					fmt.Println("Error in transaction")
 					errCount++
 				})
-				mu.Unlock()
 				return nil
 			})
 			if err != nil {
@@ -64,19 +53,13 @@ func TransactionBatch(queries ...Model[any]) []interface{} {
 			}
 		}(query)
 	}
-	wg.Wait()
 	for _, session := range sessions {
-		wg.Add(1)
-		go func(s mongo.Session) {
-			defer wg.Done()
-			if errCount > 0 {
-				s.AbortTransaction(context.Background())
-			} else {
-				s.CommitTransaction(context.Background())
-			}
-			s.EndSession(context.Background())
-		}(session)
+		if errCount > 0 {
+			session.AbortTransaction(context.Background())
+		} else {
+			session.CommitTransaction(context.Background())
+		}
+		session.EndSession(context.Background())
 	}
-	wg.Wait()
 	return results
 }

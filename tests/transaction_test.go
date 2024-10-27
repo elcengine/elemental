@@ -16,6 +16,8 @@ func TestTransaction(t *testing.T) {
 
 	defer e_test_setup.Teardown()
 
+	UserModel.SyncIndexes()
+
 	Convey("Batch transaction", t, func() {
 		Convey("Between 2 databases within the same connection", func() {
 			Convey("Should be able to insert into both databases", func() {
@@ -23,32 +25,32 @@ func TestTransaction(t *testing.T) {
 					UserModel.Create(User{
 						Name: "Yennefer",
 					}).FlexibleClone(),
-					UserModel.Create(User{
+					UserModel.SetDatabase(e_mocks.SECONDARY_DB).Create(User{
 						Name: "Triss",
-					}).SetDatabase(e_mocks.SECONDARY_DB).FlexibleClone(),
+					}).FlexibleClone(),
 				)
 				yennefer := UserModel.FindOne().Where("name", "Yennefer").Exec()
 				So(yennefer, ShouldNotBeNil)
-				triss := UserModel.FindOne().SetDatabase(e_mocks.SECONDARY_DB).Where("name", "Triss").Exec()
+				triss := UserModel.SetDatabase(e_mocks.SECONDARY_DB).FindOne().Where("name", "Triss").Exec()
 				So(triss, ShouldNotBeNil)
 			})
-			// Convey("Should rollback if one of the operations fail", func() {
-			// 	elemental.TransactionBatch(
-			// 		UserModel.Create(User{
-			// 			Name: "Eskel",
-			// 		}).FlexibleClone(),
-			// 		UserModel.Create(User{
-			// 			Name: "Eredin",
-			// 		}).SetDatabase(e_mocks.SECONDARY_DB).FlexibleClone(),
-			// 		UserModel.Create(User{
-			// 			Name: "Eredin",
-			// 		}).SetDatabase(e_mocks.SECONDARY_DB).FlexibleClone(),
-			// 	)
-			// 	eskel := UserModel.FindOne().Where("name", "Eskel").Exec().(User)
-			// 	So(eskel, ShouldBeNil)
-			// 	eredin := UserModel.FindOne().SetDatabase(e_mocks.SECONDARY_DB).Where("name", "Eredin").Exec().(User)
-			// 	So(eredin, ShouldBeNil)
-			// })
+			Convey("Should rollback if one of the operations fail", func() {
+				elemental.TransactionBatch(
+					UserModel.Create(User{
+						Name: "Eskel",
+					}).FlexibleClone(),
+					UserModel.Create(User{
+						Name: "Eskel",
+					}).FlexibleClone(),
+					UserModel.SetDatabase(e_mocks.SECONDARY_DB).Create(User{
+						Name: "Eredin",
+					}).FlexibleClone(),
+				)
+				eskel := UserModel.FindOne().Where("name", "Eskel").Exec()
+				So(eskel, ShouldBeNil)
+				eredin := UserModel.FindOne().SetDatabase(e_mocks.SECONDARY_DB).Where("name", "Eredin").Exec()
+				So(eredin, ShouldBeNil)
+			})
 		})
 	})
 }
