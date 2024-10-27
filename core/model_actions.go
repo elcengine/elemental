@@ -2,9 +2,11 @@ package elemental
 
 import (
 	"context"
+	"reflect"
+
 	"github.com/elcengine/elemental/connection"
 	"github.com/elcengine/elemental/utils"
-	"reflect"
+	"github.com/samber/lo"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -25,7 +27,7 @@ func (m Model[T]) Ping(ctx ...context.Context) error {
 
 func (m Model[T]) SyncIndexes(ctx ...context.Context) {
 	var sample [0]T
-	m.Schema.syncIndexes(reflect.TypeOf(sample).Elem())
+	m.Schema.syncIndexes(reflect.TypeOf(sample).Elem(), lo.FromPtr(m.temporaryDatabase), lo.FromPtr(m.temporaryConnection), lo.FromPtr(m.temporaryCollection))
 }
 
 func (m Model[T]) DropIndexes(ctx ...context.Context) {
@@ -39,17 +41,20 @@ func (m Model[T]) Validate(doc T) {
 // Sets a temporary connection for this model. This connection will be used for the next operation only.
 func (m Model[T]) SetConnection(connection string) Model[T] {
 	m.temporaryConnection = &connection
+	go m.SyncIndexes()
 	return m
 }
 
 // Sets a temporary database for this model. This database will be used for the next operation only.
 func (m Model[T]) SetDatabase(database string) Model[T] {
 	m.temporaryDatabase = &database
+	go m.SyncIndexes()
 	return m
 }
 
 // Sets a temporary collection for this model. This collection will be used for the next operation only.
 func (m Model[T]) SetCollection(collection string) Model[T] {
 	m.temporaryCollection = &collection
+	go m.SyncIndexes()
 	return m
 }
