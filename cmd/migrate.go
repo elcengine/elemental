@@ -108,9 +108,9 @@ func main() {
 		target,
 		rollback, cfg.ChangelogCollection, cfg.ChangelogCollection, target,
 	)
-	os.MkdirAll(".github.com/elcengine/elemental/"+target+"s", os.ModePerm)
-	e_utils.CreateAndWriteToFile(fmt.Sprintf(".github.com/elcengine/elemental/%ss/main.go", target), template)
-	err = exec.Command("go", "run", ".github.com/elcengine/elemental/"+target+"s/main.go").Run()
+	os.MkdirAll(".elemental/"+target+"s", os.ModePerm)
+	e_utils.CreateAndWriteToFile(fmt.Sprintf(".elemental/%ss/main.go", target), template)
+	err = exec.Command("go", "run", ".elemental/"+target+"s/main.go").Run()
 	if err != nil {
 		log.Fatalf("Failed to run %ss: %s", target, err.Error())
 	} else {
@@ -120,7 +120,7 @@ func main() {
 			log.Printf("Successfully ran %ss", target)
 		}
 	}
-	os.Remove(fmt.Sprintf(".github.com/elcengine/elemental/%ss/main.go", target))
+	os.Remove(fmt.Sprintf(".elemental/%ss/main.go", target))
 }
 
 func create(args []string, target string) {
