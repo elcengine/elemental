@@ -2,6 +2,7 @@ package elemental
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/elcengine/elemental/connection"
@@ -52,6 +53,7 @@ func TransactionBatch(queries ...Model[any]) []interface{} {
 					results = append(results, result)
 					return nil
 				}, func() {
+					fmt.Println("Error in transaction")
 					errCount++
 				})
 				mu.Unlock()
@@ -65,12 +67,15 @@ func TransactionBatch(queries ...Model[any]) []interface{} {
 	wg.Wait()
 	for _, session := range sessions {
 		wg.Add(1)
-		defer wg.Done()
-		if errCount > 0 {
-			go session.AbortTransaction(context.Background())
-		} else {
-			go session.CommitTransaction(context.Background())
-		}
+		go func(s mongo.Session) {
+			defer wg.Done()
+			if errCount > 0 {
+				s.AbortTransaction(context.Background())
+			} else {
+				s.CommitTransaction(context.Background())
+			}
+			s.EndSession(context.Background())
+		}(session)
 	}
 	wg.Wait()
 	return results

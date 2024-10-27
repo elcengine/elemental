@@ -2,13 +2,15 @@ package elemental
 
 import (
 	"context"
+	"reflect"
+
+	"github.com/creasty/defaults"
 	"github.com/elcengine/elemental/connection"
 	"github.com/elcengine/elemental/utils"
-	"github.com/creasty/defaults"
+	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"reflect"
 )
 
 type Schema struct {
@@ -35,8 +37,11 @@ func (s Schema) Field(path string) *Field {
 	return nil
 }
 
-func (s Schema) syncIndexes(reflectedBaseType reflect.Type) {
-	collection := e_connection.Use(s.Options.Database, s.Options.Connection).Collection(s.Options.Collection)
+func (s Schema) syncIndexes(reflectedBaseType reflect.Type, databaseOverride, connectionOverride, collectionOverride string) {
+	database, _ := lo.Coalesce(databaseOverride, s.Options.Database)
+	connection, _ := lo.Coalesce(connectionOverride, s.Options.Connection)
+	collectionName, _ := lo.Coalesce(collectionOverride, s.Options.Collection)
+	collection := e_connection.Use(database, connection).Collection(collectionName)
 	collection.Indexes().DropAll(context.Background())
 	for field, definition := range s.Definitions {
 		if (definition.Index != options.IndexOptions{}) {
