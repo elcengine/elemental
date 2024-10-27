@@ -63,3 +63,16 @@ func (m Model[T]) Exec(ctx ...context.Context) any {
 	}
 	return m.executor(m, e_utils.DefaultCTX(ctx))
 }
+
+func (m Model[T]) ExecWild(ctx ...context.Context) any {
+	if m.executor == nil {
+		m.executor = func(m Model[T], ctx context.Context) any {
+			var results []any
+			e_utils.Must(lo.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
+			// TODO: uncomment and fix
+			// m.checkConditionsAndPanic(results)
+			return results
+		}
+	}
+	return m.executor(m, e_utils.DefaultCTX(ctx))
+}

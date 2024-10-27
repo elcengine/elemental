@@ -15,6 +15,8 @@ type Monster = e_test_base.Monster
 
 type Bestiary = e_test_base.Bestiary
 
+type BestiaryWithID = e_test_base.BestiaryWithID
+
 type MonsterWeakness = e_test_base.MonsterWeakness
 
 type User = e_test_base.User
@@ -26,6 +28,8 @@ var MonsterModel = e_test_base.MonsterModel
 var KingdomModel = e_test_base.KingdomModel
 
 var BestiaryModel = e_test_base.BestiaryModel
+
+var BestiaryWithIDModel = e_test_base.BestiaryWithIDModel
 
 func SoTimeout(t *testing.T, f func() bool, timeout ...<-chan time.Time) {
 	if len(timeout) == 0 {
