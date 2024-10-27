@@ -56,6 +56,9 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 	connectionReady := func() {
 		model.CreateCollection()
 		model.SyncIndexes()
+		if model.Schema.Options.Auditing {
+			model.EnableAuditing()
+		}
 	}
 	if model.Ping() != nil {
 		e_connection.On(event.ConnectionReady, connectionReady)

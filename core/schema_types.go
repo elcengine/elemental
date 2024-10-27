@@ -10,6 +10,7 @@ type SchemaOptions struct {
 	CollectionOptions options.CreateCollectionOptions
 	Database          string
 	Connection        string
+	Auditing          bool
 }
 
 type Field struct {
