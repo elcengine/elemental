@@ -28,6 +28,7 @@ type Model[T any] struct {
 	upsert              bool
 	returnNew           bool
 	middleware          *middleware[T]
+	clusterOps             *ClusterOp[T]
 	temporaryConnection *string
 	temporaryDatabase   *string
 	temporaryCollection *string
@@ -250,4 +251,8 @@ func (m Model[T]) Select(fields ...any) Model[T] {
 		}
 	}
 	return m
+}
+
+func (m Model[T]) UseCluster(connection *string) ClusterOp[T] {
+	return Cluster(&m, connection)
 }

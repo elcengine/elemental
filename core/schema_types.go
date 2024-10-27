@@ -26,4 +26,5 @@ type Field struct {
 	IndexOrder int
 	Ref        string
 	Collection string
+	IsRefID    bool
 }
