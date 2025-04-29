@@ -35,6 +35,7 @@ func (m Model[T]) OrFail(err ...error) Model[T] {
 	return m
 }
 
+// Exec is the final step in the query builder chain. It executes the query and returns the results.
 func (m Model[T]) Exec(ctx ...context.Context) any {
 	if m.executor == nil {
 		m.executor = func(m Model[T], ctx context.Context) any {

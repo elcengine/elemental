@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/elcengine/elemental/connection"
+	"github.com/elcengine/elemental/tests/mocks"
 	"github.com/elcengine/elemental/tests/setup"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -11,11 +12,9 @@ import (
 
 func TestMultiConnection(t *testing.T) {
 	Convey("Read users where", t, func() {
-		DB_URI1 := "mongodb+srv://first:dummypass@first.ulhfa.mongodb.net/elemental?retryWrites=true&w=majority&appName=myAtlasClusterEDU"
-		DB_URI2 := "mongodb+srv://second:dummypass@cluster0.pqvjtbp.mongodb.net/elemental?retryWrites=true&w=majority&appName=myAtlasClusterEDU"
-		e_connection.ConnectURI(DB_URI1)
+		e_connection.ConnectURI(e_mocks.DEFAULT_DB_URI)
 		e_connection.Connect(e_connection.ConnectionOptions{
-			URI:   DB_URI2,
+			URI:   e_mocks.SECONDARY_DB_URI,
 			Alias: "second",
 		})
 
@@ -78,5 +77,9 @@ func TestMultiConnection(t *testing.T) {
 
 		MonsterModel.InsertMany(monstersData).Exec()
 		MonsterModel.SetConnection("second").InsertMany(monstersData).Exec()
+
+		So(len(MonsterModel.Find().Exec().([]Monster)), ShouldEqual, len(monstersData))
+
+		So(len(MonsterModel.SetConnection("second").Find().Exec().([]Monster)), ShouldEqual, len(monstersData))
 	})
 }

@@ -11,7 +11,6 @@ import (
 )
 
 func TestTransaction(t *testing.T) {
-
 	e_test_setup.Connection()
 
 	defer e_test_setup.Teardown()

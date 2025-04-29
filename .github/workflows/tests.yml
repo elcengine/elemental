@@ -9,18 +9,43 @@ jobs:
     test:
         name: Test
         runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            go-version:
+              - "1.22"
+              - "1.23"
+
         steps:
         - name: Checkout repository
           uses: actions/checkout@v4
 
-        - name: Set up Golang 1.21
+        - name: Set up Golang ${{ matrix.go-version }}
           uses: actions/setup-go@v5
           with:
-           go-version: '^1.21.0' 
+           go-version: ${{ matrix.go-version }}
 
+        - name: Start default MongoDB cluster
+          uses: supercharge/mongodb-github-action@1.12.0
+          with:
+            mongodb-version: 5.0
+            mongodb-replica-set: rs0
+            mongodb-container-name: mongo-rs0
+            mongodb-port: 27017
+   
+        - name: Start secondary MongoDB cluster
+          uses: supercharge/mongodb-github-action@1.12.0
+          with:
+            mongodb-version: 5.0
+            mongodb-replica-set: rs1
+            mongodb-container-name: mongo-rs1
+            mongodb-port: 27018
+  
         - name: Install dependencies
           run: go get -v -t -d ./...
         
         - name: Run tests
           run: go test -v ./...
+          env:
+            DEFAULT_DB_URI: mongodb://127.0.0.1:27017/elemental?replicaSet=rs0
+            SECONDARY_DB_URI: mongodb://127.0.0.1:27018/elemental?replicaSet=rs1
             
