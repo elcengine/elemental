@@ -18,6 +18,11 @@ func (m Model[T]) Collection() *mongo.Collection {
 	return e_connection.Use(database, connection).Collection(collection)
 }
 
+// Returns the underlying client instance this model uses
+func (m Model[T]) Connection() mongo.Client {
+	return e_connection.GetConnection(lo.FromPtr(e_utils.Coalesce(m.temporaryConnection, &m.Schema.Options.Connection)))
+}
+
 // Returns the underlying database instance this model uses
 func (m Model[T]) Database() *mongo.Database {
 	return m.Collection().Database()

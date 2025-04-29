@@ -26,13 +26,13 @@ func ClientTransaction(alias string, fn func(ctx mongo.SessionContext) (interfac
 	return transaction(fn, &alias)
 }
 
-func TransactionBatch(queries ...Model[any]) []interface{} {	var sessions []mongo.Session
+func TransactionBatch(queries ...ModelInterface[any]) []interface{} {
+	var sessions []mongo.Session
 	var results []interface{}
 	var errCount int
 	for _, query := range queries {
-		 func(q Model[any]) {
-			connection, _ := lo.Coalesce(lo.FromPtr(q.temporaryConnection), q.Schema.Options.Connection)
-			session, err := lo.ToPtr(e_connection.GetConnection(connection)).StartSession()
+		func(q ModelInterface[any]) {
+			session, err := lo.ToPtr(q.Connection()).StartSession()
 			if err != nil {
 				panic(err)
 			}

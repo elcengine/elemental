@@ -17,9 +17,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+type ModelInterface[T any] interface {
+	Exec(...context.Context) any
+	Connection() mongo.Client
+}
+
 type Model[T any] struct {
 	Name                string
 	Schema              Schema
+	Cloned              bool
 	pipeline            mongo.Pipeline
 	executor            func(m Model[T], ctx context.Context) any
 	whereField          string
@@ -28,7 +34,6 @@ type Model[T any] struct {
 	upsert              bool
 	returnNew           bool
 	middleware          *middleware[T]
-	clusterOps             *ClusterOp[T]
 	temporaryConnection *string
 	temporaryDatabase   *string
 	temporaryCollection *string
@@ -251,6 +256,29 @@ func (m Model[T]) Select(fields ...any) Model[T] {
 		}
 	}
 	return m
+}
+
+// Creates a clone of the current model with the same query pipeline and options as has been set on the current model.
+func (m Model[T]) Clone() Model[T] {
+	return Model[T]{
+		Name:                m.Name,
+		Schema:              m.Schema,
+		Cloned:              true,
+		pipeline:            m.pipeline,
+		executor:            m.executor,
+		whereField:          m.whereField,
+		failWith:            m.failWith,
+		orConditionActive:   m.orConditionActive,
+		upsert:              m.upsert,
+		returnNew:           m.returnNew,
+		middleware:          m.middleware,
+		temporaryConnection: m.temporaryConnection,
+		temporaryDatabase:   m.temporaryDatabase,
+		temporaryCollection: m.temporaryCollection,
+		schedule:            m.schedule,
+		softDeleteEnabled:   m.softDeleteEnabled,
+		deletedAtFieldName:  m.deletedAtFieldName,
+	}
 }
 
 // This feature is still experimental and not fully implemented.
