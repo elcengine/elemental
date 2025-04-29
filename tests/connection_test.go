@@ -1,11 +1,12 @@
 package e_tests
 
 import (
-	"github.com/elcengine/elemental/connection"
-	"github.com/elcengine/elemental/constants"
-	"github.com/elcengine/elemental/tests/mocks"
-	"github.com/elcengine/elemental/tests/setup"
 	"testing"
+
+	e_connection "github.com/elcengine/elemental/connection"
+	e_constants "github.com/elcengine/elemental/constants"
+	e_mocks "github.com/elcengine/elemental/tests/mocks"
+	e_test_setup "github.com/elcengine/elemental/tests/setup"
 
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -18,7 +19,7 @@ func TestConnection(t *testing.T) {
 	Convey("Connect to a local database", t, func() {
 		Convey("Simplest form of connect with just a URI", func() {
 			client := e_connection.Connect(e_connection.ConnectionOptions{
-				URI: e_mocks.DB_URI,
+				URI: e_mocks.DEFAULT_DB_URI,
 			})
 			So(client, ShouldNotBeNil)
 			Convey("Should use the default database", func() {
@@ -29,7 +30,7 @@ func TestConnection(t *testing.T) {
 			})
 		})
 		Convey("Connect with a URI specified within client options", func() {
-			opts := options.Client().ApplyURI(e_mocks.DB_URI)
+			opts := options.Client().ApplyURI(e_mocks.DEFAULT_DB_URI)
 			client := e_connection.Connect(e_connection.ConnectionOptions{
 				ClientOptions: opts,
 			})

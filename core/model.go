@@ -253,6 +253,7 @@ func (m Model[T]) Select(fields ...any) Model[T] {
 	return m
 }
 
+// This feature is still experimental and not fully implemented.
 func (m Model[T]) UseCluster(connection *string) ClusterOp[T] {
 	return Cluster(&m, connection)
 }

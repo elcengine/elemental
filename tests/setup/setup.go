@@ -2,13 +2,14 @@ package e_test_setup
 
 import (
 	"context"
-	"github.com/elcengine/elemental/connection"
-	"github.com/elcengine/elemental/tests/base"
-	"github.com/elcengine/elemental/tests/mocks"
+
+	e_connection "github.com/elcengine/elemental/connection"
+	e_test_base "github.com/elcengine/elemental/tests/base"
+	e_mocks "github.com/elcengine/elemental/tests/mocks"
 )
 
 func Connection() {
-	e_connection.ConnectURI(e_mocks.DB_URI)
+	e_connection.ConnectURI(e_mocks.DEFAULT_DB_URI)
 }
 
 func Seed() {
