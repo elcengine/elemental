@@ -1,5 +1,7 @@
 package elemental
 
+// @note: This module is still in development and not yet fully functional.
+
 import (
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson/primitive"

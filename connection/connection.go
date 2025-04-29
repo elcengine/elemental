@@ -96,3 +96,10 @@ func Use(database string, alias ...string) *mongo.Database {
 func UseDefault(alias ...string) *mongo.Database {
 	return lo.ToPtr(clients[e_utils.Coalesce(e_utils.First(alias), "default")]).Database(e_utils.Coalesce(defaultDatabases[e_utils.Coalesce(e_utils.First(alias), "default")], "test"))
 }
+
+// Pings the default connection or a specific connection by alias if provided to check if it is alive. Readpref is set to primary.
+//
+// @param alias - The alias of the connection to ping
+func Ping(alias ...string) error {
+	return lo.ToPtr(clients[e_utils.Coalesce(e_utils.First(alias), "default")]).Ping(context.Background(), readpref.Primary())
+}
