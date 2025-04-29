@@ -261,18 +261,17 @@ func (m Model[T]) Select(fields ...any) Model[T] {
 // Creates a clone of the current model with the same query pipeline and options as has been set on the current model.
 func (m Model[T]) Clone() Model[T] {
 	return Model[T]{
-		Name:     m.Name,
-		Schema:   m.Schema,
-		Cloned:   true,
-		pipeline: m.pipeline,
-		executor: func(_ Model[T], ctx context.Context) any {
-			return m.executor(m, ctx)
-		},
+		Name:                m.Name,
+		Schema:              m.Schema,
+		Cloned:              true,
+		pipeline:            m.pipeline,
+		executor:            m.executor,
 		whereField:          m.whereField,
 		failWith:            m.failWith,
 		orConditionActive:   m.orConditionActive,
 		upsert:              m.upsert,
 		returnNew:           m.returnNew,
+		middleware:          m.middleware,
 		temporaryConnection: m.temporaryConnection,
 		temporaryDatabase:   m.temporaryDatabase,
 		temporaryCollection: m.temporaryCollection,
