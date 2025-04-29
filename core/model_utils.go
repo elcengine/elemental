@@ -2,8 +2,9 @@ package elemental
 
 import (
 	"context"
-	"github.com/elcengine/elemental/utils"
 	"reflect"
+
+	e_utils "github.com/elcengine/elemental/utils"
 
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
@@ -167,26 +168,4 @@ func (m Model[T]) setUpdateOperator(operator string, doc any) Model[T] {
 		})()
 	}
 	return m
-}
-
-func (m Model[T]) FlexibleClone() Model[any] {
-	return Model[any]{
-		Name:     m.Name,
-		Schema:   m.Schema,
-		pipeline: m.pipeline,
-		executor: func(_ Model[any], ctx context.Context) any {
-			return m.executor(m, ctx)
-		},
-		whereField:          m.whereField,
-		failWith:            m.failWith,
-		orConditionActive:   m.orConditionActive,
-		upsert:              m.upsert,
-		returnNew:           m.returnNew,
-		temporaryConnection: m.temporaryConnection,
-		temporaryDatabase:   m.temporaryDatabase,
-		temporaryCollection: m.temporaryCollection,
-		schedule:            m.schedule,
-		softDeleteEnabled:   m.softDeleteEnabled,
-		deletedAtFieldName:  m.deletedAtFieldName,
-	}
 }

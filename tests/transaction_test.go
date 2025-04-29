@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	elemental "github.com/elcengine/elemental/core"
-	"github.com/elcengine/elemental/tests/mocks"
-	"github.com/elcengine/elemental/tests/setup"
+	e_mocks "github.com/elcengine/elemental/tests/mocks"
+	e_test_setup "github.com/elcengine/elemental/tests/setup"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -23,10 +23,10 @@ func TestTransaction(t *testing.T) {
 				elemental.TransactionBatch(
 					UserModel.Create(User{
 						Name: "Yennefer",
-					}).FlexibleClone(),
+					}),
 					UserModel.SetDatabase(e_mocks.SECONDARY_DB).Create(User{
 						Name: "Triss",
-					}).FlexibleClone(),
+					}),
 				)
 				yennefer := UserModel.FindOne().Where("name", "Yennefer").Exec()
 				So(yennefer, ShouldNotBeNil)
@@ -37,13 +37,13 @@ func TestTransaction(t *testing.T) {
 				elemental.TransactionBatch(
 					UserModel.Create(User{
 						Name: "Eskel",
-					}).FlexibleClone(),
+					}),
 					UserModel.Create(User{
 						Name: "Eskel",
-					}).FlexibleClone(),
+					}),
 					UserModel.SetDatabase(e_mocks.SECONDARY_DB).Create(User{
 						Name: "Eredin",
-					}).FlexibleClone(),
+					}),
 				)
 				eskel := UserModel.FindOne().Where("name", "Eskel").Exec()
 				So(eskel, ShouldBeNil)
