@@ -15,6 +15,8 @@ func TestTransaction(t *testing.T) {
 
 	e_test_setup.Connection(t.Name())
 
+	UserModel := UserModel.SetDatabase(t.Name())
+
 	SECONDARY_DB := fmt.Sprintf("%s_%s", t.Name(), "secondary")
 
 	UserModel.SyncIndexes()

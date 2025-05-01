@@ -24,7 +24,7 @@ func TestCoreAudit(t *testing.T) {
 			Type:     reflect.String,
 			Required: true,
 		},
-	}))
+	})).SetDatabase(t.Name())
 
 	KingdomModel.EnableAuditing()
 
