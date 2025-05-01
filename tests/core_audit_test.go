@@ -15,13 +15,11 @@ import (
 func TestCoreAudit(t *testing.T) {
 	t.Parallel()
 
-	e_test_setup.Connection()
-	
-	defer e_test_setup.Teardown()
+	e_test_setup.Connection(t.Name())
 
 	entity := "Kingdom-For-Audit"
 
-	var KingdomModel = elemental.NewModel[Kingdom](entity, elemental.NewSchema(map[string]elemental.Field{
+	KingdomModel := elemental.NewModel[Kingdom](entity, elemental.NewSchema(map[string]elemental.Field{
 		"Name": {
 			Type:     reflect.String,
 			Required: true,

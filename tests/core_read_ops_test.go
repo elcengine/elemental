@@ -14,10 +14,9 @@ import (
 )
 
 func TestCoreReadOps(t *testing.T) {
+	t.Parallel()
 
-	e_test_setup.SeededConnection()
-
-	defer e_test_setup.Teardown()
+	e_test_setup.SeededConnection(t.Name())
 
 	Convey("Read users with operators", t, func() {
 		Convey(fmt.Sprintf("Find all where age is %d", e_mocks.Geralt.Age), func() {

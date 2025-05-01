@@ -8,17 +8,8 @@ import (
 )
 
 var (
-	DEFAULT_DB_URI = e_utils.Coalesce(os.Getenv("DEFAULT_DB_URI"), "mongodb+srv://akalankaperera128:pFAnQVXE6vrbcXNk@default.ynr156r.mongodb.net/elemental") // This is a test M0 cluster there, so it is safe to use in tests.
-	SECONDARY_DB_URI = os.Getenv("SECONDARY_DB_URI")
-)
-
-const (
-	DEFAULT_DB     = "elemental"
-	SECONDARY_DB   = "elemental_secondary"
-	TERTIARY_DB    = "elemental_tertiary"
-	TEMPORARY_DB_1 = "elemental_temporary_1"
-	TEMPORARY_DB_2 = "elemental_temporary_2"
-	TEMPORARY_DB_3 = "elemental_temporary_3"
+	DEFAULT_DATASOURCE   = e_utils.Coalesce(os.Getenv("DEFAULT_DATASOURCE"), "mongodb+srv://akalankaperera128:pFAnQVXE6vrbcXNk@default.ynr156r.mongodb.net") // This is a test M0 cluster there, so it is safe to use in tests.
+	SECONDARY_DATASOURCE = os.Getenv("SECONDARY_DATASOURCE")
 )
 
 var (

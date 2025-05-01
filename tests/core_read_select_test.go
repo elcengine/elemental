@@ -10,10 +10,9 @@ import (
 )
 
 func TestCoreReadSelect(t *testing.T) {
+	t.Parallel()
 
-	e_test_setup.SeededConnection()
-
-	defer e_test_setup.Teardown()
+	e_test_setup.SeededConnection(t.Name())
 
 	Convey("Find with only specified fields", t, func() {
 		limit := int64(2)

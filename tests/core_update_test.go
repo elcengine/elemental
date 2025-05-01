@@ -14,10 +14,9 @@ import (
 )
 
 func TestCoreUpdate(t *testing.T) {
+	t.Parallel()
 
-	e_test_setup.SeededConnection()
-
-	defer e_test_setup.Teardown()
+	e_test_setup.SeededConnection(t.Name())
 
 	Convey("Update users", t, func() {
 		Convey("Find and update first user", func() {

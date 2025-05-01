@@ -14,10 +14,9 @@ import (
 )
 
 func TestCoreRead(t *testing.T) {
+	t.Parallel()
 
-	e_test_setup.SeededConnection()
-
-	defer e_test_setup.Teardown()
+	e_test_setup.SeededConnection(t.Name())
 
 	Convey("Read users", t, func() {
 		Convey("Find all users", func() {

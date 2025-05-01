@@ -12,10 +12,9 @@ import (
 )
 
 func TestCoreReadPaginate(t *testing.T) {
+	t.Parallel()
 
-	e_test_setup.SeededConnection()
-
-	defer e_test_setup.Teardown()
+	e_test_setup.SeededConnection(t.Name())
 
 	Convey("Find paginated users", t, func() {
 		Convey("First page", func() {

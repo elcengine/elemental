@@ -1,6 +1,7 @@
 package e_tests
 
 import (
+	"fmt"
 	"testing"
 
 	elemental "github.com/elcengine/elemental/core"
@@ -12,7 +13,7 @@ import (
 
 func TestRequestValidator(t *testing.T) {
 
-	e_test_setup.SeededConnection()
+	e_test_setup.SeededConnection(t.Name())
 
 	elemental.NativeModel.SetCollection("occupations").InsertMany([]map[string]any{
 		{
@@ -88,15 +89,16 @@ func TestRequestValidator(t *testing.T) {
 				So(err.Error(), ShouldEqual, "Key: 'CreateUserDTOWithCustomField.Name' Error:Field validation for 'Name' failed on the 'unique' tag")
 			})
 			Convey("Should return error if document already exists - DTO specifying custom database name", func() {
+				CUSTOM_DB := fmt.Sprintf("%s_%s", t.Name(), "custom_database")
 				type CreateUserDTOWithCustomDatabase struct {
-					Name string `augmented_validate:"unique=User" database:"elemental_secondary" json:"name"`
+					Name string `augmented_validate:"unique=User" database:"TestRequestValidator_custom_database" json:"name"`
 					Age  int    `validate:"max=150,min=18" json:"age"`
 				}
 				request := CreateUserDTOWithCustomDatabase{
 					Name: "Radovid",
 					Age:  100,
 				}
-				UserModel.SetDatabase(e_mocks.SECONDARY_DB).Create(User{
+				UserModel.SetDatabase(CUSTOM_DB).Create(User{
 					Name: "Radovid",
 					Age:  100,
 				}).Exec()

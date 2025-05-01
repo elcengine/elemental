@@ -1,10 +1,9 @@
 package e_tests
 
 import (
-	"github.com/elcengine/elemental/core"
-	"github.com/elcengine/elemental/tests/mocks"
-	"github.com/elcengine/elemental/tests/setup"
 	"fmt"
+	"github.com/elcengine/elemental/core"
+	"github.com/elcengine/elemental/tests/setup"
 	"reflect"
 	"testing"
 
@@ -15,19 +14,17 @@ import (
 func TestCoreSchemaOptions(t *testing.T) {
 	t.Parallel()
 
-	e_test_setup.Connection()
-	
-	defer e_test_setup.Teardown()
+	e_test_setup.Connection(t.Name())
 
 	Convey("Schema variations", t, func() {
-		Convey(fmt.Sprintf("Should use the default database of %s", e_mocks.DEFAULT_DB), func() {
-			So(UserModel.Collection().Database().Name(), ShouldEqual, e_mocks.DEFAULT_DB)
+		Convey(fmt.Sprintf("Should use the default database of %s", t.Name()), func() {
+			So(UserModel.Collection().Database().Name(), ShouldEqual, t.Name())
 		})
 		Convey("Should automatically create a collection with given name", func() {
 			So(UserModel.Collection().Name(), ShouldEqual, "users")
 		})
 		Convey("Collection should be a plural of the model name if not specified", func() {
-			var CastleModel = elemental.NewModel[Castle]("Castle", elemental.NewSchema(map[string]elemental.Field{
+			CastleModel := elemental.NewModel[Castle]("Castle", elemental.NewSchema(map[string]elemental.Field{
 				"Name": {
 					Type:     reflect.String,
 					Required: true,
@@ -40,7 +37,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 			collectionOptions := options.CreateCollectionOptions{}
 			collectionOptions.SetCapped(true)
 			collectionOptions.SetSizeInBytes(1024)
-			var KingdomModel = elemental.NewModel[Kingdom]("Kingdom-Temporary", elemental.NewSchema(map[string]elemental.Field{
+			KingdomModel := elemental.NewModel[Kingdom]("Kingdom-Temporary", elemental.NewSchema(map[string]elemental.Field{
 				"Name": {
 					Type:     reflect.String,
 					Required: true,
@@ -52,16 +49,17 @@ func TestCoreSchemaOptions(t *testing.T) {
 			So(KingdomModel.IsCapped(), ShouldBeTrue)
 		})
 		Convey("Should use the specified database", func() {
-			var MonsterModel = elemental.NewModel[Monster]("Monster-Temporary", elemental.NewSchema(map[string]elemental.Field{
+			DATABASE := fmt.Sprintf("%s_%s", t.Name(), "temporary_1")
+			MonsterModel := elemental.NewModel[Monster]("Monster-Temporary", elemental.NewSchema(map[string]elemental.Field{
 				"Name": {
 					Type:     reflect.String,
 					Required: true,
 				},
 			}, elemental.SchemaOptions{
-				Database: e_mocks.SECONDARY_DB,
+				Database: DATABASE,
 			}))
 			MonsterModel.Create(Monster{Name: "Nekker"}).Exec()
-			So(MonsterModel.Collection().Database().Name(), ShouldEqual, e_mocks.SECONDARY_DB)
+			So(MonsterModel.Collection().Database().Name(), ShouldEqual, DATABASE)
 		})
 		Convey("Should validate a document against the schema", func() {
 			So(func() {
