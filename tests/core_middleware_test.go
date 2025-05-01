@@ -23,7 +23,7 @@ func TestCoreMiddleware(t *testing.T) {
 			Type:     reflect.String,
 			Required: true,
 		},
-	}))
+	})).SetDatabase(t.Name())
 
 	CastleModel.PreSave(func(castle Castle) bool {
 		invokedHooks["preSave"] = true

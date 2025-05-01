@@ -12,6 +12,10 @@ func TestCoreReadPopulate(t *testing.T) {
 
 	e_test_setup.Connection(t.Name())
 
+	MonsterModel := MonsterModel.SetDatabase(t.Name())
+	KingdomModel := KingdomModel.SetDatabase(t.Name())
+	BestiaryModel := BestiaryModel.SetDatabase(t.Name())
+
 	monsters := MonsterModel.InsertMany([]Monster{
 		{
 			Name:     "Katakan",

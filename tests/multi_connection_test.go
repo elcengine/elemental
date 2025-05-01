@@ -20,6 +20,8 @@ func TestMultiConnection(t *testing.T) {
 		Alias: "second",
 	})
 
+	MonsterModel := MonsterModel.SetDatabase(t.Name())
+
 	monstersData := []Monster{
 		{
 			Name:     "Katakan",

@@ -16,6 +16,8 @@ func TestCoreReadIs(t *testing.T) {
 
 	e_test_setup.SeededConnection(t.Name())
 
+	UserModel := UserModel.SetDatabase(t.Name())
+
 	Convey("Read users where", t, func() {
 		Convey("Name is of type string", func() {
 			users := UserModel.Where("name").IsType(bson.TypeString).Exec().([]User)

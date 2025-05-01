@@ -17,12 +17,12 @@ func TestCoreTriggers(t *testing.T) {
 
 	e_test_setup.Connection(t.Name())
 
-	var CastleModel = elemental.NewModel[Castle]("Castle-For-Triggers", elemental.NewSchema(map[string]elemental.Field{
+	CastleModel := elemental.NewModel[Castle]("Castle-For-Triggers", elemental.NewSchema(map[string]elemental.Field{
 		"Name": {
 			Type:     reflect.String,
 			Required: true,
 		},
-	}))
+	})).SetDatabase(t.Name())
 
 	var insertedCastle Castle
 	var updatedCastle Castle

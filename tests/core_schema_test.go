@@ -16,6 +16,8 @@ func TestCoreSchemaOptions(t *testing.T) {
 
 	e_test_setup.Connection(t.Name())
 
+	UserModel := UserModel.SetDatabase(t.Name())
+
 	Convey("Schema variations", t, func() {
 		Convey(fmt.Sprintf("Should use the default database of %s", t.Name()), func() {
 			So(UserModel.Collection().Database().Name(), ShouldEqual, t.Name())
@@ -29,7 +31,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 					Type:     reflect.String,
 					Required: true,
 				},
-			}))
+			})).SetDatabase(t.Name())
 			CastleModel.Create(Castle{Name: "Kaer Morhen"}).Exec()
 			So(CastleModel.Collection().Name(), ShouldEqual, "castles")
 		})
@@ -43,6 +45,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 					Required: true,
 				},
 			}, elemental.SchemaOptions{
+				Database:          t.Name(),
 				CollectionOptions: collectionOptions,
 			}))
 			KingdomModel.Create(Kingdom{Name: "Nilfgaard"}).Exec()

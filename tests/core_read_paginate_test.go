@@ -16,6 +16,8 @@ func TestCoreReadPaginate(t *testing.T) {
 
 	e_test_setup.SeededConnection(t.Name())
 
+	UserModel := UserModel.SetDatabase(t.Name())
+
 	Convey("Find paginated users", t, func() {
 		Convey("First page", func() {
 			result := UserModel.Find().Paginate(1, 2).Exec().(elemental.PaginateResult[User])

@@ -18,6 +18,8 @@ func TestCoreRead(t *testing.T) {
 
 	e_test_setup.SeededConnection(t.Name())
 
+	UserModel := UserModel.SetDatabase(t.Name())
+
 	Convey("Read users", t, func() {
 		Convey("Find all users", func() {
 			users := UserModel.Find().Exec().([]User)

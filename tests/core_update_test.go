@@ -18,6 +18,8 @@ func TestCoreUpdate(t *testing.T) {
 
 	e_test_setup.SeededConnection(t.Name())
 
+	UserModel := UserModel.SetDatabase(t.Name())
+
 	Convey("Update users", t, func() {
 		Convey("Find and update first user", func() {
 			user := e_utils.Cast[User](UserModel.FindOneAndUpdate(nil, primitive.M{"name": "Zireael"}).Exec())

@@ -19,6 +19,9 @@ func TestCoreCreate(t *testing.T) {
 
 	e_test_setup.Connection(t.Name())
 
+	UserModel := UserModel.SetDatabase(t.Name())
+	MonsterModel := MonsterModel.SetDatabase(t.Name())
+
 	Convey("Create users", t, func() {
 		Convey("Create a single user", func() {
 			user := UserModel.Create(e_mocks.Ciri).Exec().(User)

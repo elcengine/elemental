@@ -14,6 +14,8 @@ func TestCoreMeta(t *testing.T) {
 
 	e_test_setup.Connection(t.Name())
 
+	UserModel := UserModel.SetDatabase(t.Name())
+
 	UserModel.InsertMany(e_mocks.Users).Exec()
 
 	Convey("Metadata", t, func() {

@@ -14,6 +14,8 @@ func TestCoreReadSelect(t *testing.T) {
 
 	e_test_setup.SeededConnection(t.Name())
 
+	UserModel := UserModel.SetDatabase(t.Name())
+
 	Convey("Find with only specified fields", t, func() {
 		limit := int64(2)
 		Convey(fmt.Sprintf("%d user names with ID", limit), func() {
