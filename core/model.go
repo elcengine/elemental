@@ -2,7 +2,6 @@ package elemental
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"strings"
 
@@ -80,8 +79,7 @@ func (m Model[T]) Create(doc T) Model[T] {
 		documentToInsert, detailedDocument := enforceSchema(m.Schema, &doc, nil)
 		detailedDocumentEntity := e_utils.CastBSON[T](detailedDocument)
 		m.middleware.pre.save.run(detailedDocumentEntity)
-		a, err := m.Collection().InsertOne(ctx, documentToInsert)
-		fmt.Println(a)
+		_, err := m.Collection().InsertOne(ctx, documentToInsert)
 		if err != nil {
 			panic(err)
 		}
