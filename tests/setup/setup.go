@@ -1,7 +1,7 @@
 package e_test_setup
 
 import (
-	"fmt"
+	"strings"
 
 	e_connection "github.com/elcengine/elemental/connection"
 	e_test_base "github.com/elcengine/elemental/tests/base"
@@ -9,7 +9,7 @@ import (
 )
 
 func Connection(databaseName string) {
-	e_connection.ConnectURI(fmt.Sprintf("%s/%s", e_mocks.DEFAULT_DATASOURCE, databaseName))
+	e_connection.ConnectURI(strings.Replace(e_mocks.DEFAULT_DATASOURCE, "elemental", databaseName, 1))
 }
 
 func Seed() {

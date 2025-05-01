@@ -2,6 +2,7 @@ package e_tests
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	e_connection "github.com/elcengine/elemental/connection"
@@ -18,7 +19,7 @@ func TestConnection(t *testing.T) {
 	Convey("Connect to a local database", t, func() {
 		Convey("Simplest form of connect with just a URI", func() {
 			client := e_connection.Connect(e_connection.ConnectionOptions{
-				URI: fmt.Sprintf("%s/%s", e_mocks.DEFAULT_DATASOURCE, t.Name()),
+				URI: strings.Replace(e_mocks.DEFAULT_DATASOURCE, "elemental", t.Name(), 1),
 			})
 			So(client, ShouldNotBeNil)
 			Convey("Should use the default database", func() {
@@ -30,7 +31,7 @@ func TestConnection(t *testing.T) {
 			})
 		})
 		Convey("Connect with a URI specified within client options", func() {
-			opts := options.Client().ApplyURI(e_mocks.DEFAULT_DATASOURCE)
+			opts := options.Client().ApplyURI(strings.Replace(e_mocks.DEFAULT_DATASOURCE, "elemental", t.Name(), 1))
 			client := e_connection.Connect(e_connection.ConnectionOptions{
 				ClientOptions: opts,
 			})

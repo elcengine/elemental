@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	DEFAULT_DATASOURCE   = e_utils.Coalesce(os.Getenv("DEFAULT_DATASOURCE"), "mongodb+srv://akalankaperera128:pFAnQVXE6vrbcXNk@default.ynr156r.mongodb.net") // This is a test M0 cluster there, so it is safe to use in tests.
+	DEFAULT_DATASOURCE   = e_utils.Coalesce(os.Getenv("DEFAULT_DATASOURCE"), "mongodb+srv://akalankaperera128:pFAnQVXE6vrbcXNk@default.ynr156r.mongodb.net/elemental") // This is a test M0 cluster there, so it is safe to use in tests.
 	SECONDARY_DATASOURCE = os.Getenv("SECONDARY_DATASOURCE")
 )
 
