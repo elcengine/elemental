@@ -2,8 +2,7 @@ package elemental
 
 import (
 	"context"
-	"fmt"
-
+	
 	"github.com/elcengine/elemental/connection"
 	"github.com/elcengine/elemental/utils"
 
@@ -17,9 +16,6 @@ func (m Model[T]) Collection() *mongo.Collection {
 	connection := lo.FromPtr(e_utils.Coalesce(m.temporaryConnection, &m.Schema.Options.Connection))
 	database := lo.FromPtr(e_utils.Coalesce(m.temporaryDatabase, &m.Schema.Options.Database))
 	collection := lo.FromPtr(e_utils.Coalesce(m.temporaryCollection, &m.Schema.Options.Collection))
-	fmt.Println("Using connection:", connection)
-	fmt.Println("Using database:", database)
-	fmt.Println("Using collection:", collection)
 	return e_connection.Use(database, connection).Collection(collection)
 }
 
