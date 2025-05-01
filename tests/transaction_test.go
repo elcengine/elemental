@@ -32,7 +32,6 @@ func TestTransaction(t *testing.T) {
 						Name: "Triss",
 					}).SetDatabase(SECONDARY_DB),
 				)
-				fmt.Println(44, results)
 				So(results, ShouldHaveLength, 2)
 				So(errors, ShouldBeEmpty)
 				yennefer := UserModel.FindOne().Where("name", "Yennefer").Exec()
