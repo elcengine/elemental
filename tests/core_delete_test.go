@@ -10,10 +10,13 @@ import (
 )
 
 func TestCoreDelete(t *testing.T) {
+	t.Parallel()
 
-	e_test_setup.SeededConnection()
+	e_test_setup.Connection(t.Name())
 
-	defer e_test_setup.Teardown()
+	UserModel := UserModel.SetDatabase(t.Name())
+
+	UserModel.InsertMany(e_mocks.Users).Exec()
 
 	Convey("Delete users", t, func() {
 		Convey("Find and delete first user", func() {

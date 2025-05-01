@@ -1,20 +1,22 @@
 package e_tests
 
 import (
-	"github.com/elcengine/elemental/core"
-	"github.com/elcengine/elemental/tests/mocks"
-	"github.com/elcengine/elemental/tests/setup"
 	"testing"
+
+	elemental "github.com/elcengine/elemental/core"
+	e_mocks "github.com/elcengine/elemental/tests/mocks"
+	e_test_setup "github.com/elcengine/elemental/tests/setup"
 
 	"github.com/samber/lo"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestCoreReadPaginate(t *testing.T) {
+	t.Parallel()
 
-	e_test_setup.SeededConnection()
+	e_test_setup.SeededConnection(t.Name())
 
-	defer e_test_setup.Teardown()
+	UserModel := UserModel.SetDatabase(t.Name())
 
 	Convey("Find paginated users", t, func() {
 		Convey("First page", func() {

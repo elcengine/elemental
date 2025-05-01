@@ -1,9 +1,10 @@
 package e_tests
 
 import (
-	"github.com/elcengine/elemental/tests/mocks"
-	"github.com/elcengine/elemental/tests/setup"
 	"testing"
+
+	e_mocks "github.com/elcengine/elemental/tests/mocks"
+	e_test_setup "github.com/elcengine/elemental/tests/setup"
 
 	"github.com/samber/lo"
 	. "github.com/smartystreets/goconvey/convey"
@@ -11,10 +12,11 @@ import (
 )
 
 func TestCoreReadIs(t *testing.T) {
+	t.Parallel()
 
-	e_test_setup.SeededConnection()
+	e_test_setup.SeededConnection(t.Name())
 
-	defer e_test_setup.Teardown()
+	UserModel := UserModel.SetDatabase(t.Name())
 
 	Convey("Read users where", t, func() {
 		Convey("Name is of type string", func() {

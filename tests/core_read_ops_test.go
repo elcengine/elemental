@@ -1,22 +1,24 @@
 package e_tests
 
 import (
-	"github.com/elcengine/elemental/tests/base"
-	"github.com/elcengine/elemental/tests/mocks"
-	"github.com/elcengine/elemental/tests/setup"
-	"github.com/elcengine/elemental/utils"
 	"fmt"
+	"testing"
+
+	e_test_base "github.com/elcengine/elemental/tests/base"
+	e_mocks "github.com/elcengine/elemental/tests/mocks"
+	e_test_setup "github.com/elcengine/elemental/tests/setup"
+	e_utils "github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"testing"
 )
 
 func TestCoreReadOps(t *testing.T) {
+	t.Parallel()
 
-	e_test_setup.SeededConnection()
+	e_test_setup.SeededConnection(t.Name())
 
-	defer e_test_setup.Teardown()
+	UserModel := UserModel.SetDatabase(t.Name())
 
 	Convey("Read users with operators", t, func() {
 		Convey(fmt.Sprintf("Find all where age is %d", e_mocks.Geralt.Age), func() {

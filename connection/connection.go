@@ -2,16 +2,18 @@ package e_connection
 
 import (
 	"context"
+	"time"
+
 	"github.com/elcengine/elemental/constants"
 	"github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
 	"golang.org/x/exp/maps"
-	"time"
 )
 
 const connectionTimeout = 30 * time.Second
@@ -95,4 +97,20 @@ func Use(database string, alias ...string) *mongo.Database {
 // @param alias - The alias of the connection to use
 func UseDefault(alias ...string) *mongo.Database {
 	return lo.ToPtr(clients[e_utils.Coalesce(e_utils.First(alias), "default")]).Database(e_utils.Coalesce(defaultDatabases[e_utils.Coalesce(e_utils.First(alias), "default")], "test"))
+}
+
+// Drops all databases across a given client or all clients if no alias is provided
+func DropAll(alias ...string) {
+	for key, client := range clients {
+		if len(alias) > 0 && !lo.Contains(alias, key) {
+			continue
+		}
+		databases, err := client.ListDatabaseNames(context.Background(), bson.D{{}}, options.ListDatabases().SetNameOnly(true))
+		if err != nil {
+			panic(err)
+		}
+		for _, db := range databases {
+			client.Database(db).Drop(context.Background())
+		}
+	}
 }

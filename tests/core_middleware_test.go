@@ -12,17 +12,18 @@ import (
 )
 
 func TestCoreMiddleware(t *testing.T) {
-	e_test_setup.Connection()
-	defer e_test_setup.Teardown()
+	t.Parallel()
+
+	e_test_setup.Connection(t.Name())
 
 	invokedHooks := make(map[string]bool)
 
-	var CastleModel = elemental.NewModel[Castle]("Castle-For-Middleware", elemental.NewSchema(map[string]elemental.Field{
+	CastleModel := elemental.NewModel[Castle]("Castle-For-Middleware", elemental.NewSchema(map[string]elemental.Field{
 		"Name": {
 			Type:     reflect.String,
 			Required: true,
 		},
-	}))
+	})).SetDatabase(t.Name())
 
 	CastleModel.PreSave(func(castle Castle) bool {
 		invokedHooks["preSave"] = true

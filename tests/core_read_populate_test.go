@@ -1,17 +1,20 @@
 package e_tests
 
 import (
-	"github.com/elcengine/elemental/tests/setup"
 	"testing"
 
+	e_test_setup "github.com/elcengine/elemental/tests/setup"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestCoreReadPopulate(t *testing.T) {
+	t.Parallel()
 
-	e_test_setup.Connection()
+	e_test_setup.Connection(t.Name())
 
-	defer e_test_setup.Teardown()
+	MonsterModel := MonsterModel.SetDatabase(t.Name())
+	KingdomModel := KingdomModel.SetDatabase(t.Name())
+	BestiaryModel := BestiaryModel.SetDatabase(t.Name())
 
 	monsters := MonsterModel.InsertMany([]Monster{
 		{

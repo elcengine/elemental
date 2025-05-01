@@ -10,10 +10,13 @@ import (
 )
 
 func TestCoreMeta(t *testing.T) {
+	t.Parallel()
 
-	e_test_setup.SeededConnection()
+	e_test_setup.Connection(t.Name())
 
-	defer e_test_setup.Teardown()
+	UserModel := UserModel.SetDatabase(t.Name())
+
+	UserModel.InsertMany(e_mocks.Users).Exec()
 
 	Convey("Metadata", t, func() {
 		Convey(fmt.Sprintf("Estimated document count should be %d", len(e_mocks.Users)), func() {

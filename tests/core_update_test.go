@@ -14,10 +14,11 @@ import (
 )
 
 func TestCoreUpdate(t *testing.T) {
+	t.Parallel()
 
-	e_test_setup.SeededConnection()
+	e_test_setup.SeededConnection(t.Name())
 
-	defer e_test_setup.Teardown()
+	UserModel := UserModel.SetDatabase(t.Name())
 
 	Convey("Update users", t, func() {
 		Convey("Find and update first user", func() {

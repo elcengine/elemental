@@ -13,15 +13,16 @@ import (
 )
 
 func TestCoreTriggers(t *testing.T) {
-	e_test_setup.Connection()
-	defer e_test_setup.Teardown()
+	t.Parallel()
 
-	var CastleModel = elemental.NewModel[Castle]("Castle-For-Triggers", elemental.NewSchema(map[string]elemental.Field{
+	e_test_setup.Connection(t.Name())
+
+	CastleModel := elemental.NewModel[Castle]("Castle-For-Triggers", elemental.NewSchema(map[string]elemental.Field{
 		"Name": {
 			Type:     reflect.String,
 			Required: true,
 		},
-	}))
+	})).SetDatabase(t.Name())
 
 	var insertedCastle Castle
 	var updatedCastle Castle
