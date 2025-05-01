@@ -24,7 +24,7 @@ func TestTransaction(t *testing.T) {
 	Convey("Batch transaction", t, func() {
 		Convey("Between 2 databases within the same connection", func() {
 			Convey("Should be able to insert into both databases", func() {
-				elemental.TransactionBatch(
+				_, errors := elemental.TransactionBatch(
 					UserModel.Create(User{
 						Name: "Yennefer",
 					}),
@@ -32,13 +32,15 @@ func TestTransaction(t *testing.T) {
 						Name: "Triss",
 					}).SetDatabase(SECONDARY_DB),
 				)
+				fmt.Println(errors)
+				So(errors, ShouldBeEmpty)
 				yennefer := UserModel.FindOne().Where("name", "Yennefer").Exec()
 				So(yennefer, ShouldNotBeNil)
 				triss := UserModel.FindOne().Where("name", "Triss").SetDatabase(SECONDARY_DB).Exec()
 				So(triss, ShouldNotBeNil)
 			})
 			Convey("Should rollback if one of the operations fail", func() {
-				elemental.TransactionBatch(
+				_, errors := elemental.TransactionBatch(
 					UserModel.Create(User{
 						Name: "Eskel",
 					}),
@@ -49,6 +51,7 @@ func TestTransaction(t *testing.T) {
 						Name: "Eredin",
 					}),
 				)
+				So(errors, ShouldNotBeEmpty)
 				eskel := UserModel.FindOne().Where("name", "Eskel").Exec()
 				So(eskel, ShouldBeNil)
 				eredin := UserModel.FindOne().SetDatabase(SECONDARY_DB).Where("name", "Eredin").Exec()
