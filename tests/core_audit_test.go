@@ -13,7 +13,10 @@ import (
 )
 
 func TestCoreAudit(t *testing.T) {
+	t.Parallel()
+
 	e_test_setup.Connection()
+	
 	defer e_test_setup.Teardown()
 
 	entity := "Kingdom-For-Audit"

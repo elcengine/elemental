@@ -10,42 +10,47 @@ import (
 )
 
 func TestCoreMeta(t *testing.T) {
+	t.Parallel()
 
-	e_test_setup.SeededConnection()
+	var LocalUserModel = UserModel.Clone().SetCollection("users_for_meta")
+
+	e_test_setup.Connection()
+
+	LocalUserModel.InsertMany(e_mocks.Users).Exec()
 
 	defer e_test_setup.Teardown()
 
 	Convey("Metadata", t, func() {
 		Convey(fmt.Sprintf("Estimated document count should be %d", len(e_mocks.Users)), func() {
-			count := UserModel.EstimatedDocumentCount()
+			count := LocalUserModel.EstimatedDocumentCount()
 			So(count, ShouldEqual, len(e_mocks.Users))
 		})
 		Convey("Stats", func() {
 			Convey("As a whole", func() {
-				stats := UserModel.Stats()
+				stats := LocalUserModel.Stats()
 				So(stats.Count, ShouldEqual, len(e_mocks.Users))
 				So(stats.AvgObjSize, ShouldBeGreaterThan, 0)
 				So(stats.Size, ShouldBeGreaterThan, 0)
 				So(stats.StorageSize, ShouldBeGreaterThan, 0)
 			})
 			Convey("Just the total size", func() {
-				size := UserModel.TotalSize()
+				size := LocalUserModel.TotalSize()
 				So(size, ShouldBeGreaterThan, 0)
 			})
 			Convey("Just the storage size", func() {
-				size := UserModel.StorageSize()
+				size := LocalUserModel.StorageSize()
 				So(size, ShouldBeGreaterThan, 0)
 			})
 			Convey("Just the total index size", func() {
-				size := UserModel.TotalIndexSize()
+				size := LocalUserModel.TotalIndexSize()
 				So(size, ShouldBeGreaterThan, 0)
 			})
 			Convey("Just the average object size", func() {
-				size := UserModel.AvgObjSize()
+				size := LocalUserModel.AvgObjSize()
 				So(size, ShouldBeGreaterThan, 0)
 			})
 			Convey("Just the index count", func() {
-				size := UserModel.NumberOfIndexes()
+				size := LocalUserModel.NumberOfIndexes()
 				So(size, ShouldBeGreaterThanOrEqualTo, 1)
 			})
 		})

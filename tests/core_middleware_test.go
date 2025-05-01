@@ -12,7 +12,10 @@ import (
 )
 
 func TestCoreMiddleware(t *testing.T) {
+	t.Parallel()
+
 	e_test_setup.Connection()
+	
 	defer e_test_setup.Teardown()
 
 	invokedHooks := make(map[string]bool)

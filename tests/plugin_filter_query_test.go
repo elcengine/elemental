@@ -11,7 +11,8 @@ import (
 )
 
 func TestPluginFilterQuery(t *testing.T) {
-
+	t.Parallel()
+	
 	Convey("Filters", t, func() {
 
 		Convey("Basic Syntax", func() {

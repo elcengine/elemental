@@ -11,43 +11,47 @@ import (
 )
 
 func TestTransaction(t *testing.T) {
+	t.Parallel()
+
 	e_test_setup.Connection()
 
 	defer e_test_setup.Teardown()
 
-	UserModel.SyncIndexes()
+	var TxnUserModel = UserModel.Clone().SetCollection("txn_users")
+
+	TxnUserModel.SyncIndexes()
 
 	Convey("Batch transaction", t, func() {
 		Convey("Between 2 databases within the same connection", func() {
 			Convey("Should be able to insert into both databases", func() {
 				elemental.TransactionBatch(
-					UserModel.Create(User{
+					TxnUserModel.Create(User{
 						Name: "Yennefer",
 					}),
-					UserModel.SetDatabase(e_mocks.SECONDARY_DB).Create(User{
+					TxnUserModel.SetDatabase(e_mocks.SECONDARY_DB).Create(User{
 						Name: "Triss",
 					}),
 				)
-				yennefer := UserModel.FindOne().Where("name", "Yennefer").Exec()
+				yennefer := TxnUserModel.FindOne().Where("name", "Yennefer").Exec()
 				So(yennefer, ShouldNotBeNil)
-				triss := UserModel.SetDatabase(e_mocks.SECONDARY_DB).FindOne().Where("name", "Triss").Exec()
+				triss := TxnUserModel.SetDatabase(e_mocks.SECONDARY_DB).FindOne().Where("name", "Triss").Exec()
 				So(triss, ShouldNotBeNil)
 			})
 			Convey("Should rollback if one of the operations fail", func() {
 				elemental.TransactionBatch(
-					UserModel.Create(User{
+					TxnUserModel.Create(User{
 						Name: "Eskel",
 					}),
-					UserModel.Create(User{
+					TxnUserModel.Create(User{
 						Name: "Eskel",
 					}),
-					UserModel.SetDatabase(e_mocks.SECONDARY_DB).Create(User{
+					TxnUserModel.SetDatabase(e_mocks.SECONDARY_DB).Create(User{
 						Name: "Eredin",
 					}),
 				)
-				eskel := UserModel.FindOne().Where("name", "Eskel").Exec()
+				eskel := TxnUserModel.FindOne().Where("name", "Eskel").Exec()
 				So(eskel, ShouldBeNil)
-				eredin := UserModel.FindOne().SetDatabase(e_mocks.SECONDARY_DB).Where("name", "Eredin").Exec()
+				eredin := TxnUserModel.FindOne().SetDatabase(e_mocks.SECONDARY_DB).Where("name", "Eredin").Exec()
 				So(eredin, ShouldBeNil)
 			})
 		})

@@ -11,6 +11,10 @@ import (
 )
 
 func TestMultiConnection(t *testing.T) {
+	t.Parallel()
+
+	var LocalMonsterModel = MonsterModel.Clone().SetCollection("monsters_for_multi_connection")
+
 	Convey("Read users where", t, func() {
 		e_connection.ConnectURI(e_mocks.DEFAULT_DB_URI)
 		e_connection.Connect(e_connection.ConnectionOptions{
@@ -75,11 +79,11 @@ func TestMultiConnection(t *testing.T) {
 			},
 		}
 
-		MonsterModel.InsertMany(monstersData).Exec()
-		MonsterModel.SetConnection("second").InsertMany(monstersData).Exec()
+		LocalMonsterModel.InsertMany(monstersData).Exec()
+		LocalMonsterModel.SetConnection("second").InsertMany(monstersData).Exec()
 
-		So(len(MonsterModel.Find().Exec().([]Monster)), ShouldEqual, len(monstersData))
+		So(len(LocalMonsterModel.Find().Exec().([]Monster)), ShouldEqual, len(monstersData))
 
-		So(len(MonsterModel.SetConnection("second").Find().Exec().([]Monster)), ShouldEqual, len(monstersData))
+		So(len(LocalMonsterModel.SetConnection("second").Find().Exec().([]Monster)), ShouldEqual, len(monstersData))
 	})
 }

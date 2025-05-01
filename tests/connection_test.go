@@ -13,6 +13,7 @@ import (
 )
 
 func TestConnection(t *testing.T) {
+	t.Parallel()
 
 	defer e_test_setup.Teardown()
 

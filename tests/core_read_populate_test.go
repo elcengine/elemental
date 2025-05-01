@@ -8,12 +8,17 @@ import (
 )
 
 func TestCoreReadPopulate(t *testing.T) {
+	t.Parallel()
 
 	e_test_setup.Connection()
 
 	defer e_test_setup.Teardown()
 
-	monsters := MonsterModel.InsertMany([]Monster{
+	var LocalMonsterModel = MonsterModel.Clone().SetCollection("monsters_for_populate")
+	var LocalKingdomModel = KingdomModel.Clone().SetCollection("kingdoms_for_populate")
+	var LocalBestiaryModel = BestiaryModel.Clone().SetCollection("bestiaries_for_populate")
+
+	monsters := LocalMonsterModel.InsertMany([]Monster{
 		{
 			Name:     "Katakan",
 			Category: "Vampire",
@@ -28,7 +33,7 @@ func TestCoreReadPopulate(t *testing.T) {
 		},
 	}).Exec().([]Monster)
 
-	kingdoms := KingdomModel.InsertMany([]Kingdom{
+	kingdoms := LocalKingdomModel.InsertMany([]Kingdom{
 		{
 			Name: "Nilfgaard",
 		},
@@ -40,7 +45,7 @@ func TestCoreReadPopulate(t *testing.T) {
 		},
 	}).Exec().([]Kingdom)
 
-	BestiaryModel.InsertMany([]Bestiary{
+	LocalBestiaryModel.InsertMany([]Bestiary{
 		{
 			Monster: monsters[0],
 			Kingdom: kingdoms[0],
@@ -57,19 +62,19 @@ func TestCoreReadPopulate(t *testing.T) {
 
 	Convey("Find with populated fields", t, func() {
 		Convey("Populate a with multiple calls", func() {
-			bestiary := BestiaryModel.Find().Populate("monster").Populate("kingdom").Exec().([]Bestiary)
+			bestiary := LocalBestiaryModel.Find().Populate("monster").Populate("kingdom").Exec().([]Bestiary)
 			So(bestiary, ShouldHaveLength, 3)
 			So(bestiary[0].Monster.Name, ShouldEqual, "Katakan")
 			So(bestiary[0].Kingdom.Name, ShouldEqual, "Nilfgaard")
 		})
 		Convey("Populate with a single call", func() {
-			bestiary := BestiaryModel.Find().Populate("monster", "kingdom").Exec().([]Bestiary)
+			bestiary := LocalBestiaryModel.Find().Populate("monster", "kingdom").Exec().([]Bestiary)
 			So(bestiary, ShouldHaveLength, 3)
 			So(bestiary[0].Monster.Name, ShouldEqual, "Katakan")
 			So(bestiary[0].Kingdom.Name, ShouldEqual, "Nilfgaard")
 		})
 		Convey("Populate with a single call (Comma separated string)", func() {
-			bestiary := BestiaryModel.Find().Populate("monster kingdom").Exec().([]Bestiary)
+			bestiary := LocalBestiaryModel.Find().Populate("monster kingdom").Exec().([]Bestiary)
 			So(bestiary, ShouldHaveLength, 3)
 			So(bestiary[0].Monster.Name, ShouldEqual, "Katakan")
 			So(bestiary[0].Kingdom.Name, ShouldEqual, "Nilfgaard")

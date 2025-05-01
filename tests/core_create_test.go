@@ -13,7 +13,8 @@ import (
 )
 
 func TestCoreCreate(t *testing.T) {
-
+	t.Parallel()
+	
 	e_test_setup.Connection()
 
 	defer e_test_setup.Teardown()

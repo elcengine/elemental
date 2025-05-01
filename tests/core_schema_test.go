@@ -13,7 +13,10 @@ import (
 )
 
 func TestCoreSchemaOptions(t *testing.T) {
+	t.Parallel()
+
 	e_test_setup.Connection()
+	
 	defer e_test_setup.Teardown()
 
 	Convey("Schema variations", t, func() {
