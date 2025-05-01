@@ -1,10 +1,10 @@
 package e_tests
 
 import (
-	"github.com/elcengine/elemental/tests/setup"
 	"fmt"
 	"testing"
 
+	e_test_setup "github.com/elcengine/elemental/tests/setup"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -18,7 +18,6 @@ func TestCoreReadSelect(t *testing.T) {
 	Convey("Find with only specified fields", t, func() {
 		limit := int64(2)
 		Convey(fmt.Sprintf("%d user names with ID", limit), func() {
-			t.Parallel()
 			assert := func(users []User) {
 				So(users, ShouldHaveLength, limit)
 				for _, user := range users {
@@ -45,7 +44,6 @@ func TestCoreReadSelect(t *testing.T) {
 			})
 		})
 		Convey(fmt.Sprintf("%d user names without ID", limit), func() {
-			t.Parallel()
 			assert := func(users []User) {
 				So(users, ShouldHaveLength, limit)
 				for _, user := range users {
@@ -77,7 +75,6 @@ func TestCoreReadSelect(t *testing.T) {
 			})
 		})
 		Convey(fmt.Sprintf("%d user names and ages", limit), func() {
-			t.Parallel()
 			assert := func(users []User) {
 				So(users, ShouldHaveLength, limit)
 				for _, user := range users {

@@ -1,6 +1,8 @@
 module github.com/elcengine/elemental
 
-go 1.21.3
+go 1.23
+
+toolchain go1.23.5
 
 require (
 	github.com/creasty/defaults v1.7.0

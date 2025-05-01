@@ -1,9 +1,9 @@
 package e_tests
 
 import (
-	"github.com/elcengine/elemental/tests/setup"
 	"testing"
 
+	e_test_setup "github.com/elcengine/elemental/tests/setup"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -57,21 +57,18 @@ func TestCoreReadPopulate(t *testing.T) {
 
 	Convey("Find with populated fields", t, func() {
 		Convey("Populate a with multiple calls", func() {
-			t.Parallel()
 			bestiary := BestiaryModel.Find().Populate("monster").Populate("kingdom").Exec().([]Bestiary)
 			So(bestiary, ShouldHaveLength, 3)
 			So(bestiary[0].Monster.Name, ShouldEqual, "Katakan")
 			So(bestiary[0].Kingdom.Name, ShouldEqual, "Nilfgaard")
 		})
 		Convey("Populate with a single call", func() {
-			t.Parallel()
 			bestiary := BestiaryModel.Find().Populate("monster", "kingdom").Exec().([]Bestiary)
 			So(bestiary, ShouldHaveLength, 3)
 			So(bestiary[0].Monster.Name, ShouldEqual, "Katakan")
 			So(bestiary[0].Kingdom.Name, ShouldEqual, "Nilfgaard")
 		})
 		Convey("Populate with a single call (Comma separated string)", func() {
-			t.Parallel()
 			bestiary := BestiaryModel.Find().Populate("monster kingdom").Exec().([]Bestiary)
 			So(bestiary, ShouldHaveLength, 3)
 			So(bestiary[0].Monster.Name, ShouldEqual, "Katakan")

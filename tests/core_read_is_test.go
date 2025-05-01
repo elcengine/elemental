@@ -1,9 +1,10 @@
 package e_tests
 
 import (
-	"github.com/elcengine/elemental/tests/mocks"
-	"github.com/elcengine/elemental/tests/setup"
 	"testing"
+
+	e_mocks "github.com/elcengine/elemental/tests/mocks"
+	e_test_setup "github.com/elcengine/elemental/tests/setup"
 
 	"github.com/samber/lo"
 	. "github.com/smartystreets/goconvey/convey"
@@ -18,12 +19,10 @@ func TestCoreReadIs(t *testing.T) {
 
 	Convey("Read users where", t, func() {
 		Convey("Name is of type string", func() {
-			t.Parallel()
 			users := UserModel.Where("name").IsType(bson.TypeString).Exec().([]User)
 			So(len(users), ShouldEqual, len(e_mocks.Users))
 		})
 		Convey("School is null", func() {
-			t.Parallel()
 			users := UserModel.Where("school").IsNull().Exec().([]User)
 			So(len(users), ShouldEqual, len(lo.Filter(e_mocks.Users, func(u User, _ int) bool {
 				return u.School == nil

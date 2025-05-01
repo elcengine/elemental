@@ -1,10 +1,11 @@
 package e_tests
 
 import (
-	"github.com/elcengine/elemental/core"
-	"github.com/elcengine/elemental/tests/mocks"
-	"github.com/elcengine/elemental/tests/setup"
 	"testing"
+
+	elemental "github.com/elcengine/elemental/core"
+	e_mocks "github.com/elcengine/elemental/tests/mocks"
+	e_test_setup "github.com/elcengine/elemental/tests/setup"
 
 	"github.com/samber/lo"
 	. "github.com/smartystreets/goconvey/convey"
@@ -18,7 +19,6 @@ func TestCoreReadPaginate(t *testing.T) {
 
 	Convey("Find paginated users", t, func() {
 		Convey("First page", func() {
-			t.Parallel()
 			result := UserModel.Find().Paginate(1, 2).Exec().(elemental.PaginateResult[User])
 			So(len(result.Docs), ShouldEqual, 2)
 			So(result.TotalPages, ShouldEqual, 4)
@@ -33,7 +33,6 @@ func TestCoreReadPaginate(t *testing.T) {
 			So(result.Docs[1].Name, ShouldEqual, e_mocks.Geralt.Name)
 		})
 		Convey("Second page", func() {
-			t.Parallel()
 			result := UserModel.Find().Paginate(2, 2).Exec().(elemental.PaginateResult[User])
 			So(len(result.Docs), ShouldEqual, 2)
 			So(result.TotalPages, ShouldEqual, 4)
@@ -48,7 +47,6 @@ func TestCoreReadPaginate(t *testing.T) {
 			So(result.Docs[1].Name, ShouldEqual, e_mocks.Caranthir.Name)
 		})
 		Convey("Last page", func() {
-			t.Parallel()
 			result := UserModel.Find().Paginate(4, 2).Exec().(elemental.PaginateResult[User])
 			So(len(result.Docs), ShouldEqual, 1)
 			So(result.TotalPages, ShouldEqual, 4)
