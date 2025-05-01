@@ -30,14 +30,12 @@ func TestCoreRead(t *testing.T) {
 		})
 		Convey("Find all with a limit of 2 and skip 2", func() {
 			Convey("In order of skip -> limit", func() {
-				t.Parallel()
 				users := UserModel.Find().Skip(2).Limit(2).Exec().([]User)
 				So(users, ShouldHaveLength, 2)
 				So(users[0].Name, ShouldEqual, e_mocks.Eredin.Name)
 				So(users[1].Name, ShouldEqual, e_mocks.Caranthir.Name)
 			})
 			Convey("In order of limit -> skip", func() {
-				t.Parallel()
 				users := UserModel.Find().Limit(2).Skip(2).Exec().([]User)
 				So(users, ShouldHaveLength, 2)
 				So(users[0].Name, ShouldEqual, e_mocks.Eredin.Name)
@@ -53,13 +51,11 @@ func TestCoreRead(t *testing.T) {
 			users := UserModel.Find(primitive.M{"name": "Yarpen Zigrin"}).Exec().([]User)
 			So(users, ShouldHaveLength, 0)
 			Convey("With or fail", func() {
-				t.Parallel()
 				So(func() {
 					UserModel.Find(primitive.M{"name": "Yarpen Zigrin"}).OrFail().Exec()
 				}, ShouldPanicWith, errors.New("no results found matching the given query"))
 			})
 			Convey("With or fail and custom error", func() {
-				t.Parallel()
 				err := errors.New("no user found")
 				So(func() {
 					UserModel.Find(primitive.M{"name": "Yarpen Zigrin"}).OrFail(err).Exec()
@@ -92,7 +88,6 @@ func TestCoreRead(t *testing.T) {
 		})
 		Convey("Find all users in descending order of age", func() {
 			Convey("In conjuntion with a primitive map", func() {
-				t.Parallel()
 				users := UserModel.Find().Sort(primitive.M{"age": -1}).Exec().([]User)
 				So(users[0].Name, ShouldEqual, e_mocks.Vesemir.Name)
 				So(users[1].Name, ShouldEqual, e_mocks.Imlerith.Name)
@@ -100,7 +95,6 @@ func TestCoreRead(t *testing.T) {
 				So(users[3].Name, ShouldEqual, e_mocks.Geralt.Name)
 			})
 			Convey("In conjuntion with key-value args", func() {
-				t.Parallel()
 				users := UserModel.Find().Sort("age", -1).Exec().([]User)
 				So(users[0].Name, ShouldEqual, e_mocks.Vesemir.Name)
 				So(users[1].Name, ShouldEqual, e_mocks.Imlerith.Name)

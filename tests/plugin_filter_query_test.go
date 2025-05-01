@@ -1,8 +1,9 @@
 package e_tests
 
 import (
-	filter_query "github.com/elcengine/elemental/plugins/filter-query"
 	"testing"
+
+	filter_query "github.com/elcengine/elemental/plugins/filter-query"
 
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,7 +13,6 @@ import (
 func TestPluginFilterQuery(t *testing.T) {
 
 	Convey("Filters", t, func() {
-		t.Parallel()
 
 		Convey("Basic Syntax", func() {
 			Convey("Equality", func() {
@@ -69,7 +69,6 @@ func TestPluginFilterQuery(t *testing.T) {
 	})
 
 	Convey("Sorts", t, func() {
-		t.Parallel()
 
 		Convey("Ascending", func() {
 			result := filter_query.Parse("sort[name]=asc")
@@ -94,7 +93,6 @@ func TestPluginFilterQuery(t *testing.T) {
 	})
 
 	Convey("Include", t, func() {
-		t.Parallel()
 
 		Convey("When present in query string", func() {
 			result := filter_query.Parse("include=field1,field2")
@@ -107,7 +105,6 @@ func TestPluginFilterQuery(t *testing.T) {
 	})
 
 	Convey("Select", t, func() {
-		t.Parallel()
 
 		Convey("When present in query string", func() {
 			result := filter_query.Parse("select=field1,field2")
@@ -124,8 +121,7 @@ func TestPluginFilterQuery(t *testing.T) {
 	})
 
 	Convey("Prepaginate", t, func() {
-		t.Parallel()
-		
+
 		Convey("When present in query string as true", func() {
 			result := filter_query.Parse("prepaginate=true")
 			So(result.Prepaginate, ShouldBeTrue)
