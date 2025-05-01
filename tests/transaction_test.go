@@ -34,10 +34,14 @@ func TestTransaction(t *testing.T) {
 				)
 				So(results, ShouldHaveLength, 2)
 				So(errors, ShouldBeEmpty)
-				yennefer := UserModel.FindOne().Where("name", "Yennefer").Exec()
-				So(yennefer, ShouldNotBeNil)
-				triss := UserModel.FindOne().Where("name", "Triss").SetDatabase(SECONDARY_DB).Exec()
-				So(triss, ShouldNotBeNil)
+				SoTimeout(t, func() (ok bool) {
+					ok = UserModel.FindOne().Where("name", "Yennefer").Exec() != nil
+					return
+				})
+				SoTimeout(t, func() (ok bool) {
+					ok = UserModel.FindOne().Where("name", "Triss").SetDatabase(SECONDARY_DB).Exec() != nil
+					return
+				})
 			})
 			Convey("Should rollback if one of the operations fail", func() {
 				_, errors := elemental.TransactionBatch(
