@@ -28,13 +28,13 @@ func TestTransaction(t *testing.T) {
 					UserModel.Create(User{
 						Name: "Yennefer",
 					}),
-					UserModel.SetDatabase(SECONDARY_DB).Create(User{
+					UserModel.Create(User{
 						Name: "Triss",
-					}),
+					}).SetDatabase(SECONDARY_DB),
 				)
 				yennefer := UserModel.FindOne().Where("name", "Yennefer").Exec()
 				So(yennefer, ShouldNotBeNil)
-				triss := UserModel.SetDatabase(SECONDARY_DB).FindOne().Where("name", "Triss").Exec()
+				triss := UserModel.FindOne().Where("name", "Triss").SetDatabase(SECONDARY_DB).Exec()
 				So(triss, ShouldNotBeNil)
 			})
 			Convey("Should rollback if one of the operations fail", func() {
