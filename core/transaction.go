@@ -2,11 +2,9 @@ package elemental
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/elcengine/elemental/connection"
 	"github.com/samber/lo"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -45,8 +43,6 @@ func TransactionBatch(queries ...ModelInterface[any]) ([]interface{}, []any) {
 			session.StartTransaction()
 			err = mongo.WithSession(context.Background(), session, func(sessionCtx mongo.SessionContext) error {
 				lo.TryCatchWithErrorValue(func() error {
-					dbs, _ := lo.ToPtr(q.Connection()).ListDatabaseNames(context.Background(), bson.M{})
-					fmt.Println("Executing query:", dbs)
 					result := q.Exec(sessionCtx)
 					results = append(results, result)
 					return nil
