@@ -48,7 +48,7 @@ func (m Model[T]) SetConnection(connection string) Model[T] {
 // Sets a temporary database for this model. This database will be used for the next operation only.
 func (m Model[T]) SetDatabase(database string) Model[T] {
 	m.temporaryDatabase = &database
-	go m.SyncIndexes()
+	m.SyncIndexes()
 	return m
 }
 

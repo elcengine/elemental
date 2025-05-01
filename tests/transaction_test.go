@@ -17,8 +17,6 @@ func TestTransaction(t *testing.T) {
 
 	UserModel := UserModel.SetDatabase(t.Name())
 
-	UserModel.SyncIndexes()
-
 	SECONDARY_DB := fmt.Sprintf("%s_%s", t.Name(), "secondary")
 
 	Convey("Batch transaction", t, func() {
