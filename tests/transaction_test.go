@@ -19,8 +19,6 @@ func TestTransaction(t *testing.T) {
 
 	SECONDARY_DB := fmt.Sprintf("%s_%s", t.Name(), "secondary")
 
-	UserModel.SyncIndexes()
-
 	Convey("Batch transaction", t, func() {
 		Convey("Between 2 databases within the same connection", func() {
 			Convey("Should be able to insert into both databases", func() {
@@ -32,7 +30,6 @@ func TestTransaction(t *testing.T) {
 						Name: "Triss",
 					}).SetDatabase(SECONDARY_DB),
 				)
-				fmt.Println(UserModel.FindOne().Where("name", "Triss").SetDatabase(SECONDARY_DB).Collection().Name())
 				So(results, ShouldHaveLength, 2)
 				So(errors, ShouldBeEmpty)
 				yennefer := UserModel.FindOne().Where("name", "Yennefer").Exec()
