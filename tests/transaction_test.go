@@ -32,10 +32,10 @@ func TestTransaction(t *testing.T) {
 						Name: "Triss",
 					}).SetDatabase(SECONDARY_DB),
 				)
-				fmt.Println(errors)
 				So(errors, ShouldBeEmpty)
 				yennefer := UserModel.FindOne().Where("name", "Yennefer").Exec()
 				So(yennefer, ShouldNotBeNil)
+				fmt.Println(UserModel.Find().Where("name", "Triss").SetDatabase(SECONDARY_DB).Exec())
 				triss := UserModel.FindOne().Where("name", "Triss").SetDatabase(SECONDARY_DB).Exec()
 				So(triss, ShouldNotBeNil)
 			})
