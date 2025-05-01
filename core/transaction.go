@@ -26,9 +26,10 @@ func ClientTransaction(alias string, fn func(ctx mongo.SessionContext) (interfac
 	return transaction(fn, &alias)
 }
 
+// TransactionBatch runs a batch of queries in a transaction. If any of the queries fail, the transaction is aborted and all changes are rolled back.
 func TransactionBatch(queries ...ModelInterface[any]) []interface{} {
 	var sessions []mongo.Session
-	var results []interface{}
+	var results []any
 	var errCount int
 	for _, query := range queries {
 		func(q ModelInterface[any]) {

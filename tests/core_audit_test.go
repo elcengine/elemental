@@ -26,13 +26,15 @@ func TestCoreAudit(t *testing.T) {
 		},
 	})).SetDatabase(t.Name())
 
+	AuditModel := elemental.AuditModel.SetDatabase(t.Name())
+
 	KingdomModel.EnableAuditing()
 
 	Convey("Inspect audit records", t, func() {
 		Convey("Insert", func() {
 			KingdomModel.Create(Kingdom{Name: "Nilfgaard"}).Exec()
 			SoTimeout(t, func() (ok bool) {
-				audit := e_utils.Cast[elemental.Audit](elemental.AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeInsert}).Exec())
+				audit := e_utils.Cast[elemental.Audit](AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeInsert}).Exec())
 				if audit.Type != "" {
 					ok = true
 				}
@@ -42,7 +44,7 @@ func TestCoreAudit(t *testing.T) {
 		Convey("Update", func() {
 			KingdomModel.UpdateOne(&primitive.M{"name": "Nilfgaard"}, Kingdom{Name: "Redania"}).Exec()
 			SoTimeout(t, func() (ok bool) {
-				audit := e_utils.Cast[elemental.Audit](elemental.AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeUpdate}).Exec())
+				audit := e_utils.Cast[elemental.Audit](AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeUpdate}).Exec())
 				if audit.Type != "" {
 					ok = true
 				}
@@ -52,7 +54,7 @@ func TestCoreAudit(t *testing.T) {
 		Convey("Delete", func() {
 			KingdomModel.DeleteOne(primitive.M{"name": "Redania"}).Exec()
 			SoTimeout(t, func() (ok bool) {
-				audit := e_utils.Cast[elemental.Audit](elemental.AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeDelete}).Exec())
+				audit := e_utils.Cast[elemental.Audit](AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeDelete}).Exec())
 				if audit.Type != "" {
 					ok = true
 				}
