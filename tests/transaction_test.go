@@ -24,14 +24,16 @@ func TestTransaction(t *testing.T) {
 	Convey("Batch transaction", t, func() {
 		Convey("Between 2 databases within the same connection", func() {
 			Convey("Should be able to insert into both databases", func() {
-				_, errors := elemental.TransactionBatch(
+				results, errors := elemental.TransactionBatch(
 					UserModel.Create(User{
 						Name: "Yennefer",
 					}),
-					UserModel.Clone().Create(User{
+					UserModel.Create(User{
 						Name: "Triss",
 					}).SetDatabase(SECONDARY_DB),
 				)
+				fmt.Println(44, results)
+				So(results, ShouldHaveLength, 2)
 				So(errors, ShouldBeEmpty)
 				yennefer := UserModel.FindOne().Where("name", "Yennefer").Exec()
 				So(yennefer, ShouldNotBeNil)
