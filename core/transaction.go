@@ -33,28 +33,26 @@ func TransactionBatch(queries ...ModelInterface[any]) ([]interface{}, []any) {
 	var sessions []mongo.Session
 	var results []any
 	var errs []any
-	for _, query := range queries {
-		func(q ModelInterface[any]) {
-			session, err := lo.ToPtr(q.Connection()).StartSession()
-			if err != nil {
-				panic(err)
-			}
-			sessions = append(sessions, session)
-			session.StartTransaction()
-			err = mongo.WithSession(context.Background(), session, func(sessionCtx mongo.SessionContext) error {
-				lo.TryCatchWithErrorValue(func() error {
-					result := q.Exec(sessionCtx)
-					results = append(results, result)
-					return nil
-				}, func(err any) {
-					errs = append(errs, err)
-				})
+	for _, q := range queries {
+		session, err := lo.ToPtr(q.Connection()).StartSession()
+		if err != nil {
+			panic(err)
+		}
+		sessions = append(sessions, session)
+		session.StartTransaction()
+		err = mongo.WithSession(context.Background(), session, func(sessionCtx mongo.SessionContext) error {
+			lo.TryCatchWithErrorValue(func() error {
+				result := q.Exec(sessionCtx)
+				results = append(results, result)
 				return nil
-			})
-			if err != nil {
+			}, func(err any) {
 				errs = append(errs, err)
-			}
-		}(query)
+			})
+			return nil
+		})
+		if err != nil {
+			errs = append(errs, err)
+		}
 	}
 	for _, session := range sessions {
 		if len(errs) > 0 {
