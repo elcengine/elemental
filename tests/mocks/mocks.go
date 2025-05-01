@@ -13,6 +13,10 @@ var (
 )
 
 var (
+	DEFAULT_DB_NAME = "elemental"
+)
+
+var (
 	WolfSchool      = "Wolf"
 	BearSchool      = "Bear"
 	GriffinSchool   = "Griffin"

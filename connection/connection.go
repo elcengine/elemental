@@ -7,6 +7,7 @@ import (
 	"github.com/elcengine/elemental/constants"
 	"github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -104,7 +105,7 @@ func DropAll(alias ...string) {
 		if len(alias) > 0 && !lo.Contains(alias, key) {
 			continue
 		}
-		databases, err := client.ListDatabaseNames(context.Background(), options.ListDatabases().SetNameOnly(true))
+		databases, err := client.ListDatabaseNames(context.Background(), bson.D{{}}, options.ListDatabases().SetNameOnly(true))
 		if err != nil {
 			panic(err)
 		}

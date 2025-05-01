@@ -9,7 +9,7 @@ import (
 )
 
 func Connection(databaseName string) {
-	e_connection.ConnectURI(strings.Replace(e_mocks.DEFAULT_DATASOURCE, "elemental", databaseName, 1))
+	e_connection.ConnectURI(strings.Replace(e_mocks.DEFAULT_DATASOURCE, e_mocks.DEFAULT_DB_NAME, databaseName, 1))
 }
 
 func Seed() {
