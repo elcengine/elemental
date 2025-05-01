@@ -12,13 +12,13 @@ func Connection(databaseName string) {
 	e_connection.ConnectURI(strings.Replace(e_mocks.DEFAULT_DATASOURCE, e_mocks.DEFAULT_DB_NAME, databaseName, 1))
 }
 
-func Seed() {
-	e_test_base.UserModel.InsertMany(e_mocks.Users).Exec()
+func Seed(databaseName string) {
+	e_test_base.UserModel.SetDatabase(databaseName).InsertMany(e_mocks.Users).Exec()
 }
 
 func SeededConnection(databaseName string) {
 	Connection(databaseName)
-	Seed()
+	Seed(databaseName)
 }
 
 func Teardown() {
