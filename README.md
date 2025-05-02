@@ -5,7 +5,7 @@ Golang ODM for MongoDB
 ## Installation
 
 ```bash
-go get github.com/akalanka47000/elemental
+go get github.com/elcengine/elemental
 ```
 
 ## Development Setup
