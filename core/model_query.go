@@ -2,8 +2,8 @@ package elemental
 
 import (
 	"context"
-	"github.com/elcengine/elemental/utils"
 	"errors"
+	"github.com/elcengine/elemental/utils"
 
 	"github.com/samber/lo"
 	"github.com/spf13/cast"
@@ -36,6 +36,7 @@ func (m Model[T]) OrFail(err ...error) Model[T] {
 }
 
 // Exec is the final step in the query builder chain. It executes the query and returns the results.
+// The result of this method is not type safe, so you need to cast it to the expected type.
 func (m Model[T]) Exec(ctx ...context.Context) any {
 	if m.executor == nil {
 		m.executor = func(m Model[T], ctx context.Context) any {
@@ -65,15 +66,26 @@ func (m Model[T]) Exec(ctx ...context.Context) any {
 	return m.executor(m, e_utils.DefaultCTX(ctx))
 }
 
-func (m Model[T]) ExecWild(ctx ...context.Context) any {
-	if m.executor == nil {
-		m.executor = func(m Model[T], ctx context.Context) any {
-			var results []any
-			e_utils.Must(lo.Must(m.Collection().Aggregate(ctx, m.pipeline)).All(ctx, &results))
-			// TODO: uncomment and fix
-			// m.checkConditionsAndPanic(results)
-			return results
-		}
-	}
-	return m.executor(m, e_utils.DefaultCTX(ctx))
+// ExecT is a convenience method that executes the query and returns the first result.
+// It is a type safe method, so you don't need to cast the result. If the query returns nothing
+// it will return the zero value of the type.
+func (m Model[T]) ExecT(ctx ...context.Context) T {
+	result := m.Exec(ctx...)
+	return e_utils.Cast[T](result)
+}
+
+// ExecP is a convenience method that executes the query and returns the first result as a pointer.
+// It is a type safe method, so you don't need to cast the result. If the query returns nothing
+// it will return nil.
+func (m Model[T]) ExecP(ctx ...context.Context) *T {
+	result := m.Exec(ctx...)
+	return e_utils.Cast[*T](result)
+}
+
+// ExecSlice is a convenience method that executes the query and returns the results as a slice.
+// It is a type safe method, so you don't need to cast the result. If the query returns nothing
+// it will return an empty slice.
+func (m Model[T]) ExecSlice(ctx ...context.Context) []T {
+	result := m.Exec(ctx...)
+	return e_utils.Cast[[]T](result)
 }
