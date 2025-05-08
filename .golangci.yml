@@ -1,0 +1,30 @@
+version: "2"
+linters:
+  default: all
+  disable:
+    - bodyclose
+    - cyclop
+    - depguard
+    - dogsled
+    - errcheck
+    - errorlint
+    - exhaustruct
+    - funlen
+    - gochecknoglobals
+    - gocyclo
+    - gocognit
+    - gosec
+    - gomoddirectives
+    - ireturn
+    - mnd
+    - nestif
+    - nlreturn
+    - noctx
+    - nonamedreturns
+    - perfsprint
+    - revive
+    - tagalign
+    - tagliatelle
+    - varnamelen
+    - wrapcheck
+    - wsl

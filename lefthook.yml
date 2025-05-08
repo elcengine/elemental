@@ -1,0 +1,15 @@
+pre-commit:
+  parallel: true
+  commands:
+    format:
+      run: make format && git add .
+
+commit-msg:
+  commands:
+    commitlint:
+      run: |
+        if [ ! -f "$(which commitlint)" ]; then
+          echo "\033[0;33mcommitlint not found, skipping commit message linting\033[0m"
+          exit 0
+        fi
+        npx commitlint --edit --color

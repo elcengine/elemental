@@ -1,6 +1,7 @@
 package e_tests
 
 import (
+	"os"
 	"testing"
 
 	e_connection "github.com/elcengine/elemental/connection"
@@ -12,6 +13,10 @@ import (
 
 func TestMultiConnection(t *testing.T) {
 	t.Parallel()
+
+	if (os.Getenv("CI") == "") {
+		t.Skip("Skipping test in non-CI environment")
+	}
 
 	e_test_setup.Connection(t.Name())
 
