@@ -8,11 +8,14 @@ import (
 	e_connection "github.com/elcengine/elemental/connection"
 	e_constants "github.com/elcengine/elemental/constants"
 	e_mocks "github.com/elcengine/elemental/tests/mocks"
+	e_test_setup "github.com/elcengine/elemental/tests/setup"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func TestConnection(t *testing.T) {
+	defer e_test_setup.Teardown()
+
 	Convey("Connect to a local database", t, func() {
 		Convey("Simplest form of connect with just a URI", func() {
 			client := e_connection.Connect(e_connection.ConnectionOptions{
