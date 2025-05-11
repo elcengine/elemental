@@ -34,7 +34,7 @@ var BestiaryWithIDModel = e_test_base.BestiaryWithIDModel
 func SoTimeout(t *testing.T, f func() bool, timeout ...<-chan time.Time) {
 	t.Helper()
 	if len(timeout) == 0 {
-		timeout = append(timeout, time.After(15*time.Second))
+		timeout = append(timeout, time.After(10*time.Second))
 	}
 	for {
 		select {
