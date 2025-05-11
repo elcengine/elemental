@@ -28,28 +28,28 @@ type TriggerOptions struct {
 }
 
 func (m Model[T]) on(event triggerType, f func(change primitive.M), opts ...TriggerOptions) {
+	filters := primitive.M{}
+	ctx := context.Background()
+	if len(opts) > 0 {
+		if opts[0].Context != nil {
+			ctx = *opts[0].Context
+		}
+		if opts[0].Filter != nil {
+			filters = *opts[0].Filter
+		}
+	}
+	filters["operationType"] = event
+	cs, err := m.Collection().Watch(ctx, mongo.Pipeline{
+		bson.D{{Key: "$match", Value: filters}},
+	}, options.ChangeStream().SetFullDocument(options.UpdateLookup))
+	if err != nil {
+		panic(err)
+	}
 	go lo.Try(func() error {
-		filters := primitive.M{}
-		ctx := context.Background()
-		if len(opts) > 0 {
-			if opts[0].Context != nil {
-				ctx = *opts[0].Context
-			}
-			if opts[0].Filter != nil {
-				filters = *opts[0].Filter
-			}
-		}
-		filters["operationType"] = event
-		cs, err := m.Collection().Watch(ctx, mongo.Pipeline{
-			bson.D{{Key: "$match", Value: filters}},
-		}, options.ChangeStream().SetFullDocument(options.UpdateLookup))
-		if err != nil {
-			panic(err)
-		}
-		defer cs.Close(ctx)
 		for cs.Next(ctx) {
 			var changeDoc bson.M
 			if err := cs.Decode(&changeDoc); err != nil {
+				cs.Close(ctx)
 				return err
 			}
 			f(changeDoc)

@@ -2,6 +2,9 @@ package e_connection
 
 import (
 	"context"
+	"maps"
+	"slices"
+	"sync"
 	"time"
 
 	"github.com/elcengine/elemental/constants"
@@ -13,13 +16,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
-	"golang.org/x/exp/maps"
 )
 
 const connectionTimeout = 30 * time.Second
 
 var clients = make(map[string]mongo.Client)
 var defaultDatabases = make(map[string]string)
+var mu sync.RWMutex
 
 type ConnectionOptions struct {
 	Alias         string
@@ -29,8 +32,12 @@ type ConnectionOptions struct {
 }
 
 func Connect(opts ConnectionOptions) mongo.Client {
+	mu.Lock()
+	defer mu.Unlock()
 	opts.Alias = e_utils.Coalesce(opts.Alias, "default")
-	clientOpts := e_utils.Coalesce(opts.ClientOptions, options.Client()).SetServerAPIOptions(options.ServerAPI(options.ServerAPIVersion1)).SetPoolMonitor(e_utils.Coalesce(opts.PoolMonitor, poolMonitor(opts.Alias)))
+	clientOpts := e_utils.Coalesce(opts.ClientOptions, options.Client()).
+		SetServerAPIOptions(options.ServerAPI(options.ServerAPIVersion1)).
+		SetPoolMonitor(e_utils.Coalesce(opts.PoolMonitor, poolMonitor(opts.Alias)))
 	if clientOpts.GetURI() == "" {
 		clientOpts = clientOpts.ApplyURI(opts.URI)
 		if clientOpts.GetURI() == "" {
@@ -70,7 +77,7 @@ func GetConnection(alias ...string) mongo.Client {
 // @param aliases - The aliases of the connections to disconnect
 func Disconnect(aliases ...string) error {
 	if len(aliases) == 0 {
-		aliases = maps.Keys(clients)
+		aliases = slices.AppendSeq(aliases, maps.Keys(clients))
 	}
 	for _, alias := range aliases {
 		err := lo.ToPtr(clients[alias]).Disconnect(context.Background())
@@ -89,14 +96,16 @@ func Disconnect(aliases ...string) error {
 //
 // @param alias - The alias of the connection to use
 func Use(database string, alias ...string) *mongo.Database {
-	return lo.ToPtr(clients[e_utils.Coalesce(e_utils.First(alias), "default")]).Database(e_utils.Coalesce(database, defaultDatabases[e_utils.Coalesce(e_utils.First(alias), "default")]))
+	return lo.ToPtr(clients[e_utils.Coalesce(e_utils.First(alias), "default")]).
+		Database(e_utils.Coalesce(database, defaultDatabases[e_utils.Coalesce(e_utils.First(alias), "default")]))
 }
 
 // Use the default database on a connection. Uses the default connection if no alias is provided
 //
 // @param alias - The alias of the connection to use
 func UseDefault(alias ...string) *mongo.Database {
-	return lo.ToPtr(clients[e_utils.Coalesce(e_utils.First(alias), "default")]).Database(e_utils.Coalesce(defaultDatabases[e_utils.Coalesce(e_utils.First(alias), "default")], "test"))
+	return lo.ToPtr(clients[e_utils.Coalesce(e_utils.First(alias), "default")]).
+		Database(e_utils.Coalesce(defaultDatabases[e_utils.Coalesce(e_utils.First(alias), "default")], "test"))
 }
 
 // Drops all databases across a given client or all clients if no alias is provided

@@ -18,6 +18,7 @@ type Schema struct {
 	Options     SchemaOptions
 }
 
+// Creates a new Elemental schema with the given definitions and options.
 func NewSchema(definitions map[string]Field, opts ...SchemaOptions) Schema {
 	schema := Schema{
 		Definitions: definitions,

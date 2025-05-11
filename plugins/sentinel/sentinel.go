@@ -14,7 +14,9 @@ import (
 
 var validate = validator.New()
 
-// Legitimize validates the input data based on the given validation tags within it's type definition. Basic validations are inherited from the go-playground/validator package while the augmented validations are provided by the sentinel package.
+// Legitimize validates the input data based on the given validation tags within it's type definition.
+// Basic validations are inherited from the go-playground/validator package while the augmented validations
+// are provided by the sentinel package.
 func Legitimize(input interface{}) error {
 	err := validate.Struct(input)
 	if err != nil {
@@ -24,7 +26,7 @@ func Legitimize(input interface{}) error {
 
 	inputMap := e_utils.ToMap(input)
 
-	for i := 0; i < v.NumField(); i++ {
+	for i := range v.NumField() {
 		field := v.Type().Field(i)
 		value := v.Field(i).Interface()
 		vts := strings.Split(field.Tag.Get("augmented_validate"), ";")

@@ -1,9 +1,9 @@
 package main
 
 import (
-  "github.com/elcengine/elemental/cmd"
+	"github.com/elcengine/elemental/cmd"
 )
 
 func main() {
-  e_cmd.Execute()
+	e_cmd.Execute()
 }

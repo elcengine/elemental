@@ -1,3 +1,4 @@
+//nolint:exhaustive
 package e_utils
 
 import (
@@ -10,7 +11,7 @@ import (
 
 func setField(field reflect.Value, defaultVal string) error {
 	if !field.CanSet() {
-		return fmt.Errorf("Can't set value\n")
+		return fmt.Errorf("can't set value")
 	}
 	switch field.Kind() {
 	case reflect.Int:
@@ -25,16 +26,15 @@ func setField(field reflect.Value, defaultVal string) error {
 
 func SetDefaults(ptr interface{}) error {
 	if reflect.TypeOf(ptr).Kind() != reflect.Ptr {
-		return fmt.Errorf("Not a pointer")
+		return fmt.Errorf("not a pointer")
 	}
 	v := reflect.ValueOf(ptr).Elem()
 	t := v.Type()
-	for i := 0; i < t.NumField(); i++ {
+	for i := range t.NumField() {
 		if defaultVal := t.Field(i).Tag.Get("default"); defaultVal != "-" {
 			if err := setField(v.Field(i), defaultVal); err != nil {
 				return err
 			}
-
 		}
 	}
 	return nil

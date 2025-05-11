@@ -77,7 +77,7 @@ func (m Model[T]) UpdateByID(id primitive.ObjectID, doc any, opts ...*options.Up
 func (m Model[T]) Save(doc T) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
 		m.middleware.pre.save.run(doc)
-		m.UpdateByID(reflect.ValueOf(doc).FieldByName("ID").Interface().(primitive.ObjectID), doc).Exec()
+		m.UpdateByID(reflect.ValueOf(doc).FieldByName("ID").Interface().(primitive.ObjectID), doc).Exec(ctx) //nolint:contextcheck
 		m.middleware.post.save.run(doc)
 		return doc
 	}

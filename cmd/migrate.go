@@ -1,10 +1,10 @@
+//nolint:gocritic
 package e_cmd
 
 import (
+	"fmt"
 	e_connection "github.com/elcengine/elemental/connection"
 	e_utils "github.com/elcengine/elemental/utils"
-	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -18,15 +18,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	TargetSeed    = "seed"
+	TargetMigrate = "migrate"
+)
+
 func run(rollback bool, target string) {
 	cfg := readConfigFile()
-	e_connection.ConnectURI(cfg.ConnectionStr)
-	defer e_connection.Disconnect()
 	dir := cfg.MigrationsDir
-	if target == "seed" {
+	if target == TargetSeed {
 		dir = cfg.SeedsDir
 	}
-	files, err := ioutil.ReadDir(dir)
+	files, err := os.ReadDir(dir)
 	if err != nil {
 		log.Fatalf("Failed to read %ss: %v", target, err)
 	}
@@ -94,10 +97,10 @@ func main() {
 }
 `,
 		target, cfg.ConnectionStr, cfg.ChangelogCollection,
-		strings.Join(lo.Map(files, func(file os.FileInfo, index int) string {
+		strings.Join(lo.Map(files, func(file os.DirEntry, index int) string {
 			return fmt.Sprintf("\"%s\"", strings.TrimSuffix(file.Name(), ".go"))
 		}), ","),
-		strings.Join(lo.Map(files, func(file os.FileInfo, index int) string {
+		strings.Join(lo.Map(files, func(file os.DirEntry, index int) string {
 			if rollback {
 				return fmt.Sprintf("%ss.Down_%d", target, extractTimestamp(file.Name()))
 			} else {
@@ -108,10 +111,13 @@ func main() {
 		target,
 		rollback, cfg.ChangelogCollection, cfg.ChangelogCollection, target,
 	)
+	e_connection.ConnectURI(cfg.ConnectionStr)
+	defer e_connection.Disconnect()
 	os.MkdirAll(".elemental/"+target+"s", os.ModePerm)
 	e_utils.CreateAndWriteToFile(fmt.Sprintf(".elemental/%ss/main.go", target), template)
 	err = exec.Command("go", "run", ".elemental/"+target+"s/main.go").Run()
 	if err != nil {
+		e_connection.Disconnect()
 		log.Fatalf("Failed to run %ss: %s", target, err.Error())
 	} else {
 		if rollback {
@@ -128,7 +134,7 @@ func create(args []string, target string) {
 		log.Fatalf("Please provide a name for the %s", target)
 	}
 	cfg := readConfigFile()
-	if (target != "seed") {
+	if target != TargetSeed {
 		os.MkdirAll(cfg.MigrationsDir, os.ModePerm)
 	} else {
 		os.MkdirAll(cfg.SeedsDir, os.ModePerm)
@@ -149,7 +155,7 @@ func Down_%s(ctx context.Context, db *mongo.Database, client *mongo.Client) {
 // Write your rollback here
 }`, target, timestamp, target, timestamp)
 	dir := cfg.MigrationsDir
-	if target == "seed" {
+	if target == TargetSeed {
 		dir = cfg.SeedsDir
 	}
 	outputFile := dir + "/" + args[0] + "_" + timestamp + ".go"

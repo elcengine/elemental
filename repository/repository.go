@@ -2,9 +2,8 @@ package e_repository
 
 import (
 	"context"
-	"github.com/elcengine/elemental/connection"
 	"errors"
-	"fmt"
+	"github.com/elcengine/elemental/connection"
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -32,7 +31,7 @@ func (r Repository[T]) FindOne(query primitive.M) *T {
 	doc := e_connection.UseDefault().Collection(r.collection).FindOne(context.Background(), query)
 	if doc.Err() != nil {
 		if errors.Is(doc.Err(), mongo.ErrNoDocuments) {
-			log.Fatal(fmt.Sprintf("%v %s", r, doc.Err().Error()))
+			log.Fatalf("%v %s", r, doc.Err().Error())
 			return nil
 		}
 		panic(doc.Err())

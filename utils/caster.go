@@ -21,6 +21,7 @@ func CastJSON[T any](val any) T {
 
 // Converts a given value to a byte array.
 func ToJSON(val any) []byte {
+	//nolint:errchkjson
 	bytes, _ := json.Marshal(val)
 	return bytes
 }
