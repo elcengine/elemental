@@ -39,10 +39,10 @@ func Connect(opts ConnectionOptions) mongo.Client {
 		SetServerAPIOptions(options.ServerAPI(options.ServerAPIVersion1)).
 		SetPoolMonitor(e_utils.Coalesce(opts.PoolMonitor, poolMonitor(opts.Alias)))
 	if clientOpts.GetURI() == "" {
-		clientOpts = clientOpts.ApplyURI(opts.URI)
-		if clientOpts.GetURI() == "" {
+		if opts.URI == "" {
 			panic(e_constants.ErrURIRequired)
 		}
+		clientOpts = clientOpts.ApplyURI(opts.URI)
 	}
 	cs, err := connstring.ParseAndValidate(clientOpts.GetURI())
 	if err != nil {

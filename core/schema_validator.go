@@ -34,13 +34,13 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 		createdAt, _ := (*reflectedEntityType).FieldByName("CreatedAt")
 		updatedAt, _ := (*reflectedEntityType).FieldByName("UpdatedAt")
 		if id.Type != nil {
-			SetDefault(&entityToInsert, id.Tag.Get("bson"), primitive.NewObjectID())
+			setDefault(&entityToInsert, id.Tag.Get("bson"), primitive.NewObjectID())
 		}
 		if createdAt.Type != nil {
-			SetDefault(&entityToInsert, createdAt.Tag.Get("bson"), time.Now())
+			setDefault(&entityToInsert, createdAt.Tag.Get("bson"), time.Now())
 		}
 		if updatedAt.Type != nil {
-			SetDefault(&entityToInsert, updatedAt.Tag.Get("bson"), time.Now())
+			setDefault(&entityToInsert, updatedAt.Tag.Get("bson"), time.Now())
 		}
 	}
 	detailedEntity := lo.Assign(entityToInsert)
@@ -99,7 +99,7 @@ func cleanBSONTag(tag string) string {
 	return strings.ReplaceAll(tag, ",omitempty", "")
 }
 
-func SetDefault[T any](entity *bson.M, field string, defaultValue T) {
+func setDefault[T any](entity *bson.M, field string, defaultValue T) {
 	if entity != nil {
 		if e_utils.IsEmpty((*entity)[field]) {
 			(*entity)[field] = defaultValue

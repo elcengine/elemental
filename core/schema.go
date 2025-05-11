@@ -14,8 +14,8 @@ import (
 )
 
 type Schema struct {
-	Definitions map[string]Field
-	Options     SchemaOptions
+	Definitions map[string]Field // The definitions of the schema, basically the fields of the document
+	Options     SchemaOptions    // Custom schema options, like the collection name, database name, etc.
 }
 
 // Creates a new Elemental schema with the given definitions and options.
@@ -30,6 +30,7 @@ func NewSchema(definitions map[string]Field, opts ...SchemaOptions) Schema {
 	return schema
 }
 
+// Retrives the Elemental field definition for the given path in the schema.
 func (s Schema) Field(path string) *Field {
 	definition := s.Definitions[path]
 	if definition != (Field{}) {
