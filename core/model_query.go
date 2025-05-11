@@ -9,6 +9,9 @@ import (
 	"github.com/spf13/cast"
 )
 
+// Extends the query with a where clause. The value of the clause if specified within this method itself
+// will function as an equals clause. If you want to use a different operator, you can use the Where method
+// and chain it with another operator method.
 func (m Model[T]) Where(field string, equals ...any) Model[T] {
 	m.whereField = field
 	if len(equals) > 0 {
@@ -17,6 +20,9 @@ func (m Model[T]) Where(field string, equals ...any) Model[T] {
 	return m
 }
 
+// Extends the query with an or where clause. The value of the clause if specified within this method itself
+// will function as an equals clause. If you want to use a different operator, you can use the OrWhere method
+// and chain it with another operator method.
 func (m Model[T]) OrWhere(field string, equals ...any) Model[T] {
 	m.whereField = field
 	m.orConditionActive = true
