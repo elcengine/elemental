@@ -12,6 +12,8 @@ import (
 )
 
 func TestRequestValidator(t *testing.T) {
+	t.Parallel()
+
 	e_test_setup.SeededConnection(t.Name())
 
 	elemental.NativeModel.SetCollection("occupations").InsertMany([]map[string]any{
@@ -24,8 +26,6 @@ func TestRequestValidator(t *testing.T) {
 			"minimum_income": 200,
 		},
 	}).Exec()
-
-	defer e_test_setup.Teardown()
 
 	Convey("Basic validations", t, func() {
 		Convey("Inherited validations", func() {
