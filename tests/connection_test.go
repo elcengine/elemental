@@ -28,7 +28,6 @@ func TestConnection(t *testing.T) {
 				DATABASE := fmt.Sprintf("%s_%s", t.Name(), "secondary")
 				So(e_connection.Use(DATABASE).Name(), ShouldEqual, DATABASE)
 			})
-
 		})
 		Convey("Connect with a URI specified within client options", func() {
 			opts := options.Client().ApplyURI(strings.Replace(e_mocks.DEFAULT_DATASOURCE, e_mocks.DEFAULT_DB_NAME, t.Name(), 1))
