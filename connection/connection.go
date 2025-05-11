@@ -4,6 +4,7 @@ import (
 	"context"
 	"maps"
 	"slices"
+	"sync"
 	"time"
 
 	"github.com/elcengine/elemental/constants"
@@ -21,6 +22,7 @@ const connectionTimeout = 30 * time.Second
 
 var clients = make(map[string]mongo.Client)
 var defaultDatabases = make(map[string]string)
+var mu sync.RWMutex
 
 type ConnectionOptions struct {
 	Alias         string
@@ -30,6 +32,8 @@ type ConnectionOptions struct {
 }
 
 func Connect(opts ConnectionOptions) mongo.Client {
+	mu.Lock()
+	defer mu.Unlock()
 	opts.Alias = e_utils.Coalesce(opts.Alias, "default")
 	clientOpts := e_utils.Coalesce(opts.ClientOptions, options.Client()).
 		SetServerAPIOptions(options.ServerAPI(options.ServerAPIVersion1)).

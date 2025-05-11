@@ -31,7 +31,7 @@ func TestCoreAudit(t *testing.T) {
 
 	KingdomModel.EnableAuditing()
 
-	AuditModel := elemental.AuditModel.SetDatabase(t.Name()).SetConnection(t.Name())
+	AuditModel := elemental.AuditModel.SetDatabase(t.Name())
 
 	ParallelConvey, Wait := pc.New(t)
 
