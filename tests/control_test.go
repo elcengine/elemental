@@ -8,9 +8,9 @@ import (
 )
 
 func TestMain(m *testing.M) {
-    code := m.Run()
+	code := m.Run()
 
-    e_test_setup.Teardown()
+	e_test_setup.Teardown()
 
-    os.Exit(code)
+	os.Exit(code)
 }

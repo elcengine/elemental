@@ -2,9 +2,9 @@ package e_repository
 
 import (
 	"context"
-	"github.com/elcengine/elemental/connection"
 	"errors"
 	"fmt"
+	"github.com/elcengine/elemental/connection"
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
