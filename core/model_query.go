@@ -26,6 +26,8 @@ func (m Model[T]) OrWhere(field string, equals ...any) Model[T] {
 	return m
 }
 
+// Instructs a query to panic if no results are found matching the given query.
+// It optionally accepts a custom error to panic with. If no error is provided, it will panic with a default error message.
 func (m Model[T]) OrFail(err ...error) Model[T] {
 	if len(err) > 0 {
 		m.failWith = &err[0]
