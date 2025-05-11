@@ -1,0 +1,29 @@
+name: CI Release
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        name: Semantic Release
+
+        steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        - name: Set up Golang 1.23
+          uses: actions/setup-go@v5
+          with:
+           go-version: 1.23
+
+        - name: Install dependencies
+          run: go mod tidy
+        
+        - name: Release
+          uses: go-semantic-release/action@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            

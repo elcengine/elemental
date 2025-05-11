@@ -1,5 +1,4 @@
-name: run-tests
-run-name: Run tests
+name: CI Tests
 on:
   pull_request:
     branches:
