@@ -1,9 +1,9 @@
 package e_cmd
 
 import (
+	"fmt"
 	e_connection "github.com/elcengine/elemental/connection"
 	e_utils "github.com/elcengine/elemental/utils"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -128,7 +128,7 @@ func create(args []string, target string) {
 		log.Fatalf("Please provide a name for the %s", target)
 	}
 	cfg := readConfigFile()
-	if (target != "seed") {
+	if target != "seed" {
 		os.MkdirAll(cfg.MigrationsDir, os.ModePerm)
 	} else {
 		os.MkdirAll(cfg.SeedsDir, os.ModePerm)

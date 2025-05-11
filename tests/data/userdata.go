@@ -1,6 +1,5 @@
 package data
 
-
 type User struct {
 	ID       int    `validate:"exists=user_table,id"`
 	Name     string `validate:"exists=user_table,name"`

@@ -1,9 +1,9 @@
 package e_tests
 
 import (
+	"fmt"
 	"github.com/elcengine/elemental/tests/mocks"
 	"github.com/elcengine/elemental/tests/setup"
-	"fmt"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"

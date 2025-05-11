@@ -27,7 +27,9 @@ jobs:
           uses: go-semantic-release/action@v1
           with:
             prerelease: ${{ github.ref_name != 'main' }}
-            
+            changelog-generator-opt: "emojis=true"
+            hooks: goreleaser
+
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             
