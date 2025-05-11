@@ -13,7 +13,6 @@ import (
 )
 
 func TestConnection(t *testing.T) {
-	t.Parallel()
 	Convey("Connect to a local database", t, func() {
 		Convey("Simplest form of connect with just a URI", func() {
 			client := e_connection.Connect(e_connection.ConnectionOptions{
