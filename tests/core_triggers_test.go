@@ -13,6 +13,8 @@ import (
 )
 
 func TestCoreTriggers(t *testing.T) {
+	t.Parallel()
+
 	e_test_setup.Connection(t.Name())
 
 	CastleModel := elemental.NewModel[Castle]("Castle-For-Triggers", elemental.NewSchema(map[string]elemental.Field{
