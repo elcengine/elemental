@@ -47,7 +47,7 @@ jobs:
           run: go mod tidy
         
         - name: Run tests
-          run: make test-lightspeed
+          run: make test
           env:
             DEFAULT_DATASOURCE: mongodb://127.0.0.1:27017/elemental?replicaSet=rs0
             SECONDARY_DATASOURCE: mongodb://127.0.0.1:27018/elemental?replicaSet=rs1
