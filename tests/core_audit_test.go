@@ -14,8 +14,6 @@ import (
 )
 
 func TestCoreAudit(t *testing.T) {
-	t.Parallel()
-
 	if os.Getenv("CI") == "" {
 		t.Skip("Skipping test in non-CI environment")
 	}
