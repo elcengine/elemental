@@ -26,6 +26,5 @@ jobs:
             prerelease: ${{ github.ref_name != 'main' }}
             changelog-generator-opt: "emojis=true"
             hooks: goreleaser
-
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
