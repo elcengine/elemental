@@ -12,6 +12,8 @@ import (
 )
 
 func TestRequestValidator(t *testing.T) {
+	t.Parallel()
+
 	e_test_setup.SeededConnection(t.Name())
 
 	elemental.NativeModel.SetCollection("occupations").InsertMany([]map[string]any{
