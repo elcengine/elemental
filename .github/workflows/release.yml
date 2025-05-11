@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - blizzard
   workflow_dispatch:
 
 jobs:
