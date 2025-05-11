@@ -8,7 +8,6 @@ import (
 	"github.com/akalanka47000/go-modkit/parallel_convey"
 	"github.com/elcengine/elemental/core"
 	"github.com/elcengine/elemental/tests/setup"
-	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -34,43 +33,41 @@ func TestCoreAudit(t *testing.T) {
 
 	AuditModel := elemental.AuditModel.SetDatabase(t.Name())
 
-	Convey("Inspect audit records", t, func() {
-		ParallelConvey, Wait := pc.New(t)
+	ParallelConvey, Wait := pc.New(t)
 
-		ParallelConvey("Insert", func() {
-			KingdomModel.Create(Kingdom{Name: "Nilfgaard"}).Exec()
-			SoTimeout(t, func() (ok bool) {
-				audit := AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeInsert}).ExecT()
-				if audit.Type != "" {
-					ok = true
-				}
-				return
-			})
+	ParallelConvey("Insert", func() {
+		KingdomModel.Create(Kingdom{Name: "Nilfgaard"}).Exec()
+		SoTimeout(t, func() (ok bool) {
+			audit := AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeInsert}).ExecT()
+			if audit.Type != "" {
+				ok = true
+			}
+			return
 		})
-
-		ParallelConvey("Update", func() {
-			KingdomModel.UpdateOne(&primitive.M{"name": "Nilfgaard"}, Kingdom{Name: "Redania"}).Exec()
-			SoTimeout(t, func() (ok bool) {
-				audit := AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeUpdate}).ExecT()
-				if audit.Type != "" {
-					ok = true
-				}
-				return
-			})
-		})
-
-		ParallelConvey("Delete", func() {
-			KingdomModel.Create(Kingdom{Name: "Skellige"}).Exec()
-			KingdomModel.DeleteOne(primitive.M{"name": "Skellige"}).Exec()
-			SoTimeout(t, func() (ok bool) {
-				audit := AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeDelete}).ExecT()
-				if audit.Type != "" {
-					ok = true
-				}
-				return
-			})
-		})
-
-		Wait()
 	})
+
+	ParallelConvey("Update", func() {
+		KingdomModel.UpdateOne(&primitive.M{"name": "Nilfgaard"}, Kingdom{Name: "Redania"}).Exec()
+		SoTimeout(t, func() (ok bool) {
+			audit := AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeUpdate}).ExecT()
+			if audit.Type != "" {
+				ok = true
+			}
+			return
+		})
+	})
+
+	ParallelConvey("Delete", func() {
+		KingdomModel.Create(Kingdom{Name: "Skellige"}).Exec()
+		KingdomModel.DeleteOne(primitive.M{"name": "Skellige"}).Exec()
+		SoTimeout(t, func() (ok bool) {
+			audit := AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeDelete}).ExecT()
+			if audit.Type != "" {
+				ok = true
+			}
+			return
+		})
+	})
+
+	Wait()
 }
