@@ -25,6 +25,9 @@ jobs:
         
         - name: Release
           uses: go-semantic-release/action@v1
+          with:
+            prerelease: ${{ github.ref_name != 'main' }}
+            
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             
