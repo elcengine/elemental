@@ -1,6 +1,7 @@
 package e_tests
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -18,6 +19,7 @@ func TestConnection(t *testing.T) {
 			client := e_connection.Connect(e_connection.ConnectionOptions{
 				URI: strings.Replace(e_mocks.DEFAULT_DATASOURCE, e_mocks.DEFAULT_DB_NAME, t.Name(), 1),
 			})
+			defer client.Disconnect(context.Background())
 			So(client, ShouldNotBeNil)
 			Convey("Should use the default database", func() {
 				So(e_connection.UseDefault().Name(), ShouldEqual, t.Name())
@@ -26,12 +28,14 @@ func TestConnection(t *testing.T) {
 				DATABASE := fmt.Sprintf("%s_%s", t.Name(), "secondary")
 				So(e_connection.Use(DATABASE).Name(), ShouldEqual, DATABASE)
 			})
+
 		})
 		Convey("Connect with a URI specified within client options", func() {
 			opts := options.Client().ApplyURI(strings.Replace(e_mocks.DEFAULT_DATASOURCE, e_mocks.DEFAULT_DB_NAME, t.Name(), 1))
 			client := e_connection.Connect(e_connection.ConnectionOptions{
 				ClientOptions: opts,
 			})
+			defer client.Disconnect(context.Background())
 			So(client, ShouldNotBeNil)
 		})
 		Convey("Connect with no URI", func() {
