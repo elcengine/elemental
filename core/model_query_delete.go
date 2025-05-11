@@ -62,12 +62,12 @@ func (m Model[T]) DeleteByID(id primitive.ObjectID) Model[T] {
 func (m Model[T]) Delete(doc T) Model[T] {
 	if m.softDeleteEnabled {
 		m.executor = func(m Model[T], ctx context.Context) any {
-			m.UpdateByID(reflect.ValueOf(doc).FieldByName("ID").Interface().(primitive.ObjectID), m.softDeletePayload()).Exec()
+			m.UpdateByID(reflect.ValueOf(doc).FieldByName("ID").Interface().(primitive.ObjectID), m.softDeletePayload()).Exec(ctx) //nolint:contextcheck
 			return nil
 		}
 	} else {
 		m.executor = func(m Model[T], ctx context.Context) any {
-			m.DeleteByID(reflect.ValueOf(doc).FieldByName("ID").Interface().(primitive.ObjectID)).Exec()
+			m.DeleteByID(reflect.ValueOf(doc).FieldByName("ID").Interface().(primitive.ObjectID)).Exec(ctx) //nolint:contextcheck
 			return nil
 		}
 	}

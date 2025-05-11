@@ -12,7 +12,8 @@ import (
 )
 
 func (m Model[T]) CreateCollection(ctx ...context.Context) *mongo.Collection {
-	e_connection.Use(m.Schema.Options.Database, m.Schema.Options.Connection).CreateCollection(e_utils.DefaultCTX(ctx), m.Schema.Options.Collection, &m.Schema.Options.CollectionOptions)
+	e_connection.Use(m.Schema.Options.Database, m.Schema.Options.Connection).
+		CreateCollection(e_utils.DefaultCTX(ctx), m.Schema.Options.Collection, &m.Schema.Options.CollectionOptions)
 	return m.Collection()
 }
 

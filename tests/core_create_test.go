@@ -1,6 +1,7 @@
 package e_tests
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -46,7 +47,7 @@ func TestCoreCreate(t *testing.T) {
 			user := UserModel.Create(e_mocks.Ciri).SetDatabase(TEMPORARY_DB).Exec().(User)
 			So(user.ID, ShouldNotBeNil)
 			var newUser User
-			e_connection.Use(TEMPORARY_DB).Collection(UserModel.Collection().Name()).FindOne(nil, primitive.M{"_id": user.ID}).Decode(&newUser)
+			e_connection.Use(TEMPORARY_DB).Collection(UserModel.Collection().Name()).FindOne(context.TODO(), primitive.M{"_id": user.ID}).Decode(&newUser)
 			So(newUser.Name, ShouldEqual, e_mocks.Ciri.Name)
 		})
 		Convey("Create a single user in a different collection in a different database", func() {
@@ -54,7 +55,7 @@ func TestCoreCreate(t *testing.T) {
 			user := UserModel.Create(e_mocks.Geralt).SetDatabase(TEMPORARY_DB).SetCollection("witchers").Exec().(User)
 			So(user.ID, ShouldNotBeNil)
 			var newUser User
-			e_connection.Use(TEMPORARY_DB).Collection("witchers").FindOne(nil, primitive.M{"_id": user.ID}).Decode(&newUser)
+			e_connection.Use(TEMPORARY_DB).Collection("witchers").FindOne(context.TODO(), primitive.M{"_id": user.ID}).Decode(&newUser)
 			So(newUser.Name, ShouldEqual, e_mocks.Geralt.Name)
 		})
 	})

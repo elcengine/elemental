@@ -30,15 +30,15 @@ func ClientTransaction(alias string, fn func(ctx mongo.SessionContext) (interfac
 // TransactionBatch runs a batch of queries in a transaction. If any of the queries fail, the transaction is aborted and all changes are rolled back.
 // It returns a slice of results and a slice of errors. The results are in the same order as the queries, and the errors are in the same order as the results.
 func TransactionBatch(queries ...ModelInterface[any]) ([]interface{}, []any) {
-	var sessions []mongo.Session
+	sessions := make([]mongo.Session, len(queries))
 	var results []any
 	var errs []any
-	for _, q := range queries {
+	for i, q := range queries {
 		session, err := lo.ToPtr(q.Connection()).StartSession()
 		if err != nil {
 			panic(err)
 		}
-		sessions = append(sessions, session)
+		sessions[i] = session
 		session.StartTransaction()
 		err = mongo.WithSession(context.Background(), session, func(sessionCtx mongo.SessionContext) error {
 			lo.TryCatchWithErrorValue(func() error {

@@ -22,7 +22,7 @@ func (m Model[T]) populate(value any) Model[T] {
 	if path != nil {
 		var sample [0]T
 		modelType := reflect.TypeOf(sample).Elem()
-		for i := 0; i < modelType.NumField(); i++ {
+		for i := range modelType.NumField() {
 			field := modelType.Field(i)
 			if field.Tag.Get("bson") == *path {
 				fieldname = &field.Name

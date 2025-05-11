@@ -1,3 +1,4 @@
+//nolint:exhaustive
 package e_utils
 
 import (

@@ -28,8 +28,8 @@ func (m Model[T]) GreaterThanOrEquals(value any) Model[T] {
 	return m.addToFilters("$gte", value)
 }
 
-func (m Model[T]) Between(min, max any) Model[T] {
-	return m.addToFilters("$gte", min).addToFilters("$lte", max)
+func (m Model[T]) Between(minimum, maximum any) Model[T] {
+	return m.addToFilters("$gte", minimum).addToFilters("$lte", maximum)
 }
 
 func (m Model[T]) Mod(divisor, remainder int) Model[T] {

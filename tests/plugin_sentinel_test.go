@@ -12,7 +12,6 @@ import (
 )
 
 func TestRequestValidator(t *testing.T) {
-
 	e_test_setup.SeededConnection(t.Name())
 
 	elemental.NativeModel.SetCollection("occupations").InsertMany([]map[string]any{
@@ -29,7 +28,6 @@ func TestRequestValidator(t *testing.T) {
 	defer e_test_setup.Teardown()
 
 	Convey("Basic validations", t, func() {
-
 		Convey("Inherited validations", func() {
 			type CreateUserDTO struct {
 				Name string `augmented_validate:"unique=users" json:"name"`
