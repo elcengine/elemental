@@ -8,7 +8,6 @@ import (
 	"github.com/akalanka47000/go-modkit/parallel_convey"
 	"github.com/elcengine/elemental/core"
 	"github.com/elcengine/elemental/tests/setup"
-	"github.com/elcengine/elemental/utils"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -41,7 +40,7 @@ func TestCoreAudit(t *testing.T) {
 		ParallelConvey("Insert", func() {
 			KingdomModel.Create(Kingdom{Name: "Nilfgaard"}).Exec()
 			SoTimeout(t, func() (ok bool) {
-				audit := e_utils.Cast[elemental.Audit](AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeInsert}).Exec())
+				audit := AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeInsert}).ExecT()
 				if audit.Type != "" {
 					ok = true
 				}
@@ -52,7 +51,7 @@ func TestCoreAudit(t *testing.T) {
 		ParallelConvey("Update", func() {
 			KingdomModel.UpdateOne(&primitive.M{"name": "Nilfgaard"}, Kingdom{Name: "Redania"}).Exec()
 			SoTimeout(t, func() (ok bool) {
-				audit := e_utils.Cast[elemental.Audit](AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeUpdate}).Exec())
+				audit := AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeUpdate}).ExecT()
 				if audit.Type != "" {
 					ok = true
 				}
@@ -64,7 +63,7 @@ func TestCoreAudit(t *testing.T) {
 			KingdomModel.Create(Kingdom{Name: "Skellige"}).Exec()
 			KingdomModel.DeleteOne(primitive.M{"name": "Skellige"}).Exec()
 			SoTimeout(t, func() (ok bool) {
-				audit := e_utils.Cast[elemental.Audit](AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeDelete}).Exec())
+				audit := AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeDelete}).ExecT()
 				if audit.Type != "" {
 					ok = true
 				}

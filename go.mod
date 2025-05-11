@@ -5,7 +5,7 @@ go 1.23
 toolchain go1.23.5
 
 require (
-	github.com/akalanka47000/go-modkit/parallel_convey v1.1.0
+	github.com/akalanka47000/go-modkit/parallel_convey v1.1.1
 	github.com/creasty/defaults v1.7.0
 	github.com/gertd/go-pluralize v0.2.1
 	github.com/go-playground/validator/v10 v10.22.0

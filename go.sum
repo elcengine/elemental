@@ -1,5 +1,5 @@
-github.com/akalanka47000/go-modkit/parallel_convey v1.1.0 h1:iwkjnBNFWw71f3VBK+VvDIwQbJGvMN15VhMimAjygpc=
-github.com/akalanka47000/go-modkit/parallel_convey v1.1.0/go.mod h1:P/5Mq1tKcFDMUjtSXSJfmodMNe9hX0XJdOUslmsKcT0=
+github.com/akalanka47000/go-modkit/parallel_convey v1.1.1 h1:amcGW277I6sM+aPq/lkhwneszZYzFM0uD4XYdETOMsA=
+github.com/akalanka47000/go-modkit/parallel_convey v1.1.1/go.mod h1:P/5Mq1tKcFDMUjtSXSJfmodMNe9hX0XJdOUslmsKcT0=
 github.com/andybalholm/brotli v1.0.5 h1:8uQZIdzKmjc/iuPu7O2ioW48L81FgatrcpfFmiq/cCs=
 github.com/andybalholm/brotli v1.0.5/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/cpuguy83/go-md2man/v2 v2.0.3/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
