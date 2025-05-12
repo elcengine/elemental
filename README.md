@@ -42,6 +42,12 @@ go get github.com/elcengine/elemental
 - Run `make test-coverage` to run all test suites and generate a coverage report. Executes with `make test-lightspeed` under the hood.
 - Run `make lint` to run the linter.
 
+## Contributing
+
+Contributions are more than welcome, as well as any suggestions / things you would differently to improve developer experience, etc...
+
+Just open an issue or pull request and I'll surely go through it when time permits
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
