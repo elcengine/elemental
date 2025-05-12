@@ -1,6 +1,25 @@
-# elemental
+<br/>
 
-Golang ODM for MongoDB
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/5aa4922a-ded3-4d51-8c63-94cd2fe09127" width="200" height="200" alt="Elemental Logo"/>
+</p>
+
+<p align="center">
+  <a aria-label="License" href="https://github.com/elcengine/elemental/blob/main/LICENSE">
+    <img alt="" src="https://img.shields.io/badge/License-MIT-yellow.svg">
+  </a>
+  <a aria-label="CI Tests" href="https://github.com/elcengine/elemental/actions/workflows/tests.yml">
+    <img alt="" src="https://github.com/elcengine/elemental/actions/workflows/tests.yml/badge.svg">
+  </a>
+</p>
+
+<hr/>
+
+<br/>
+
+Elemental is inspired by multiple ODMs and ORMs such as [Mongoose](https://mongoosejs.com), [TypeORM](https://typeorm.io), and [Eloquent](https://laravel.com/docs/12.x/eloquent) and its primary purpose is to improve developer experience without loss of performance or extensibility
+
+## [Documentation](https://elcengine.github.io/docs/intro)
 
 ## Installation
 
