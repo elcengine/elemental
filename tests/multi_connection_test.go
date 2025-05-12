@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	e_connection "github.com/elcengine/elemental/connection"
+	elemental "github.com/elcengine/elemental/core"
 	e_mocks "github.com/elcengine/elemental/tests/mocks"
 	e_test_setup "github.com/elcengine/elemental/tests/setup"
 
@@ -20,7 +20,7 @@ func TestMultiConnection(t *testing.T) {
 
 	e_test_setup.Connection(t.Name())
 
-	e_connection.Connect(e_connection.ConnectionOptions{
+	elemental.Connect(elemental.ConnectionOptions{
 		URI:   e_mocks.SECONDARY_DATASOURCE,
 		Alias: "second",
 	})

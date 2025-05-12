@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"strings"
 
-	e_connection "github.com/elcengine/elemental/connection"
 	e_constants "github.com/elcengine/elemental/constants"
 	e_utils "github.com/elcengine/elemental/utils"
 
@@ -67,7 +66,7 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 		}
 	}
 	if model.Ping() != nil {
-		e_connection.On(event.ConnectionReady, connectionReady)
+		OnConnectionEvent(event.ConnectionReady, connectionReady)
 	} else {
 		connectionReady()
 	}

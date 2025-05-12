@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/elcengine/elemental/connection"
-	"github.com/elcengine/elemental/tests/base"
-	"github.com/elcengine/elemental/tests/mocks"
-	"github.com/elcengine/elemental/tests/setup"
+	elemental "github.com/elcengine/elemental/core"
+	e_test_base "github.com/elcengine/elemental/tests/base"
+	e_mocks "github.com/elcengine/elemental/tests/mocks"
+	e_test_setup "github.com/elcengine/elemental/tests/setup"
 
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -47,7 +47,7 @@ func TestCoreCreate(t *testing.T) {
 			user := UserModel.Create(e_mocks.Ciri).SetDatabase(TEMPORARY_DB).Exec().(User)
 			So(user.ID, ShouldNotBeNil)
 			var newUser User
-			e_connection.Use(TEMPORARY_DB).Collection(UserModel.Collection().Name()).FindOne(context.TODO(), primitive.M{"_id": user.ID}).Decode(&newUser)
+			elemental.UseDatabase(TEMPORARY_DB).Collection(UserModel.Collection().Name()).FindOne(context.TODO(), primitive.M{"_id": user.ID}).Decode(&newUser)
 			So(newUser.Name, ShouldEqual, e_mocks.Ciri.Name)
 		})
 		Convey("Create a single user in a different collection in a different database", func() {
@@ -55,7 +55,7 @@ func TestCoreCreate(t *testing.T) {
 			user := UserModel.Create(e_mocks.Geralt).SetDatabase(TEMPORARY_DB).SetCollection("witchers").Exec().(User)
 			So(user.ID, ShouldNotBeNil)
 			var newUser User
-			e_connection.Use(TEMPORARY_DB).Collection("witchers").FindOne(context.TODO(), primitive.M{"_id": user.ID}).Decode(&newUser)
+			elemental.UseDatabase(TEMPORARY_DB).Collection("witchers").FindOne(context.TODO(), primitive.M{"_id": user.ID}).Decode(&newUser)
 			So(newUser.Name, ShouldEqual, e_mocks.Geralt.Name)
 		})
 	})

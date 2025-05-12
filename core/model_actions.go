@@ -4,15 +4,14 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/elcengine/elemental/connection"
-	"github.com/elcengine/elemental/utils"
+	e_utils "github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func (m Model[T]) CreateCollection(ctx ...context.Context) *mongo.Collection {
-	e_connection.Use(m.Schema.Options.Database, m.Schema.Options.Connection).
+	UseDatabase(m.Schema.Options.Database, m.Schema.Options.Connection).
 		CreateCollection(e_utils.DefaultCTX(ctx), m.Schema.Options.Collection, &m.Schema.Options.CollectionOptions)
 	return m.Collection()
 }

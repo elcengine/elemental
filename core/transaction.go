@@ -2,14 +2,12 @@ package elemental
 
 import (
 	"context"
-
-	"github.com/elcengine/elemental/connection"
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func transaction(fn func(ctx mongo.SessionContext) (interface{}, error), alias *string) (interface{}, error) {
-	session, err := lo.ToPtr(e_connection.GetConnection(lo.FromPtr(alias))).StartSession()
+	session, err := lo.ToPtr(GetConnection(lo.FromPtr(alias))).StartSession()
 	if err != nil {
 		panic(err)
 	}

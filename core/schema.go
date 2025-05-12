@@ -5,8 +5,7 @@ import (
 	"reflect"
 
 	"github.com/creasty/defaults"
-	"github.com/elcengine/elemental/connection"
-	"github.com/elcengine/elemental/utils"
+	e_utils "github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -43,7 +42,7 @@ func (s Schema) syncIndexes(reflectedBaseType reflect.Type, databaseOverride, co
 	database, _ := lo.Coalesce(databaseOverride, s.Options.Database)
 	connection, _ := lo.Coalesce(connectionOverride, s.Options.Connection)
 	collectionName, _ := lo.Coalesce(collectionOverride, s.Options.Collection)
-	collection := e_connection.Use(database, connection).Collection(collectionName)
+	collection := UseDatabase(database, connection).Collection(collectionName)
 	collection.Indexes().DropAll(context.Background())
 	for field, definition := range s.Definitions {
 		if (definition.Index != options.IndexOptions{}) {
