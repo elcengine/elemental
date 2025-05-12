@@ -3,8 +3,8 @@ package e_cmd
 
 import (
 	"fmt"
-	e_connection "github.com/elcengine/elemental/connection"
-	e_utils "github.com/elcengine/elemental/utils"
+	"github.com/elcengine/elemental/core"
+	"github.com/elcengine/elemental/utils"
 	"log"
 	"os"
 	"os/exec"
@@ -54,7 +54,7 @@ import (
 	"time"
 	"go.mongodb.org/mongo-driver/mongo"
 	"github.com/samber/lo"
-	"github.com/elcengine/elemental/connection"
+	"github.com/elcengine/elemental/core"
 	"github.com/elcengine/elemental/database/%ss"
 )
 
@@ -66,8 +66,8 @@ import (
 }
 
 func main() {
-	client := e_connection.ConnectURI("%s")
-	db := e_connection.UseDefault()
+	client := elemental.Connect("%s")
+	db := elemental.UseDefaultDatabase()
 	go db.Collection("%s").Indexes().CreateOne(context.Background(), mongo.IndexModel{
 		Keys: map[string]interface{}{"type": 1},
 	})
@@ -111,13 +111,13 @@ func main() {
 		target,
 		rollback, cfg.ChangelogCollection, cfg.ChangelogCollection, target,
 	)
-	e_connection.ConnectURI(cfg.ConnectionStr)
-	defer e_connection.Disconnect()
+	elemental.Connect(cfg.ConnectionStr)
+	defer elemental.Disconnect()
 	os.MkdirAll(".elemental/"+target+"s", os.ModePerm)
 	e_utils.CreateAndWriteToFile(fmt.Sprintf(".elemental/%ss/main.go", target), template)
 	err = exec.Command("go", "run", ".elemental/"+target+"s/main.go").Run()
 	if err != nil {
-		e_connection.Disconnect()
+		elemental.Disconnect()
 		log.Fatalf("Failed to run %ss: %s", target, err.Error())
 	} else {
 		if rollback {

@@ -1,125 +1,53 @@
+// Deprecated: Use package "github.com/elcengine/elemental/core" instead
+//
+// This package will be completely removed once v2.0.0 is released
 package e_connection
 
 import (
-	"context"
-	"maps"
-	"slices"
-	"sync"
-	"time"
-
-	"github.com/elcengine/elemental/constants"
-	"github.com/elcengine/elemental/utils"
-	"github.com/samber/lo"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/event"
+	elemental "github.com/elcengine/elemental/core"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
 )
 
-const connectionTimeout = 30 * time.Second
+// Elemental connection options
+//
+// Deprecated: Use 'elemental.ConnectionOptions' instead
+type ConnectionOptions = elemental.ConnectionOptions
 
-var clients = make(map[string]mongo.Client)
-var defaultDatabases = make(map[string]string)
-var mu sync.RWMutex
-
-type ConnectionOptions struct {
-	Alias         string
-	URI           string
-	ClientOptions *options.ClientOptions
-	PoolMonitor   *event.PoolMonitor
-}
-
+// Connect to a new data source with custom options
+//
+// Deprecated: Use 'elemental.Connect' instead
 func Connect(opts ConnectionOptions) mongo.Client {
-	mu.Lock()
-	defer mu.Unlock()
-	opts.Alias = e_utils.Coalesce(opts.Alias, "default")
-	clientOpts := e_utils.Coalesce(opts.ClientOptions, options.Client()).
-		SetServerAPIOptions(options.ServerAPI(options.ServerAPIVersion1)).
-		SetPoolMonitor(e_utils.Coalesce(opts.PoolMonitor, poolMonitor(opts.Alias)))
-	if clientOpts.GetURI() == "" {
-		if opts.URI == "" {
-			panic(e_constants.ErrURIRequired)
-		}
-		clientOpts = clientOpts.ApplyURI(opts.URI)
-	}
-	cs, err := connstring.ParseAndValidate(clientOpts.GetURI())
-	if err != nil {
-		panic(err)
-	}
-	defaultDatabases[opts.Alias] = cs.Database
-	ctx, cancel := context.WithTimeout(context.Background(), *e_utils.Coalesce(clientOpts.ConnectTimeout, lo.ToPtr(connectionTimeout)))
-	defer cancel()
-	client, err := mongo.Connect(ctx, clientOpts)
-	if err != nil {
-		panic(err)
-	}
-	e_utils.Must(client.Ping(ctx, readpref.Primary()))
-	clients[opts.Alias] = *client
-	return *client
+	return elemental.Connect(opts)
 }
 
 // Simplest form of connect with just a URI and no options
+//
+// Deprecated: Use 'elemental.Connect' instead
 func ConnectURI(uri string) mongo.Client {
-	return Connect(ConnectionOptions{URI: uri})
+	return elemental.Connect(uri)
 }
 
 // Get the database connection for a given alias or the default connection if no alias is provided
 //
-// @param alias - The alias of the connection to get
-func GetConnection(alias ...string) mongo.Client {
-	return clients[e_utils.Coalesce(e_utils.First(alias), "default")]
-}
+// Deprecated: Use 'elemental.GetConnection' instead
+var GetConnection = elemental.GetConnection
 
 // Disconnect a set of connections by alias or disconnect all connections if no alias is provided
 //
-// @param aliases - The aliases of the connections to disconnect
-func Disconnect(aliases ...string) error {
-	if len(aliases) == 0 {
-		aliases = slices.AppendSeq(aliases, maps.Keys(clients))
-	}
-	for _, alias := range aliases {
-		err := lo.ToPtr(clients[alias]).Disconnect(context.Background())
-		if err != nil {
-			return err
-		}
-		delete(clients, alias)
-		delete(defaultDatabases, alias)
-	}
-	return nil
-}
+// Deprecated: Use 'elemental.Disconnect' instead
+var Disconnect = elemental.Disconnect
 
 // Use a specific database on a connection
 //
-// @param database - The name of the database to use
-//
-// @param alias - The alias of the connection to use
-func Use(database string, alias ...string) *mongo.Database {
-	return lo.ToPtr(clients[e_utils.Coalesce(e_utils.First(alias), "default")]).
-		Database(e_utils.Coalesce(database, defaultDatabases[e_utils.Coalesce(e_utils.First(alias), "default")]))
-}
+// Deprecated: Use 'elemental.UseDatabase' instead
+var Use = elemental.UseDatabase
 
 // Use the default database on a connection. Uses the default connection if no alias is provided
 //
-// @param alias - The alias of the connection to use
-func UseDefault(alias ...string) *mongo.Database {
-	return lo.ToPtr(clients[e_utils.Coalesce(e_utils.First(alias), "default")]).
-		Database(e_utils.Coalesce(defaultDatabases[e_utils.Coalesce(e_utils.First(alias), "default")], "test"))
-}
+// Deprecated: Use 'elemental.UseDefaultDatabase' instead
+var UseDefault = elemental.UseDefaultDatabase
 
 // Drops all databases across a given client or all clients if no alias is provided
-func DropAll(alias ...string) {
-	for key, client := range clients {
-		if len(alias) > 0 && !lo.Contains(alias, key) {
-			continue
-		}
-		databases, err := client.ListDatabaseNames(context.Background(), bson.D{{}}, options.ListDatabases().SetNameOnly(true))
-		if err != nil {
-			panic(err)
-		}
-		for _, db := range databases {
-			client.Database(db).Drop(context.Background())
-		}
-	}
-}
+//
+// Deprecated: Use 'elemental.DropAllDatabases' instead
+var DropAll = elemental.DropAllDatabases

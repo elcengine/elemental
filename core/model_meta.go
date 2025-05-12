@@ -3,8 +3,7 @@ package elemental
 import (
 	"context"
 
-	"github.com/elcengine/elemental/connection"
-	"github.com/elcengine/elemental/utils"
+	e_utils "github.com/elcengine/elemental/utils"
 
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
@@ -16,12 +15,12 @@ func (m Model[T]) Collection() *mongo.Collection {
 	connection := lo.FromPtr(e_utils.Coalesce(m.temporaryConnection, &m.Schema.Options.Connection))
 	database := lo.FromPtr(e_utils.Coalesce(m.temporaryDatabase, &m.Schema.Options.Database))
 	collection := lo.FromPtr(e_utils.Coalesce(m.temporaryCollection, &m.Schema.Options.Collection))
-	return e_connection.Use(database, connection).Collection(collection)
+	return UseDatabase(database, connection).Collection(collection)
 }
 
 // Returns the underlying client instance this model uses
 func (m Model[T]) Connection() mongo.Client {
-	return e_connection.GetConnection(lo.FromPtr(e_utils.Coalesce(m.temporaryConnection, &m.Schema.Options.Connection)))
+	return GetConnection(lo.FromPtr(e_utils.Coalesce(m.temporaryConnection, &m.Schema.Options.Connection)))
 }
 
 // Returns the underlying database instance this model uses

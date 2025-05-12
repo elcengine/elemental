@@ -1,6 +1,7 @@
 package e_constants
 
 const (
-	ErrURIRequired           = "URI is required"
-	ErrMustPairSortArguments = "Sort arguments must be in pairs"
+	ErrURIRequired               = "URI is required"
+	ErrInvalidConnectionArgument = "Invalid connection argument"
+	ErrMustPairSortArguments     = "Sort arguments must be in pairs"
 )
