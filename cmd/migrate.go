@@ -143,16 +143,16 @@ func create(args []string, target string) {
 	var template = fmt.Sprintf(`package %ss
 
 import (
-"context"
-"go.mongodb.org/mongo-driver/mongo"
+	"context"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func Up_%s(ctx context.Context, db *mongo.Database, client *mongo.Client) {
-// Write your %s here
+	// Write your %s here
 }
 
 func Down_%s(ctx context.Context, db *mongo.Database, client *mongo.Client) {
-// Write your rollback here
+	// Write your rollback here
 }`, target, timestamp, target, timestamp)
 	dir := cfg.MigrationsDir
 	if target == TargetSeed {

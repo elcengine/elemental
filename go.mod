@@ -16,6 +16,7 @@ require (
 	github.com/spf13/cast v1.6.0
 	github.com/spf13/cobra v1.8.0
 	go.mongodb.org/mongo-driver v1.14.0
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
