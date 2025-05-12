@@ -99,6 +99,9 @@ var GetClient = GetConnection
 //
 // @param aliases - The aliases of the connections to disconnect
 func Disconnect(aliases ...string) error {
+	mu.Lock()
+	defer mu.Unlock()
+
 	if len(aliases) == 0 {
 		aliases = slices.AppendSeq(aliases, maps.Keys(clients))
 	}
