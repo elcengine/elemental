@@ -12,7 +12,7 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize elemental with a config file",
 	Run: func(cmd *cobra.Command, args []string) {
-		configFile := ".elemental.json"
+		configFile := ".elementalrc"
 		_, err := os.Stat(configFile)
 		if err == nil {
 			return

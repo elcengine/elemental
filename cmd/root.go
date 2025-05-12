@@ -3,11 +3,13 @@ package e_cmd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
+
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 )
 
 type config struct {
@@ -65,12 +67,15 @@ func configWithDefaults(conf *config) config {
 func readConfigFile() config {
 	var conf *config
 
-	dir, _ := os.Getwd()
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	supportedConfigFiles := []string{".elementalrc", "elemental.json", "elemental.yaml", "elemental.yml", ".elemental.yaml", ".elemental.yml"}
 
 	for i, file := range supportedConfigFiles {
-		configFilePath := dir + "/" + file
+		configFilePath := filepath.Join(dir, file)
 		if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
 			if i == len(supportedConfigFiles)-1 {
 				log.Fatalf(`Config file not found. Please create a config file matching one of the following names: %s 
