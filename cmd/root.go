@@ -1,4 +1,3 @@
-//nolint:gocritic
 package e_cmd
 
 import (
@@ -74,7 +73,8 @@ func readConfigFile() config {
 		configFilePath := dir + "/" + file
 		if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
 			if i == len(supportedConfigFiles)-1 {
-				log.Fatalf("Config file not found. Please create a config file matching one of the following names: %s and place it in the root of your project or run `elemental init` to create one.", strings.Join(supportedConfigFiles, ", "))
+				log.Fatalf(`Config file not found. Please create a config file matching one of the following names: %s 
+				and place it in the root of your project or run 'elemental init' to create one.`, strings.Join(supportedConfigFiles, ", "))
 			}
 			continue
 		}

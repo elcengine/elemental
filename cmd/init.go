@@ -22,10 +22,13 @@ var initCmd = &cobra.Command{
 		}
 		f, err := os.Create(configFile)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		defer f.Close()
-		bytes, _ := json.MarshalIndent(configWithDefaults(&config{}), "", "  ")
+		bytes, err := json.MarshalIndent(configWithDefaults(&config{}), "", "  ")
+		if err != nil {
+			log.Fatal(err)
+		}
 		f.Write(bytes)
 		fmt.Println("\033[32mElemental config file created at", configFile, "\033[0m")
 	},
