@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	"github.com/creasty/defaults"
-	e_utils "github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -39,16 +38,16 @@ func (s Schema) Field(path string) *Field {
 }
 
 func (s Schema) syncIndexes(reflectedBaseType reflect.Type, databaseOverride, connectionOverride, collectionOverride string) {
-	database, _ := lo.Coalesce(databaseOverride, s.Options.Database)
-	connection, _ := lo.Coalesce(connectionOverride, s.Options.Connection)
-	collectionName, _ := lo.Coalesce(collectionOverride, s.Options.Collection)
+	database := lo.CoalesceOrEmpty(databaseOverride, s.Options.Database)
+	connection := lo.CoalesceOrEmpty(connectionOverride, s.Options.Connection)
+	collectionName := lo.CoalesceOrEmpty(collectionOverride, s.Options.Collection)
 	collection := UseDatabase(database, connection).Collection(collectionName)
 	collection.Indexes().DropAll(context.Background())
 	for field, definition := range s.Definitions {
 		if (definition.Index != options.IndexOptions{}) {
 			reflectedField, _ := reflectedBaseType.FieldByName(field)
 			indexModel := mongo.IndexModel{
-				Keys:    bson.D{{Key: cleanBSONTag(reflectedField.Tag.Get("bson")), Value: e_utils.Coalesce(definition.IndexOrder, 1)}},
+				Keys:    bson.D{{Key: cleanBSONTag(reflectedField.Tag.Get("bson")), Value: lo.CoalesceOrEmpty(definition.IndexOrder, 1)}},
 				Options: &definition.Index,
 			}
 			collection.Indexes().CreateOne(context.TODO(), indexModel)

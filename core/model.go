@@ -50,7 +50,7 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 	if _, ok := Models[name]; ok {
 		return e_utils.Cast[Model[T]](Models[name])
 	}
-	schema.Options.Collection, _ = lo.Coalesce(schema.Options.Collection, pluralize.NewClient().Plural(strings.ToLower(name)))
+	schema.Options.Collection = lo.CoalesceOrEmpty(schema.Options.Collection, pluralize.NewClient().Plural(strings.ToLower(name)))
 	middleware := newMiddleware[T]()
 	model := Model[T]{
 		Name:       name,
@@ -124,7 +124,7 @@ func (m Model[T]) Find(query ...primitive.M) Model[T] {
 		m.checkConditionsAndPanic(results)
 		return results
 	}
-	q := e_utils.DefaultQuery(query...)
+	q := lo.FirstOrEmpty(query)
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
@@ -133,7 +133,7 @@ func (m Model[T]) Find(query ...primitive.M) Model[T] {
 }
 
 func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
-	q := e_utils.DefaultQuery(query...)
+	q := lo.FirstOrEmpty(query)
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
@@ -169,7 +169,7 @@ func (m Model[T]) FindByID(id primitive.ObjectID) Model[T] {
 }
 
 func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
-	q := e_utils.DefaultQuery(query...)
+	q := lo.FirstOrEmpty(query)
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
@@ -190,7 +190,7 @@ func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
 }
 
 func (m Model[T]) Distinct(field string, query ...primitive.M) Model[T] {
-	q := e_utils.DefaultQuery(query...)
+	q := lo.FirstOrEmpty(query)
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}

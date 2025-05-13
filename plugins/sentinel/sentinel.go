@@ -38,7 +38,7 @@ func Legitimize(input interface{}) error {
 			tag := tagSections[0]
 			definition := tagSections[1]
 			definitionSections := strings.Split(definition, "->")
-			fieldName, _ := lo.Coalesce(field.Tag.Get("json"), field.Tag.Get("bson"), "_id")
+			fieldName := lo.CoalesceOrEmpty(field.Tag.Get("json"), field.Tag.Get("bson"), "_id")
 			if len(definitionSections) > 1 {
 				fieldName = definitionSections[1]
 			}

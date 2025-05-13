@@ -2,7 +2,6 @@ package elemental
 
 import (
 	"context"
-	"github.com/elcengine/elemental/utils"
 	"reflect"
 
 	"github.com/samber/lo"
@@ -22,7 +21,7 @@ func (m Model[T]) FindOneAndUpdate(query *primitive.M, doc any, opts ...*options
 			result := m.Collection().FindOneAndUpdate(ctx, filters, primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
 			m.middleware.post.findOneAndUpdate.run(&resultDoc)
 			m.checkConditionsAndPanicForSingleResult(result)
-			e_utils.Must(result.Decode(&resultDoc))
+			lo.Must0(result.Decode(&resultDoc))
 			return resultDoc
 		})()
 	}
@@ -34,7 +33,7 @@ func (m Model[T]) FindByIDAndUpdate(id primitive.ObjectID, doc any, opts ...*opt
 		var resultDoc T
 		result := m.Collection().FindOneAndUpdate(ctx, primitive.M{"_id": id}, primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
 		m.checkConditionsAndPanicForSingleResult(result)
-		e_utils.Must(result.Decode(&resultDoc))
+		lo.Must0(result.Decode(&resultDoc))
 		return resultDoc
 	}
 	return m
@@ -138,7 +137,7 @@ func (m Model[T]) FindOneAndReplace(query *primitive.M, doc any, opts ...*option
 		res := m.Collection().FindOneAndReplace(ctx, filters, m.parseDocument(doc), opts...)
 		m.middleware.post.findOneAndReplace.run(&resultDoc)
 		m.checkConditionsAndPanicForSingleResult(res)
-		e_utils.Must(res.Decode(&resultDoc))
+		lo.Must0(res.Decode(&resultDoc))
 		return resultDoc
 	}
 	return m
@@ -149,7 +148,7 @@ func (m Model[T]) FindByIDAndReplace(id primitive.ObjectID, doc any, opts ...*op
 		var resultDoc T
 		res := m.Collection().FindOneAndReplace(ctx, primitive.M{"_id": id}, m.parseDocument(doc), parseUpdateOptions(m, opts)...)
 		m.checkConditionsAndPanicForSingleResult(res)
-		e_utils.Must(res.Decode(&resultDoc))
+		lo.Must0(res.Decode(&resultDoc))
 		return resultDoc
 	}
 	return m
