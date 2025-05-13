@@ -120,6 +120,8 @@ func (m Model[T]) InsertMany(docs []T) Model[T] {
 }
 
 // Extends the query with a match stage to find multiple documents in the collection.
+// Optionally accepts one or more queries to filter the results.
+// If multiple queries are provided, they are merged into a single from left to right.
 func (m Model[T]) Find(query ...primitive.M) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var results []T
@@ -144,7 +146,8 @@ func (m Model[T]) Find(query ...primitive.M) Model[T] {
 }
 
 // Extends the query with a limit stage to find a single document.
-// It optionally accepts a query to filter the results before limiting.
+// It optionally accepts one or more queries to filter the results before limiting.
+// If multiple queries are provided, they are merged into a single from left to right.
 func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
 	q := e_utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
@@ -183,7 +186,8 @@ func (m Model[T]) FindByID(id primitive.ObjectID) Model[T] {
 }
 
 // Extends the query with a count stage to count the number of documents in the collection.
-// It optionally accepts a query to filter the results before counting.
+// It optionally accepts one or more queries to filter the results before counting.
+// If multiple queries are provided, they are merged into a single from left to right.
 func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
 	q := e_utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
@@ -206,7 +210,8 @@ func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
 }
 
 // Distinct returns a list of distinct values for the given field.
-// It optionally accepts a query to filter the results before getting the distinct values.
+// It optionally accepts one or more queries to filter the results before getting the distinct values.
+// If multiple queries are provided, they are merged into a single from left to right.
 func (m Model[T]) Distinct(field string, query ...primitive.M) Model[T] {
 	q := e_utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
@@ -283,6 +288,7 @@ func (m Model[T]) Select(fields ...any) Model[T] {
 }
 
 // Creates a clone of the current model with the same query pipeline and options as has been set on the current model.
+// Invoking this method will set the Cloned flag of the newly created model to true.
 func (m Model[T]) Clone() Model[T] {
 	return Model[T]{
 		Name:                m.Name,

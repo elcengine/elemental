@@ -11,6 +11,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// Extends the query with a delete operation matching the given query(s)
+// If multiple queries are provided, they are merged into a single from left to right.
+// It deletes only the first document that matches the query.
+// This method will return the deleted document.
+// If the model has soft delete enabled, it will update the document with a deleted_at field instead of deleting it.
 func (m Model[T]) FindOneAndDelete(query ...primitive.M) Model[T] {
 	q := e_utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
@@ -29,6 +34,10 @@ func (m Model[T]) FindOneAndDelete(query ...primitive.M) Model[T] {
 	return m
 }
 
+// Extends the query with a delete operation matching the given id
+// It deletes only the first document that matches the id.
+// This method will return the deleted document.
+// If the model has soft delete enabled, it will update the document with a deleted_at field instead of deleting it.
 func (m Model[T]) FindByIdAndDelete(id primitive.ObjectID) Model[T] {
 	if m.softDeleteEnabled {
 		return m.FindOneAndUpdate(lo.ToPtr(primitive.M{"_id": id}), m.softDeletePayload())
@@ -37,6 +46,11 @@ func (m Model[T]) FindByIdAndDelete(id primitive.ObjectID) Model[T] {
 	}
 }
 
+// Extends the query with a delete operation matching the given query(s).
+// If multiple queries are provided, they are merged into a single from left to right.
+// It deletes only the first document that matches the query.
+// This method will not return the deleted document.
+// If the model has soft delete enabled, it will update the document with a deleted_at field instead of deleting it.
 func (m Model[T]) DeleteOne(query ...primitive.M) Model[T] {
 	q := e_utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
@@ -53,6 +67,10 @@ func (m Model[T]) DeleteOne(query ...primitive.M) Model[T] {
 	return m
 }
 
+// Extends the query with a delete operation matching the given id.
+// It deletes only the first document that matches the id.
+// This method will not return the deleted document.
+// If the model has soft delete enabled, it will update the document with a deleted_at field instead of deleting it.
 func (m Model[T]) DeleteByID(id primitive.ObjectID) Model[T] {
 	if m.softDeleteEnabled {
 		return m.UpdateOne(lo.ToPtr(primitive.M{"_id": id}), m.softDeletePayload())
@@ -61,6 +79,8 @@ func (m Model[T]) DeleteByID(id primitive.ObjectID) Model[T] {
 	}
 }
 
+// Extends the query with a delete operation matching the given document.
+// If the model has soft delete enabled, it will update the document with a deleted_at field instead of deleting it.
 func (m Model[T]) Delete(doc T) Model[T] {
 	if m.softDeleteEnabled {
 		m.executor = func(m Model[T], ctx context.Context) any {
@@ -76,6 +96,11 @@ func (m Model[T]) Delete(doc T) Model[T] {
 	return m
 }
 
+// Extends the query with a delete operation matching the given query(s)
+// If multiple queries are provided, they are merged into a single from left to right.
+// It deletes all documents that match the query.
+// This method will not return the deleted documents.
+// If the model has soft delete enabled, it will update the documents with a deleted_at field instead of deleting them.
 func (m Model[T]) DeleteMany(query ...primitive.M) Model[T] {
 	q := e_utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
@@ -92,8 +117,15 @@ func (m Model[T]) DeleteMany(query ...primitive.M) Model[T] {
 	return m
 }
 
+// Enables soft delete for the model.
 func (m Model[T]) EnableSoftDelete() Model[T] {
 	m.softDeleteEnabled = true
+	return m
+}
+
+// Disables soft delete for the model.
+func (m Model[T]) DisableSoftDelete() Model[T] {
+	m.softDeleteEnabled = false
 	return m
 }
 
