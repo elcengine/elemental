@@ -3,7 +3,6 @@ package elemental
 import (
 	"context"
 	"errors"
-	"reflect"
 
 	e_utils "github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
@@ -91,8 +90,8 @@ func (m Model[T]) ExecPtr(ctx ...context.Context) *T {
 	if result == nil {
 		return nil
 	}
-	if reflect.TypeOf(result).Kind() == reflect.Ptr {
-		return e_utils.Cast[*T](result)
+	if val, ok := result.(*T); ok {
+		return val
 	}
 	return lo.ToPtr(e_utils.Cast[T](result))
 }
