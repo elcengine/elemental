@@ -47,6 +47,14 @@ func TestCoreRead(t *testing.T) {
 			So(users, ShouldHaveLength, 1)
 			So(users[0].Name, ShouldEqual, e_mocks.Ciri.Name)
 		})
+		Convey("Find all users with a filter query overriden by another filter query", func() {
+			users := UserModel.Find(
+				primitive.M{"name": e_mocks.Geralt.Name, "occupation": e_mocks.Geralt.Occupation},
+				primitive.M{"name": e_mocks.Vesemir.Name},
+			).ExecTT()
+			So(users, ShouldHaveLength, 1)
+			So(users[0].Name, ShouldEqual, e_mocks.Vesemir.Name)
+		})
 		Convey("Find all users with a filter query which has no matching documents", func() {
 			users := UserModel.Find(primitive.M{"name": "Yarpen Zigrin"}).ExecTT()
 			So(users, ShouldHaveLength, 0)

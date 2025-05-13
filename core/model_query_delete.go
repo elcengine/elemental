@@ -5,13 +5,14 @@ import (
 	"reflect"
 	"time"
 
+	e_utils "github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (m Model[T]) FindOneAndDelete(query ...primitive.M) Model[T] {
-	q := lo.FirstOr(query, primitive.M{})
+	q := e_utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
 		m = m.UpdateOne(&q, m.softDeletePayload())
 	} else {
@@ -37,7 +38,7 @@ func (m Model[T]) FindByIdAndDelete(id primitive.ObjectID) Model[T] {
 }
 
 func (m Model[T]) DeleteOne(query ...primitive.M) Model[T] {
-	q := lo.FirstOr(query, primitive.M{})
+	q := e_utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
 		m = m.UpdateOne(&q, m.softDeletePayload())
 	} else {
@@ -76,7 +77,7 @@ func (m Model[T]) Delete(doc T) Model[T] {
 }
 
 func (m Model[T]) DeleteMany(query ...primitive.M) Model[T] {
-	q := lo.FirstOr(query, primitive.M{})
+	q := e_utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
 		m = m.UpdateMany(&q, m.softDeletePayload())
 	} else {

@@ -135,7 +135,7 @@ func (m Model[T]) Find(query ...primitive.M) Model[T] {
 		m.checkConditionsAndPanic(results)
 		return results
 	}
-	q := lo.FirstOr(query, primitive.M{})
+	q := e_utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
@@ -146,7 +146,7 @@ func (m Model[T]) Find(query ...primitive.M) Model[T] {
 // Extends the query with a limit stage to find a single document.
 // It optionally accepts a query to filter the results before limiting.
 func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
-	q := lo.FirstOr(query, primitive.M{})
+	q := e_utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
@@ -185,7 +185,7 @@ func (m Model[T]) FindByID(id primitive.ObjectID) Model[T] {
 // Extends the query with a count stage to count the number of documents in the collection.
 // It optionally accepts a query to filter the results before counting.
 func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
-	q := lo.FirstOr(query, primitive.M{})
+	q := e_utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
@@ -208,7 +208,7 @@ func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
 // Distinct returns a list of distinct values for the given field.
 // It optionally accepts a query to filter the results before getting the distinct values.
 func (m Model[T]) Distinct(field string, query ...primitive.M) Model[T] {
-	q := lo.FirstOr(query, primitive.M{})
+	q := e_utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
