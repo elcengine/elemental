@@ -55,9 +55,6 @@ func (m Model[T]) EnableAuditing(ctx ...context.Context) {
 		if m.temporaryDatabase != nil {
 			q = q.SetDatabase(*m.temporaryDatabase)
 		}
-		if m.temporaryCollection != nil {
-			q = q.SetCollection(*m.temporaryCollection)
-		}
 		q.Exec(context)
 	}
 

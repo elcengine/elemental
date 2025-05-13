@@ -1,9 +1,12 @@
 package e_tests
 
 import (
+	"fmt"
 	"testing"
 
-	filter_query "github.com/elcengine/elemental/plugins/filter-query"
+	filter_query "github.com/elcengine/elemental/plugins/filter_query"
+	e_mocks "github.com/elcengine/elemental/tests/mocks"
+	e_test_setup "github.com/elcengine/elemental/tests/setup"
 
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,6 +15,10 @@ import (
 
 func TestPluginFilterQuery(t *testing.T) {
 	t.Parallel()
+
+	e_test_setup.SeededConnection(t.Name())
+
+	UserModel := UserModel.SetDatabase(t.Name())
 
 	Convey("Filters", t, func() {
 		Convey("Basic Syntax", func() {
@@ -129,6 +136,31 @@ func TestPluginFilterQuery(t *testing.T) {
 		Convey("When not present in query string", func() {
 			result := filter_query.Parse("")
 			So(result.Prepaginate, ShouldBeFalse)
+		})
+	})
+
+	Convey("QS", t, func() {
+		Convey("When a filter is present in query string", func() {
+			results := UserModel.QS(fmt.Sprintf("filter[name]=eq(%s)", e_mocks.Caranthir.Name)).ExecTT()
+			So(results, ShouldHaveLength, 1)
+			So(results[0].Name, ShouldEqual, e_mocks.Caranthir.Name)
+		})
+		Convey("When a secondary filter is present in query string", func() {
+			results := UserModel.QS(fmt.Sprintf("secondaryFilter[name]=eq(%s)", e_mocks.Vesemir.Name)).ExecTT()
+			So(results, ShouldHaveLength, 1)
+			So(results[0].Name, ShouldEqual, e_mocks.Vesemir.Name)
+		})
+		Convey("When a sort is present in query string", func() {
+			results := UserModel.QS("sort[name]=desc").ExecTT()
+			So(results, ShouldHaveLength, len(e_mocks.Users))
+			So(results[0].Name, ShouldEqual, e_mocks.Yennefer.Name)
+		})
+		Convey("When a select is present in query string", func() {
+			results := UserModel.QS(fmt.Sprintf("select=age&filter[name]=eq(%s)", e_mocks.Geralt.Name)).ExecTT()
+			So(results, ShouldHaveLength, 1)
+			So(results[0].ID, ShouldNotBeZeroValue)
+			So(results[0].Name, ShouldBeZeroValue)
+			So(results[0].Age, ShouldEqual, e_mocks.Geralt.Age)
 		})
 	})
 }

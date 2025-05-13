@@ -1,3 +1,4 @@
+// Deprecated: This package is not being maintained anymore, use at your own risk.
 package e_repository
 
 import (
@@ -11,10 +12,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// A lightweight repository powered by Elemental.
+// This has no overhead of a model or schema definition. It's just a simple interface for CRUD operations.
 type Repository[T any] struct {
 	collection string
 }
 
+// NewRepository creates a new repository for the given collection.
+// The type parameter T is the type of the document in the collection.
 func NewRepository[T any](collection string) Repository[T] {
 	return Repository[T]{collection: collection}
 }

@@ -23,6 +23,12 @@ func (m Model[T]) Connection() mongo.Client {
 	return GetConnection(lo.FromPtr(lo.CoalesceOrEmpty(m.temporaryConnection, &m.Schema.Options.Connection)))
 }
 
+// Returns the underlying client instance this model uses
+// This method is an alias for Connection() and is kept for clarity to indicate that this retrieves a client instance
+func (m Model[T]) Client() *mongo.Client {
+	return lo.ToPtr(m.Connection())
+}
+
 // Returns the underlying database instance this model uses
 func (m Model[T]) Database() *mongo.Database {
 	return m.Collection().Database()
