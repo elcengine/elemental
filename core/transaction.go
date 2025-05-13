@@ -6,7 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func transaction(fn func(ctx mongo.SessionContext) (interface{}, error), alias *string) (interface{}, error) {
+func transaction(fn func(ctx mongo.SessionContext) (any, error), alias *string) (any, error) {
 	session, err := lo.ToPtr(GetConnection(lo.FromPtr(alias))).StartSession()
 	if err != nil {
 		panic(err)
@@ -16,18 +16,18 @@ func transaction(fn func(ctx mongo.SessionContext) (interface{}, error), alias *
 }
 
 // Run a transaction with the given function. This is the simplest form of a transaction which uses the default connection and takes care of session management
-func Transaction(fn func(ctx mongo.SessionContext) (interface{}, error)) (interface{}, error) {
+func Transaction(fn func(ctx mongo.SessionContext) (any, error)) (any, error) {
 	return transaction(fn, nil)
 }
 
 // Essentially the same as Transaction, but with an alias which points to the connection to use
-func ClientTransaction(alias string, fn func(ctx mongo.SessionContext) (interface{}, error)) (interface{}, error) {
+func ClientTransaction(alias string, fn func(ctx mongo.SessionContext) (any, error)) (any, error) {
 	return transaction(fn, &alias)
 }
 
 // TransactionBatch runs a batch of queries in a transaction. If any of the queries fail, the transaction is aborted and all changes are rolled back.
 // It returns a slice of results and a slice of errors. The results are in the same order as the queries, and the errors are in the same order as the results.
-func TransactionBatch(queries ...ModelInterface[any]) ([]interface{}, []any) {
+func TransactionBatch(queries ...ModelInterface[any]) ([]any, []any) {
 	sessions := make([]mongo.Session, len(queries))
 	var results []any
 	var errs []any

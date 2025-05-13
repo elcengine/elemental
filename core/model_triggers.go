@@ -23,8 +23,8 @@ const (
 )
 
 type TriggerOptions struct {
-	Filter  *primitive.M
-	Context *context.Context
+	Filter  *primitive.M     // Optional filter to apply to the change stream
+	Context *context.Context // Optional context to use for the change stream. If not provided, the default context will be used.
 }
 
 func (m Model[T]) on(event triggerType, f func(change primitive.M), opts ...TriggerOptions) {
@@ -58,42 +58,56 @@ func (m Model[T]) on(event triggerType, f func(change primitive.M), opts ...Trig
 	})
 }
 
+// Listens for insert events on the collection and calls the provided function with the inserted document.
+// For more information, refer the following link: https://www.mongodb.com/docs/manual/reference/change-events/insert
 func (m Model[T]) OnInsert(f func(doc T), opts ...TriggerOptions) {
 	m.on(triggerTypeInsert, func(change primitive.M) {
 		f(e_utils.CastBSON[T](change["fullDocument"]))
 	}, opts...)
 }
 
+// Listens for update events on the collection and calls the provided function with the updated document.
+// For more information, refer the following link: https://www.mongodb.com/docs/manual/reference/change-events/update
 func (m Model[T]) OnUpdate(f func(doc T), opts ...TriggerOptions) {
 	m.on(triggerTypeUpdate, func(change primitive.M) {
 		f(e_utils.CastBSON[T](change["fullDocument"]))
 	}, opts...)
 }
 
+// Listens for delete events on the collection and calls the provided function with the deleted document's ID.
+// For more information, refer the following link: https://www.mongodb.com/docs/manual/reference/change-events/delete
 func (m Model[T]) OnDelete(f func(id primitive.ObjectID), opts ...TriggerOptions) {
 	m.on(triggerTypeDelete, func(change primitive.M) {
 		f(e_utils.Cast[primitive.ObjectID](change["documentKey"].(primitive.M)["_id"]))
 	}, opts...)
 }
 
+// Listens for replace events on the collection and calls the provided function with the replaced document.
+// For more information, refer the following link: https://www.mongodb.com/docs/manual/reference/change-events/replace
 func (m Model[T]) OnReplace(f func(doc T), opts ...TriggerOptions) {
 	m.on(triggerTypeReplace, func(change primitive.M) {
 		f(e_utils.CastBSON[T](change["fullDocument"]))
 	}, opts...)
 }
 
+// Listens for collection drop events and calls the provided function.
+// For more information, refer the following link: https://www.mongodb.com/docs/manual/reference/change-events/drop
 func (m Model[T]) OnCollectionDrop(f func(), opts ...TriggerOptions) {
 	m.on(triggerTypeCollectionDrop, func(change primitive.M) {
 		f()
 	}, opts...)
 }
 
+// Listens for collection rename events and calls the provided function.
+// For more information, refer the following link: https://www.mongodb.com/docs/manual/reference/change-events/rename
 func (m Model[T]) OnCollectionRename(f func(), opts ...TriggerOptions) {
 	m.on(triggerTypeCollectionRename, func(change primitive.M) {
 		f()
 	}, opts...)
 }
 
+// Listens for stream invalidation events and calls the provided function.
+// For more information, refer the following link: https://www.mongodb.com/docs/manual/reference/change-events/invalidate
 func (m Model[T]) OnStreamInvalidate(f func(), opts ...TriggerOptions) {
 	m.on(triggerTypeStreamInvalidate, func(change primitive.M) {
 		f()

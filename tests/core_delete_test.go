@@ -3,7 +3,6 @@ package e_tests
 import (
 	"github.com/elcengine/elemental/tests/mocks"
 	"github.com/elcengine/elemental/tests/setup"
-	"github.com/elcengine/elemental/utils"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -20,25 +19,25 @@ func TestCoreDelete(t *testing.T) {
 
 	Convey("Delete users", t, func() {
 		Convey("Find and delete first user", func() {
-			user := e_utils.Cast[User](UserModel.FindOneAndDelete().Exec())
+			user := UserModel.FindOneAndDelete().ExecT()
 			So(user.Name, ShouldEqual, e_mocks.Ciri.Name)
 			So(UserModel.FindByID(user.ID).Exec(), ShouldBeNil)
 		})
 		Convey("Find and delete user by ID", func() {
-			user := e_utils.Cast[User](UserModel.FindOne().Exec())
+			user := UserModel.FindOne().ExecT()
 			So(user.Name, ShouldEqual, e_mocks.Geralt.Name)
-			deletedUser := e_utils.Cast[User](UserModel.FindByIdAndDelete(user.ID).Exec())
+			deletedUser := UserModel.FindByIdAndDelete(user.ID).ExecT()
 			So(deletedUser.Name, ShouldEqual, e_mocks.Geralt.Name)
 			So(UserModel.FindByID(user.ID).Exec(), ShouldBeNil)
 		})
 		Convey("Delete a user document", func() {
-			user := e_utils.Cast[User](UserModel.FindOne().Exec())
+			user := UserModel.FindOne().ExecT()
 			So(user.Name, ShouldEqual, e_mocks.Eredin.Name)
 			UserModel.Delete(user).Exec()
 			So(UserModel.FindByID(user.ID).Exec(), ShouldBeNil)
 		})
 		Convey("Delete a user by ID", func() {
-			user := e_utils.Cast[User](UserModel.FindOne().Exec())
+			user := UserModel.FindOne().ExecT()
 			So(user.Name, ShouldEqual, e_mocks.Caranthir.Name)
 			UserModel.DeleteByID(user.ID).Exec()
 			So(UserModel.FindByID(user.ID).Exec(), ShouldBeNil)

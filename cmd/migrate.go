@@ -69,24 +69,24 @@ func main() {
 	client := elemental.Connect("%s")
 	db := elemental.UseDefaultDatabase()
 	go db.Collection("%s").Indexes().CreateOne(context.Background(), mongo.IndexModel{
-		Keys: map[string]interface{}{"type": 1},
+		Keys: map[string]any{"type": 1},
 	})
 	files := []string{%s}
 	functions := []func(context.Context, *mongo.Database, *mongo.Client){%s}
 	ctx := context.Background()
 	for i, f := range files {
 		functionToRun := functions[i]
-		var entry = map[string]interface{}{}
-		db.Collection("%s").FindOne(ctx, map[string]interface{}{"name": f, "type": "%s"}).Decode(&entry)
+		var entry = map[string]any{}
+		db.Collection("%s").FindOne(ctx, map[string]any{"name": f, "type": "%s"}).Decode(&entry)
 		if %t {
 			if entry["name"] != nil {
 				functionToRun(ctx, db, &client)
-				db.Collection("%s").DeleteOne(ctx, map[string]interface{}{"name": f})
+				db.Collection("%s").DeleteOne(ctx, map[string]any{"name": f})
 			}
 		} else {
 			if entry["name"] == nil {
 				functionToRun(ctx, db, &client)
-				db.Collection("%s").InsertOne(ctx, map[string]interface{}{
+				db.Collection("%s").InsertOne(ctx, map[string]any{
 					"name": f,
 					"type": "%s",
 					"created_at": time.Now(),
