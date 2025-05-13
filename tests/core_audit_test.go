@@ -38,7 +38,7 @@ func TestCoreAudit(t *testing.T) {
 	ParallelConvey("Insert", t, func() {
 		KingdomModel.Create(Kingdom{Name: "Nilfgaard"}).Exec()
 		SoTimeout(t, func() (ok bool) {
-			audit := AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeInsert}).ExecPtr()
+			audit := AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeInsert}).ExecT()
 			if audit.Type != "" {
 				ok = true
 			}
@@ -49,7 +49,7 @@ func TestCoreAudit(t *testing.T) {
 	ParallelConvey("Update", t, func() {
 		KingdomModel.UpdateOne(&primitive.M{"name": "Nilfgaard"}, Kingdom{Name: "Redania"}).Exec()
 		SoTimeout(t, func() (ok bool) {
-			audit := AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeUpdate}).ExecPtr()
+			audit := AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeUpdate}).ExecT()
 			if audit.Type != "" {
 				ok = true
 			}
@@ -61,7 +61,7 @@ func TestCoreAudit(t *testing.T) {
 		KingdomModel.Create(Kingdom{Name: "Skellige"}).Exec()
 		KingdomModel.DeleteOne(primitive.M{"name": "Skellige"}).Exec()
 		SoTimeout(t, func() (ok bool) {
-			audit := AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeDelete}).ExecPtr()
+			audit := AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeDelete}).ExecT()
 			if audit.Type != "" {
 				ok = true
 			}
