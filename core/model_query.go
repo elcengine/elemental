@@ -108,7 +108,7 @@ func (m Model[T]) ExecTT(ctx ...context.Context) []T {
 // It is a type safe method, so you don't need to cast the result. If the query returns nothing
 // it will return 0.
 // This method is useful for queries that return a single integer value, such as count queries
-// or schedule queries with a schedule ID.
+// or schedule queries which return a cron entry ID.
 func (m Model[T]) ExecInt(ctx ...context.Context) int {
 	result := m.Exec(ctx...)
 	return cast.ToInt(result)
