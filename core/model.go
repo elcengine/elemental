@@ -19,7 +19,7 @@ import (
 
 type ModelInterface[T any] interface {
 	Exec(ctx ...context.Context) any
-	Connection() mongo.Client
+	Connection() *mongo.Client
 }
 
 type Model[T any] struct {

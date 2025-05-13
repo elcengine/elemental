@@ -7,7 +7,7 @@ import (
 )
 
 func transaction(fn func(ctx mongo.SessionContext) (any, error), alias *string) (any, error) {
-	session, err := lo.ToPtr(GetConnection(lo.FromPtr(alias))).StartSession()
+	session, err := GetConnection(lo.FromPtr(alias)).StartSession()
 	if err != nil {
 		panic(err)
 	}
@@ -32,7 +32,7 @@ func TransactionBatch(queries ...ModelInterface[any]) ([]any, []any) {
 	var results []any
 	var errs []any
 	for i, q := range queries {
-		session, err := lo.ToPtr(q.Connection()).StartSession()
+		session, err := q.Connection().StartSession()
 		if err != nil {
 			panic(err)
 		}
