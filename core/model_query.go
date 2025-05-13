@@ -3,8 +3,9 @@ package elemental
 import (
 	"context"
 	"errors"
-	"github.com/elcengine/elemental/utils"
+	"reflect"
 
+	e_utils "github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
 	"github.com/spf13/cast"
 )
@@ -82,18 +83,43 @@ func (m Model[T]) ExecT(ctx ...context.Context) T {
 	return e_utils.Cast[T](result)
 }
 
-// ExecP is a convenience method that executes the query and returns the first result as a pointer.
+// ExecPtr is a convenience method that executes the query and returns the first result as a pointer.
 // It is a type safe method, so you don't need to cast the result. If the query returns nothing
 // it will return nil.
-func (m Model[T]) ExecP(ctx ...context.Context) *T {
+func (m Model[T]) ExecPtr(ctx ...context.Context) *T {
 	result := m.Exec(ctx...)
-	return e_utils.Cast[*T](result)
+	if result == nil {
+		return nil
+	}
+	if reflect.TypeOf(result).Kind() == reflect.Ptr {
+		return e_utils.Cast[*T](result)
+	}
+	return lo.ToPtr(e_utils.Cast[T](result))
 }
 
-// ExecSlice is a convenience method that executes the query and returns the results as a slice.
+// ExecTT is a convenience method that executes the query and returns the results as a slice.
 // It is a type safe method, so you don't need to cast the result. If the query returns nothing
 // it will return an empty slice.
-func (m Model[T]) ExecSlice(ctx ...context.Context) []T {
+func (m Model[T]) ExecTT(ctx ...context.Context) []T {
 	result := m.Exec(ctx...)
 	return e_utils.Cast[[]T](result)
+}
+
+// ExecInt is a convenience method that executes the query and returns the first result as an int.
+// It is a type safe method, so you don't need to cast the result. If the query returns nothing
+// it will return 0.
+// This method is useful for queries that return a single integer value, such as count queries
+// or schedule queries with a schedule ID.
+func (m Model[T]) ExecInt(ctx ...context.Context) int {
+	result := m.Exec(ctx...)
+	return cast.ToInt(result)
+}
+
+// ExecStringSlice is a convenience method that executes the query and returns the first result as a slice of strings.
+// It is a type safe method, so you don't need to cast the result. If the query returns nothing
+// it will return an empty slice.
+// This method is useful for queries that return an array of strings, such as distinct queries.
+func (m Model[T]) ExecStringSlice(ctx ...context.Context) []string {
+	result := m.Exec(ctx...)
+	return cast.ToStringSlice(result)
 }

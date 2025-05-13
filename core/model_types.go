@@ -1,15 +1,15 @@
 package elemental
 
 type PaginateResult[T any] struct {
-	Docs       []T    `json:"docs"`
-	TotalDocs  int64  `json:"totalDocs"`
-	Page       int64  `json:"page"`
-	Limit      int64  `json:"limit"`
-	TotalPages int64  `json:"totalPages"`
-	NextPage   *int64 `json:"nextPage"`
-	PrevPage   *int64 `json:"prevPage"`
-	HasPrev    bool   `json:"hasPrev"`
-	HasNext    bool   `json:"hasNext"`
+	Docs       []T    `json:"docs"`       // The documents returned by the query
+	TotalDocs  int64  `json:"totalDocs"`  // The total number of documents which match the query before pagination
+	Page       int64  `json:"page"`       // The current page number
+	Limit      int64  `json:"limit"`      // The number of documents per page
+	TotalPages int64  `json:"totalPages"` // The total number of pages which match the query
+	NextPage   *int64 `json:"nextPage"`   // The next page number if there is one
+	PrevPage   *int64 `json:"prevPage"`   // The previous page number if there is one
+	HasPrev    bool   `json:"hasPrev"`    // Whether there is a previous page or not
+	HasNext    bool   `json:"hasNext"`    // Whether there is a next page or not
 }
 
 type facetResult[T any] struct {

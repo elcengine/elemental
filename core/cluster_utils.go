@@ -27,7 +27,7 @@ func structToMap(obj any) map[string]any {
 }
 
 // Function to convert primitive.D to map[string]any
-func convertDToMap(doc primitive.D) map[string]any {
+func convertDocToMap(doc primitive.D) map[string]any {
 	result := make(map[string]any)
 	for _, elem := range doc {
 		result[elem.Key] = elem.Value

@@ -7,7 +7,6 @@ import (
 	e_constants "github.com/elcengine/elemental/constants"
 	e_mocks "github.com/elcengine/elemental/tests/mocks"
 	e_test_setup "github.com/elcengine/elemental/tests/setup"
-	e_utils "github.com/elcengine/elemental/utils"
 
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -22,34 +21,34 @@ func TestCoreRead(t *testing.T) {
 
 	Convey("Read users", t, func() {
 		Convey("Find all users", func() {
-			users := UserModel.Find().Exec().([]User)
+			users := UserModel.Find().ExecTT()
 			So(users, ShouldHaveLength, len(e_mocks.Users))
 		})
 		Convey("Find all with a limit of 2", func() {
-			users := UserModel.Find().Limit(2).Exec().([]User)
+			users := UserModel.Find().Limit(2).ExecTT()
 			So(users, ShouldHaveLength, 2)
 		})
 		Convey("Find all with a limit of 2 and skip 2", func() {
 			Convey("In order of skip -> limit", func() {
-				users := UserModel.Find().Skip(2).Limit(2).Exec().([]User)
+				users := UserModel.Find().Skip(2).Limit(2).ExecTT()
 				So(users, ShouldHaveLength, 2)
 				So(users[0].Name, ShouldEqual, e_mocks.Eredin.Name)
 				So(users[1].Name, ShouldEqual, e_mocks.Caranthir.Name)
 			})
 			Convey("In order of limit -> skip", func() {
-				users := UserModel.Find().Limit(2).Skip(2).Exec().([]User)
+				users := UserModel.Find().Limit(2).Skip(2).ExecTT()
 				So(users, ShouldHaveLength, 2)
 				So(users[0].Name, ShouldEqual, e_mocks.Eredin.Name)
 				So(users[1].Name, ShouldEqual, e_mocks.Caranthir.Name)
 			})
 		})
 		Convey("Find all users with a filter query", func() {
-			users := UserModel.Find(primitive.M{"name": e_mocks.Ciri.Name}).Exec().([]User)
+			users := UserModel.Find(primitive.M{"name": e_mocks.Ciri.Name}).ExecTT()
 			So(users, ShouldHaveLength, 1)
 			So(users[0].Name, ShouldEqual, e_mocks.Ciri.Name)
 		})
 		Convey("Find all users with a filter query which has no matching documents", func() {
-			users := UserModel.Find(primitive.M{"name": "Yarpen Zigrin"}).Exec().([]User)
+			users := UserModel.Find(primitive.M{"name": "Yarpen Zigrin"}).ExecTT()
 			So(users, ShouldHaveLength, 0)
 			Convey("With or fail", func() {
 				So(func() {
@@ -64,39 +63,39 @@ func TestCoreRead(t *testing.T) {
 			})
 		})
 		Convey("Find a user with a filter query", func() {
-			user := UserModel.FindOne(primitive.M{"age": e_mocks.Geralt.Age}).Exec()
+			user := UserModel.FindOne(primitive.M{"age": e_mocks.Geralt.Age}).ExecPtr()
 			So(user, ShouldNotBeNil)
-			So(e_utils.Cast[User](user).Name, ShouldEqual, e_mocks.Geralt.Name)
+			So(user.Name, ShouldEqual, e_mocks.Geralt.Name)
 		})
 		Convey("Find a user with a filter query which has no matching documents", func() {
-			user := UserModel.FindOne(primitive.M{"name": "Yarpen Zigrin"}).Exec()
+			user := UserModel.FindOne(primitive.M{"name": "Yarpen Zigrin"}).ExecPtr()
 			So(user, ShouldBeNil)
 		})
 		Convey("Find first user", func() {
-			user := UserModel.FindOne().Exec()
+			user := UserModel.FindOne().ExecPtr()
 			So(user, ShouldNotBeNil)
-			So(e_utils.Cast[User](user).Name, ShouldEqual, e_mocks.Ciri.Name)
+			So(user.Name, ShouldEqual, e_mocks.Ciri.Name)
 		})
 		Convey("Find user by ID", func() {
-			user := e_utils.Cast[User](UserModel.FindOne().Exec())
-			userById := UserModel.FindByID(user.ID).Exec()
+			user := UserModel.FindOne().ExecPtr()
+			userById := UserModel.FindByID(user.ID).ExecPtr()
 			So(userById, ShouldNotBeNil)
-			So(e_utils.Cast[User](userById).Name, ShouldEqual, e_mocks.Ciri.Name)
+			So(userById.Name, ShouldEqual, e_mocks.Ciri.Name)
 		})
 		Convey("Count users", func() {
-			count := UserModel.CountDocuments().Exec().(int64)
+			count := UserModel.CountDocuments().ExecInt()
 			So(count, ShouldEqual, len(e_mocks.Users))
 		})
 		Convey("Find all users in descending order of age", func() {
 			Convey("In conjuntion with a primitive map", func() {
-				users := UserModel.Find().Sort(primitive.M{"age": -1}).Exec().([]User)
+				users := UserModel.Find().Sort(primitive.M{"age": -1}).ExecTT()
 				So(users[0].Name, ShouldEqual, e_mocks.Vesemir.Name)
 				So(users[1].Name, ShouldEqual, e_mocks.Imlerith.Name)
 				So(users[2].Name, ShouldEqual, e_mocks.Caranthir.Name)
 				So(users[3].Name, ShouldEqual, e_mocks.Geralt.Name)
 			})
 			Convey("In conjuntion with key-value args", func() {
-				users := UserModel.Find().Sort("age", -1).Exec().([]User)
+				users := UserModel.Find().Sort("age", -1).ExecTT()
 				So(users[0].Name, ShouldEqual, e_mocks.Vesemir.Name)
 				So(users[1].Name, ShouldEqual, e_mocks.Imlerith.Name)
 				So(users[2].Name, ShouldEqual, e_mocks.Caranthir.Name)
@@ -104,7 +103,7 @@ func TestCoreRead(t *testing.T) {
 			})
 		})
 		Convey("Find all users in descending order of age but ascending order of name", func() {
-			users := UserModel.Find().Sort("age", -1, "name", 1).Exec().([]User)
+			users := UserModel.Find().Sort("age", -1, "name", 1).ExecTT()
 			So(users[0].Name, ShouldEqual, e_mocks.Vesemir.Name)
 			So(users[1].Name, ShouldEqual, e_mocks.Imlerith.Name)
 			So(users[2].Name, ShouldEqual, e_mocks.Caranthir.Name)
@@ -112,7 +111,7 @@ func TestCoreRead(t *testing.T) {
 			So(users[4].Name, ShouldEqual, e_mocks.Yennefer.Name)
 		})
 		Convey("Find all users in descending order of age and name", func() {
-			users := UserModel.Find().Sort("age", -1, "name", -1).Exec().([]User)
+			users := UserModel.Find().Sort("age", -1, "name", -1).ExecTT()
 			So(users[0].Name, ShouldEqual, e_mocks.Vesemir.Name)
 			So(users[1].Name, ShouldEqual, e_mocks.Imlerith.Name)
 			So(users[2].Name, ShouldEqual, e_mocks.Caranthir.Name)
@@ -125,7 +124,7 @@ func TestCoreRead(t *testing.T) {
 			}, ShouldPanicWith, e_constants.ErrMustPairSortArguments)
 		})
 		Convey("Find all distinct witcher schools", func() {
-			schools := UserModel.Distinct("school").Exec().([]string)
+			schools := UserModel.Distinct("school").ExecStringSlice()
 			So(schools, ShouldHaveLength, 2)
 			So(schools, ShouldContain, e_mocks.WolfSchool)
 			So(schools, ShouldContain, "")

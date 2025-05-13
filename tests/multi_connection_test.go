@@ -84,11 +84,11 @@ func TestMultiConnection(t *testing.T) {
 
 	Convey("Insert and read monsters from default datasource", t, func() {
 		MonsterModel.InsertMany(monstersData).Exec()
-		So(len(MonsterModel.Find().Exec().([]Monster)), ShouldEqual, len(monstersData))
+		So(len(MonsterModel.Find().ExecTT()), ShouldEqual, len(monstersData))
 	})
 
 	Convey("Insert and read monsters from secondary data source", t, func() {
 		MonsterModel.SetConnection("second").InsertMany(monstersData).Exec()
-		So(len(MonsterModel.SetConnection("second").Find().Exec().([]Monster)), ShouldEqual, len(monstersData))
+		So(len(MonsterModel.SetConnection("second").Find().ExecTT()), ShouldEqual, len(monstersData))
 	})
 }

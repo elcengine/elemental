@@ -18,12 +18,11 @@ const (
 )
 
 type Audit struct {
-	Entity    string             `json:"entity" bson:"entity"`
-	Type      AuditType          `json:"type" bson:"type"`
-	Document  primitive.M        `json:"document" bson:"document"`
-	User      string             `json:"user" bson:"user"`
-	CreatedAt primitive.DateTime `json:"created_at" bson:"created_at"`
-	UpdatedAt primitive.DateTime `json:"updated_at" bson:"updated_at"`
+	Entity    string             `json:"entity" bson:"entity"`         // The name of the model that was audited.
+	Type      AuditType          `json:"type" bson:"type"`             // The type of operation that was performed (insert, update, delete).
+	Document  primitive.M        `json:"document" bson:"document"`     // The document that was affected by the operation.
+	User      string             `json:"user" bson:"user"`             // The user who performed the operation if available within the context.
+	CreatedAt primitive.DateTime `json:"created_at" bson:"created_at"` // The date and time when the operation was performed.
 }
 
 var AuditModel = NewModel[Audit]("Audit", NewSchema(map[string]Field{
@@ -45,6 +44,7 @@ var AuditModel = NewModel[Audit]("Audit", NewSchema(map[string]Field{
 	Collection: "audits",
 }))
 
+// Enables auditing for the current model.
 func (m Model[T]) EnableAuditing(ctx ...context.Context) {
 	context := e_utils.DefaultCTX(ctx)
 

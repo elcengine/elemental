@@ -2,9 +2,10 @@ package elemental
 
 import (
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"reflect"
 	"strings"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type ClusterOp[T any] struct {
@@ -82,7 +83,7 @@ func (c ClusterOp[T]) populate(model Model[any]) ClusterOp[T] {
 		fmt.Println("Result is not a primitive.D")
 		return c
 	}
-	resMap := convertDToMap(res.(primitive.D))
+	resMap := convertDocToMap(res.(primitive.D))
 
 	r[model.Name] = resMap
 	*c.result = &r
