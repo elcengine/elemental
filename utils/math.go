@@ -49,7 +49,7 @@ func parseReflectValue(ar, br reflect.Value) (reflect.Value, reflect.Value) {
 	return ar, br
 }
 
-func LT(a, b interface{}) bool {
+func LT(a, b any) bool {
 	ar := reflect.ValueOf(a)
 	br := reflect.ValueOf(b)
 	ar, br = parseReflectValue(ar, br)
@@ -65,7 +65,7 @@ func LT(a, b interface{}) bool {
 	}
 }
 
-func LTE(a, b interface{}) bool {
+func LTE(a, b any) bool {
 	ar := reflect.ValueOf(a)
 	br := reflect.ValueOf(b)
 	ar, br = parseReflectValue(ar, br)
@@ -81,7 +81,7 @@ func LTE(a, b interface{}) bool {
 	}
 }
 
-func GT(a, b interface{}) bool {
+func GT(a, b any) bool {
 	ar := reflect.ValueOf(a)
 	br := reflect.ValueOf(b)
 	ar, br = parseReflectValue(ar, br)
@@ -97,7 +97,7 @@ func GT(a, b interface{}) bool {
 	}
 }
 
-func GTE(a, b interface{}) bool {
+func GTE(a, b any) bool {
 	ar := reflect.ValueOf(a)
 	br := reflect.ValueOf(b)
 	ar, br = parseReflectValue(ar, br)
@@ -113,7 +113,7 @@ func GTE(a, b interface{}) bool {
 	}
 }
 
-func EQ(a, b interface{}) bool {
+func EQ(a, b any) bool {
 	ar := reflect.ValueOf(a)
 	br := reflect.ValueOf(b)
 	ar, br = parseReflectValue(ar, br)
@@ -124,6 +124,8 @@ func EQ(a, b interface{}) bool {
 		return ar.Float() == br.Float()
 	case reflect.String:
 		return ar.String() == br.String()
+	case reflect.Bool:
+		return ar.Bool() == br.Bool()
 	default:
 		panic(fmt.Errorf("unsupported type: %s", ar.Kind()))
 	}

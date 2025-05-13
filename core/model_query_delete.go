@@ -5,23 +5,23 @@ import (
 	"reflect"
 	"time"
 
-	e_utils "github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (m Model[T]) FindOneAndDelete(query ...primitive.M) Model[T] {
+	q := lo.FirstOr(query, primitive.M{})
 	if m.softDeleteEnabled {
-		m = m.UpdateOne(lo.ToPtr(e_utils.DefaultQuery(query...)), m.softDeletePayload())
+		m = m.UpdateOne(&q, m.softDeletePayload())
 	} else {
 		m.executor = func(m Model[T], ctx context.Context) any {
 			var doc T
-			m.middleware.pre.findOneAndDelete.run(e_utils.First(query))
-			result := m.Collection().FindOneAndDelete(ctx, e_utils.DefaultQuery(query...))
+			m.middleware.pre.findOneAndDelete.run(q)
+			result := m.Collection().FindOneAndDelete(ctx, q)
 			m.middleware.post.findOneAndDelete.run(&doc)
 			m.checkConditionsAndPanicForSingleResult(result)
-			e_utils.Must(result.Decode(&doc))
+			lo.Must0(result.Decode(&doc))
 			return doc
 		}
 	}
@@ -37,12 +37,13 @@ func (m Model[T]) FindByIdAndDelete(id primitive.ObjectID) Model[T] {
 }
 
 func (m Model[T]) DeleteOne(query ...primitive.M) Model[T] {
+	q := lo.FirstOr(query, primitive.M{})
 	if m.softDeleteEnabled {
-		m = m.UpdateOne(lo.ToPtr(e_utils.DefaultQuery(query...)), m.softDeletePayload())
+		m = m.UpdateOne(&q, m.softDeletePayload())
 	} else {
 		m.executor = func(m Model[T], ctx context.Context) any {
-			m.middleware.pre.deleteOne.run(e_utils.First(query))
-			result, err := m.Collection().DeleteOne(ctx, e_utils.DefaultQuery(query...))
+			m.middleware.pre.deleteOne.run(q)
+			result, err := m.Collection().DeleteOne(ctx, q)
 			m.middleware.post.deleteOne.run(result, err)
 			m.checkConditionsAndPanicForErr(err)
 			return result
@@ -75,12 +76,13 @@ func (m Model[T]) Delete(doc T) Model[T] {
 }
 
 func (m Model[T]) DeleteMany(query ...primitive.M) Model[T] {
+	q := lo.FirstOr(query, primitive.M{})
 	if m.softDeleteEnabled {
-		m = m.UpdateMany(lo.ToPtr(e_utils.DefaultQuery(query...)), m.softDeletePayload())
+		m = m.UpdateMany(&q, m.softDeletePayload())
 	} else {
 		m.executor = func(m Model[T], ctx context.Context) any {
-			m.middleware.pre.deleteMany.run(e_utils.First(query))
-			result, err := m.Collection().DeleteMany(ctx, e_utils.DefaultQuery(query...))
+			m.middleware.pre.deleteMany.run(q)
+			result, err := m.Collection().DeleteMany(ctx, q)
 			m.checkConditionsAndPanicForErr(err)
 			m.middleware.post.deleteMany.run(result, err)
 			return result

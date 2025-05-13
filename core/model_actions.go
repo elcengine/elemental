@@ -17,7 +17,7 @@ func (m Model[T]) CreateCollection(ctx ...context.Context) *mongo.Collection {
 }
 
 func (m Model[T]) Drop(ctx ...context.Context) {
-	e_utils.Must(m.Collection().Drop(e_utils.DefaultCTX(ctx)))
+	lo.Must0(m.Collection().Drop(e_utils.DefaultCTX(ctx)))
 }
 
 // Sends out a ping to the underlying client connection used by this model.

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	e_constants "github.com/elcengine/elemental/constants"
-	e_utils "github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/event"
@@ -59,10 +58,10 @@ func Connect(arg any) mongo.Client {
 		panic(e_constants.ErrInvalidConnectionArgument)
 	}
 
-	opts.Alias = e_utils.Coalesce(opts.Alias, "default")
-	clientOpts := e_utils.Coalesce(opts.ClientOptions, options.Client()).
+	opts.Alias = lo.CoalesceOrEmpty(opts.Alias, "default")
+	clientOpts := lo.CoalesceOrEmpty(opts.ClientOptions, options.Client()).
 		SetServerAPIOptions(options.ServerAPI(options.ServerAPIVersion1)).
-		SetPoolMonitor(e_utils.Coalesce(opts.PoolMonitor, defaultPoolMonitor(opts.Alias)))
+		SetPoolMonitor(lo.CoalesceOrEmpty(opts.PoolMonitor, defaultPoolMonitor(opts.Alias)))
 	if clientOpts.GetURI() == "" {
 		if opts.URI == "" {
 			panic(e_constants.ErrURIRequired)
@@ -74,13 +73,13 @@ func Connect(arg any) mongo.Client {
 		panic(err)
 	}
 	defaultDatabases[opts.Alias] = cs.Database
-	ctx, cancel := context.WithTimeout(context.Background(), *e_utils.Coalesce(clientOpts.ConnectTimeout, lo.ToPtr(connectionTimeout)))
+	ctx, cancel := context.WithTimeout(context.Background(), *lo.CoalesceOrEmpty(clientOpts.ConnectTimeout, lo.ToPtr(connectionTimeout)))
 	defer cancel()
 	client, err := mongo.Connect(ctx, clientOpts)
 	if err != nil {
 		panic(err)
 	}
-	e_utils.Must(client.Ping(ctx, readpref.Primary()))
+	lo.Must0(client.Ping(ctx, readpref.Primary()))
 	clients[opts.Alias] = *client
 	return *client
 }
@@ -89,7 +88,7 @@ func Connect(arg any) mongo.Client {
 //
 // @param alias - The alias of the connection to get
 func GetConnection(alias ...string) mongo.Client {
-	return clients[e_utils.Coalesce(e_utils.First(alias), "default")]
+	return clients[lo.CoalesceOrEmpty(lo.FirstOrEmpty(alias), "default")]
 }
 
 // Same as 'GetConnection' method
@@ -122,16 +121,16 @@ func Disconnect(aliases ...string) error {
 //
 // @param alias - The alias of the connection to use
 func UseDatabase(database string, alias ...string) *mongo.Database {
-	return lo.ToPtr(clients[e_utils.Coalesce(e_utils.First(alias), "default")]).
-		Database(e_utils.Coalesce(database, defaultDatabases[e_utils.Coalesce(e_utils.First(alias), "default")]))
+	return lo.ToPtr(clients[lo.CoalesceOrEmpty(lo.FirstOrEmpty(alias), "default")]).
+		Database(lo.CoalesceOrEmpty(database, defaultDatabases[lo.CoalesceOrEmpty(lo.FirstOrEmpty(alias), "default")]))
 }
 
 // Use the default database on a connection. Uses the default connection if no alias is provided
 //
 // @param alias - The alias of the connection to use
 func UseDefaultDatabase(alias ...string) *mongo.Database {
-	return lo.ToPtr(clients[e_utils.Coalesce(e_utils.First(alias), "default")]).
-		Database(e_utils.Coalesce(defaultDatabases[e_utils.Coalesce(e_utils.First(alias), "default")], "test"))
+	return lo.ToPtr(clients[lo.CoalesceOrEmpty(lo.FirstOrEmpty(alias), "default")]).
+		Database(lo.CoalesceOrEmpty(defaultDatabases[lo.CoalesceOrEmpty(lo.FirstOrEmpty(alias), "default")], "test"))
 }
 
 // Drops all databases across a given client or all clients if no alias is provided

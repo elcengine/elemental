@@ -12,15 +12,15 @@ import (
 
 // Returns the underlying collection instance this model uses.
 func (m Model[T]) Collection() *mongo.Collection {
-	connection := lo.FromPtr(e_utils.Coalesce(m.temporaryConnection, &m.Schema.Options.Connection))
-	database := lo.FromPtr(e_utils.Coalesce(m.temporaryDatabase, &m.Schema.Options.Database))
-	collection := lo.FromPtr(e_utils.Coalesce(m.temporaryCollection, &m.Schema.Options.Collection))
+	connection := lo.FromPtr(lo.CoalesceOrEmpty(m.temporaryConnection, &m.Schema.Options.Connection))
+	database := lo.FromPtr(lo.CoalesceOrEmpty(m.temporaryDatabase, &m.Schema.Options.Database))
+	collection := lo.FromPtr(lo.CoalesceOrEmpty(m.temporaryCollection, &m.Schema.Options.Collection))
 	return UseDatabase(database, connection).Collection(collection)
 }
 
 // Returns the underlying client instance this model uses
 func (m Model[T]) Connection() mongo.Client {
-	return GetConnection(lo.FromPtr(e_utils.Coalesce(m.temporaryConnection, &m.Schema.Options.Connection)))
+	return GetConnection(lo.FromPtr(lo.CoalesceOrEmpty(m.temporaryConnection, &m.Schema.Options.Connection)))
 }
 
 // Returns the underlying database instance this model uses
@@ -38,7 +38,7 @@ func (m Model[T]) EstimatedDocumentCount(ctx ...context.Context) int64 {
 func (m Model[T]) Stats(ctx ...context.Context) CollectionStats {
 	result := m.Database().RunCommand(e_utils.DefaultCTX(ctx), bson.M{"collStats": m.Schema.Options.Collection})
 	var stats CollectionStats
-	e_utils.Must(result.Decode(&stats))
+	lo.Must0(result.Decode(&stats))
 	return stats
 }
 

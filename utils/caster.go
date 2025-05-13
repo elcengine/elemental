@@ -33,9 +33,9 @@ func FromJSON[T any](bytes []byte) T {
 	return v
 }
 
-// Converts any type to a map[string]interface{}.
-func ToMap(s any) map[string]interface{} {
-	m := make(map[string]interface{})
+// Converts any type to a map[string]any.
+func ToMap(s any) map[string]any {
+	m := make(map[string]any)
 	json.Unmarshal(ToJSON(s), &m)
 	return m
 }
@@ -59,7 +59,7 @@ func FromBSON[T any](bytes []byte) T {
 }
 
 // Converts an interface to a bson document
-func ToBSONDoc(v interface{}) (doc *bson.M) {
+func ToBSONDoc(v any) (doc *bson.M) {
 	data, err := bson.Marshal(v)
 	if err != nil {
 		return nil

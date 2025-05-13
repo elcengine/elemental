@@ -24,7 +24,7 @@ func setField(field reflect.Value, defaultVal string) error {
 	return nil
 }
 
-func SetDefaults(ptr interface{}) error {
+func SetDefaults(ptr any) error {
 	if reflect.TypeOf(ptr).Kind() != reflect.Ptr {
 		return fmt.Errorf("not a pointer")
 	}
@@ -40,7 +40,7 @@ func SetDefaults(ptr interface{}) error {
 	return nil
 }
 
-func IsEmpty(value interface{}) bool {
+func IsEmpty(value any) bool {
 	if value == nil {
 		return true
 	}

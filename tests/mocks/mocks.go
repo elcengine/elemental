@@ -4,11 +4,11 @@ import (
 	"os"
 
 	e_test_base "github.com/elcengine/elemental/tests/base"
-	e_utils "github.com/elcengine/elemental/utils"
+	"github.com/samber/lo"
 )
 
 var (
-	DEFAULT_DATASOURCE = e_utils.Coalesce(os.Getenv("DEFAULT_DATASOURCE"),
+	DEFAULT_DATASOURCE = lo.CoalesceOrEmpty(os.Getenv("DEFAULT_DATASOURCE"),
 		"mongodb+srv://akalankaperera128:pFAnQVXE6vrbcXNk@default.ynr156r.mongodb.net/elemental") // This is a test M0 cluster there, so it is safe to use in tests.
 	SECONDARY_DATASOURCE = os.Getenv("SECONDARY_DATASOURCE")
 )
