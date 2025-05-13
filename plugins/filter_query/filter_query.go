@@ -39,7 +39,6 @@ func Parse(queryString string) FilterQueryResult {
 			if filterKey := extractFieldName(key); filterKey != "" {
 				result.SecondaryFilters[filterKey] = value
 			}
-
 		}
 		if strings.Contains(key, "sort") {
 			if sortKey := extractFieldName(key); sortKey != "" {
