@@ -88,7 +88,7 @@ func Connect(arg any) mongo.Client {
 //
 // @param alias - The alias of the connection to get
 func GetConnection(alias ...string) mongo.Client {
-	return clients[lo.CoalesceOrEmpty(lo.FirstOrEmpty(alias), "default")]
+	return clients[lo.FirstOr(alias, "default")]
 }
 
 // Same as 'GetConnection' method
@@ -121,16 +121,16 @@ func Disconnect(aliases ...string) error {
 //
 // @param alias - The alias of the connection to use
 func UseDatabase(database string, alias ...string) *mongo.Database {
-	return lo.ToPtr(clients[lo.CoalesceOrEmpty(lo.FirstOrEmpty(alias), "default")]).
-		Database(lo.CoalesceOrEmpty(database, defaultDatabases[lo.CoalesceOrEmpty(lo.FirstOrEmpty(alias), "default")]))
+	return lo.ToPtr(GetConnection(alias...)).
+		Database(lo.CoalesceOrEmpty(database, defaultDatabases[lo.FirstOr(alias, "default")]))
 }
 
 // Use the default database on a connection. Uses the default connection if no alias is provided
 //
 // @param alias - The alias of the connection to use
 func UseDefaultDatabase(alias ...string) *mongo.Database {
-	return lo.ToPtr(clients[lo.CoalesceOrEmpty(lo.FirstOrEmpty(alias), "default")]).
-		Database(lo.CoalesceOrEmpty(defaultDatabases[lo.CoalesceOrEmpty(lo.FirstOrEmpty(alias), "default")], "test"))
+	return lo.ToPtr(GetConnection(alias...)).
+		Database(lo.CoalesceOrEmpty(defaultDatabases[lo.FirstOr(alias, "default")], "test"))
 }
 
 // Drops all databases across a given client or all clients if no alias is provided
