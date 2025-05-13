@@ -47,11 +47,11 @@ func TestPluginFilterQuery(t *testing.T) {
 			})
 			Convey("In", func() {
 				result := filter_query.Parse("filter[name]=in(John,Jane)")
-				So(result.Filters, ShouldResemble, bson.M{"name": bson.M{"$in": []interface{}{"John", "Jane"}}})
+				So(result.Filters, ShouldResemble, bson.M{"name": bson.M{"$in": []string{"John", "Jane"}}})
 			})
 			Convey("Not In", func() {
 				result := filter_query.Parse("filter[name]=nin(John,Jane)")
-				So(result.Filters, ShouldResemble, bson.M{"name": bson.M{"$nin": []interface{}{"John", "Jane"}}})
+				So(result.Filters, ShouldResemble, bson.M{"name": bson.M{"$nin": []string{"John", "Jane"}}})
 			})
 			Convey("Regex", func() {
 				result := filter_query.Parse("filter[name]=reg(^J)")

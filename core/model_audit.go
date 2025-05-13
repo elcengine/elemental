@@ -81,7 +81,7 @@ func (m Model[T]) EnableAuditing(ctx ...context.Context) {
 		execWithModelOpts(AuditModel.Create(Audit{
 			Entity:   m.Name,
 			Type:     AuditTypeDelete,
-			Document: map[string]interface{}{"_id": id},
+			Document: map[string]any{"_id": id},
 			User:     e_utils.Cast[string](context.Value(e_constants.CtxUser)),
 		}))
 	}, TriggerOptions{Context: &context, Filter: &primitive.M{"ns.coll": primitive.M{"$eq": m.Collection().Name()}}})

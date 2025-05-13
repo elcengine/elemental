@@ -17,7 +17,7 @@ var validate = validator.New()
 // Legitimize validates the input data based on the given validation tags within it's type definition.
 // Basic validations are inherited from the go-playground/validator package while the augmented validations
 // are provided by the sentinel package.
-func Legitimize(input interface{}) error {
+func Legitimize(input any) error {
 	err := validate.Struct(input)
 	if err != nil {
 		return err
@@ -70,7 +70,7 @@ func Legitimize(input interface{}) error {
 				return fieldName
 			}
 
-			getReferenceFieldValue := func() interface{} {
+			getReferenceFieldValue := func() any {
 				if reference != "" {
 					return inputMap[reference]
 				}

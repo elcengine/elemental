@@ -27,7 +27,7 @@ func replaceOperator(value string, operator string) string {
 	return value[len(operator)+1 : len(value)-1]
 }
 
-func parseOperatorValue(value any, operator string) interface{} {
+func parseOperatorValue(value any, operator string) any {
 	if operator != "" {
 		value = replaceOperator(cast.ToString(value), operator)
 	}
@@ -50,7 +50,7 @@ func parseOperatorValue(value any, operator string) interface{} {
 	return value
 }
 
-func mapValue(value any) interface{} {
+func mapValue(value any) any {
 	switch {
 	case strings.HasPrefix(cast.ToString(value), "eq("):
 		value = parseOperatorValue(value, "eq")
@@ -69,11 +69,11 @@ func mapValue(value any) interface{} {
 	case strings.HasPrefix(cast.ToString(value), "lte("):
 		return bson.M{"$lte": parseOperatorValue(value, "lte")}
 	case strings.HasPrefix(cast.ToString(value), "in("):
-		return bson.M{"$in": lo.Map(strings.Split(replaceOperator(cast.ToString(value), "in"), ","), func(value string, index int) interface{} {
+		return bson.M{"$in": lo.Map(strings.Split(replaceOperator(cast.ToString(value), "in"), ","), func(value string, index int) any {
 			return parseOperatorValue(value, "")
 		})}
 	case strings.HasPrefix(cast.ToString(value), "nin("):
-		return bson.M{"$nin": lo.Map(strings.Split(replaceOperator(cast.ToString(value), "nin"), ","), func(value string, index int) interface{} {
+		return bson.M{"$nin": lo.Map(strings.Split(replaceOperator(cast.ToString(value), "nin"), ","), func(value string, index int) any {
 			return parseOperatorValue(value, "")
 		})}
 	case strings.HasPrefix(cast.ToString(value), "reg("):
@@ -96,7 +96,7 @@ func mapValue(value any) interface{} {
 func mapFilters(filter bson.M) bson.M {
 	for key, value := range filter {
 		if slices.Contains(complexOperators, key) {
-			filter["$"+key] = lo.Map(strings.Split(cast.ToString(value), ","), func(kv string, index int) interface{} {
+			filter["$"+key] = lo.Map(strings.Split(cast.ToString(value), ","), func(kv string, index int) any {
 				key, value := strings.Split(kv, "=")[0], strings.Split(kv, "=")[1]
 				return bson.M{key: mapValue(value)}
 			})
@@ -107,7 +107,7 @@ func mapFilters(filter bson.M) bson.M {
 			})
 			if complexOp != "" && found {
 				values := strings.Split(cast.ToString(parseOperatorValue(value, complexOp)), ",")
-				filter["$"+complexOp] = lo.Map(values, func(subValue string, index int) interface{} {
+				filter["$"+complexOp] = lo.Map(values, func(subValue string, index int) any {
 					return bson.M{key: mapValue(subValue)}
 				})
 				delete(filter, key)

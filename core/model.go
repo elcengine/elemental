@@ -104,7 +104,7 @@ func (m Model[T]) CreateMany(docs []T) Model[T] {
 // This method validates the document against the model schema and panics if any errors are found.
 func (m Model[T]) InsertMany(docs []T) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
-		var documentsToInsert, detailedDocuments []interface{}
+		var documentsToInsert, detailedDocuments []any
 		for _, doc := range docs {
 			documentToInsert, detailedDocument := enforceSchema(m.Schema, &doc, nil)
 			documentsToInsert = append(documentsToInsert, documentToInsert)
