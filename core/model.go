@@ -124,7 +124,7 @@ func (m Model[T]) Find(query ...primitive.M) Model[T] {
 		m.checkConditionsAndPanic(results)
 		return results
 	}
-	q := lo.FirstOrEmpty(query)
+	q := lo.FirstOr(query, primitive.M{})
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
@@ -133,7 +133,7 @@ func (m Model[T]) Find(query ...primitive.M) Model[T] {
 }
 
 func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
-	q := lo.FirstOrEmpty(query)
+	q := lo.FirstOr(query, primitive.M{})
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
@@ -169,7 +169,7 @@ func (m Model[T]) FindByID(id primitive.ObjectID) Model[T] {
 }
 
 func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
-	q := lo.FirstOrEmpty(query)
+	q := lo.FirstOr(query, primitive.M{})
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
@@ -190,7 +190,7 @@ func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
 }
 
 func (m Model[T]) Distinct(field string, query ...primitive.M) Model[T] {
-	q := lo.FirstOrEmpty(query)
+	q := lo.FirstOr(query, primitive.M{})
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
