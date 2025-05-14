@@ -1,14 +1,14 @@
-GO_TEST_ARGS ?= -v --count=1
-
+GO_TEST_ARGS ?= -tags=unit
+	
 format:
 	gofmt -w .
 test:
 	PARALLEL_CONVEY=false make test-lightspeed
 test-lightspeed:
-	go test $(GO_TEST_ARGS) ./tests/...
+	go test $(GO_TEST_ARGS) -v --count=1 ./tests/...
 test-coverage:
 	@mkdir -p ./coverage
-	make test-lightspeed GO_TEST_ARGS="--cover -coverpkg=./... --coverprofile=./coverage/coverage.out"
+	make test-lightspeed GO_TEST_ARGS="--cover -coverpkg=./cmd/...,./constants/...,./core/...,./plugins/...,./utils/... --coverprofile=./coverage/coverage.out"
 	go tool cover -html=./coverage/coverage.out -o ./coverage/index.html
 	@echo "\033[0;32mCoverage report generated at ./coverage/index.html.\033[0m"
 lint:

@@ -7,14 +7,15 @@ import (
 )
 
 type FilterQueryResult struct {
-	Filters          bson.M
-	SecondaryFilters bson.M
-	Sorts            bson.M
-	Include          []string
-	Select           bson.M
-	Prepaginate      bool
+	Filters          bson.M   // Primary filters which are usually evaluated as the first stage of an aggregation query
+	SecondaryFilters bson.M   // Secondary filters which are usually evaluated after any lookups
+	Sorts            bson.M   // Fields to sort by, with 1 or 'asc' for ascending and -1 or 'desc' for descending
+	Include          []string // Fields to populate/lookup in the result set
+	Select           bson.M   // Fields to select in the result set
+	Prepaginate      bool     // Whether to paginate the results before any lookups
 }
 
+// Parses the given query string into a Elemental FilterQueryResult.
 func Parse(queryString string) FilterQueryResult {
 	result := FilterQueryResult{}
 	result.Filters = bson.M{}
@@ -30,19 +31,22 @@ func Parse(queryString string) FilterQueryResult {
 		key := pair[0]
 		value := pair[1]
 		if strings.Contains(key, "filter") {
-			filterKey := extractFieldName(key)
-			result.Filters[filterKey] = value
+			if filterKey := extractFieldName(key); filterKey != "" {
+				result.Filters[filterKey] = value
+			}
 		}
 		if strings.Contains(key, "secondaryFilter") {
-			filterKey := extractFieldName(key)
-			result.SecondaryFilters[filterKey] = value
+			if filterKey := extractFieldName(key); filterKey != "" {
+				result.SecondaryFilters[filterKey] = value
+			}
 		}
 		if strings.Contains(key, "sort") {
-			sortKey := extractFieldName(key)
-			if value == "asc" || value == "1" {
-				result.Sorts[sortKey] = 1
-			} else {
-				result.Sorts[sortKey] = -1
+			if sortKey := extractFieldName(key); sortKey != "" {
+				if value == "asc" || value == "1" {
+					result.Sorts[sortKey] = 1
+				} else {
+					result.Sorts[sortKey] = -1
+				}
 			}
 		}
 		if strings.Contains(key, "include") {

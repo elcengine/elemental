@@ -2,7 +2,6 @@ package e_tests
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	elemental "github.com/elcengine/elemental/core"
@@ -13,10 +12,6 @@ import (
 
 func TestTransaction(t *testing.T) {
 	t.Parallel()
-
-	if os.Getenv("CI") == "" {
-		t.Skip("Skipping test in non-CI environment")
-	}
 
 	e_test_setup.Connection(t.Name())
 

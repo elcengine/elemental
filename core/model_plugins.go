@@ -1,14 +1,14 @@
 package elemental
 
-import filter_query "github.com/elcengine/elemental/plugins/filter-query"
+import "github.com/elcengine/elemental/plugins/filter_query"
 
-// QS allows you to construct a MongoDB query directly from the params in a request.
+// QS allows you to construct an Elemental query directly from a request's query string.
 //
 // It uses the filter_query plugin to parse the query string and apply filters, sorting, lookups, and projections to the final query.
 //
 // Usage:
 //
-//	UserModel.QS("filter[name]=John&sort[name]=asc&include=field1&select=field1").Exec().([]User)
+//	UserModel.QS("filter[name]=John&sort[name]=asc&include=field1&select=field1").ExecTT()
 func (m Model[T]) QS(query string) Model[T] {
 	result := filter_query.Parse(query)
 	if len(result.Filters) > 0 {

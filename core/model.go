@@ -19,7 +19,7 @@ import (
 
 type ModelInterface[T any] interface {
 	Exec(ctx ...context.Context) any
-	Connection() mongo.Client
+	Connection() *mongo.Client
 }
 
 type Model[T any] struct {
@@ -42,6 +42,8 @@ type Model[T any] struct {
 	deletedAtFieldName  string
 }
 
+var pluralizeClient = pluralize.NewClient()
+
 // Static map of all created models. You can use this map to access models by name.
 // The key is the name of the model and the value is the model itself.
 var Models = make(map[string]any)
@@ -54,7 +56,7 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 	if _, ok := Models[name]; ok {
 		return e_utils.Cast[Model[T]](Models[name])
 	}
-	schema.Options.Collection = lo.CoalesceOrEmpty(schema.Options.Collection, pluralize.NewClient().Plural(strings.ToLower(name)))
+	schema.Options.Collection = lo.CoalesceOrEmpty(schema.Options.Collection, pluralizeClient.Plural(strings.ToLower(name)))
 	middleware := newMiddleware[T]()
 	model := Model[T]{
 		Name:       name,

@@ -66,7 +66,7 @@ func (m Model[T]) Exec(ctx ...context.Context) any {
 			m.executor(m, e_utils.DefaultCTX(ctx))
 		})
 		if err != nil {
-			panic(errors.New("failed to schedule query"))
+			panic(err)
 		}
 		cron.Start()
 		return cast.ToInt(id)

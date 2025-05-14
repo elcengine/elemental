@@ -17,10 +17,7 @@ var complexOperators = []string{"and", "or"}
 func extractFieldName(input string) string {
 	re := regexp.MustCompile(`^[^\[]+\[(.+?)\]$`)
 	matches := re.FindStringSubmatch(input)
-	if len(matches) > 1 {
-		return matches[1]
-	}
-	panic("Invalid field name")
+	return lo.NthOrEmpty(matches, 1)
 }
 
 func replaceOperator(value string, operator string) string {
