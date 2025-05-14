@@ -1,0 +1,30 @@
+package e_tests
+
+import (
+	e_test_setup "github.com/elcengine/elemental/tests/setup"
+	"github.com/google/uuid"
+	. "github.com/smartystreets/goconvey/convey"
+	"testing"
+	"time"
+)
+
+func TestCoreSchedule(t *testing.T) {
+	t.Parallel()
+
+	e_test_setup.Connection(t.Name())
+
+	KingdomModel := KingdomModel.SetDatabase(t.Name())
+
+	Convey("Schedule document creation every 2 seconds", t, func() {
+		id := KingdomModel.Create(Kingdom{
+			Name: uuid.NewString(),
+		}).Schedule("*/2 * * * * *").ExecInt()
+
+		defer KingdomModel.Unschedule(id)
+
+		for i := range 3 {
+			So(KingdomModel.Find().Exec(), ShouldHaveLength, i)
+			time.Sleep(2 * time.Second)
+		}
+	})
+}
