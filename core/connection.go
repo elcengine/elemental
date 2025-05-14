@@ -88,7 +88,11 @@ func Connect(arg any) mongo.Client {
 //
 // @param alias - The alias of the connection to get
 func GetConnection(alias ...string) *mongo.Client {
-	return clients[lo.CoalesceOrEmpty(lo.FirstOrEmpty(alias), "default")]
+	client, ok := clients[lo.CoalesceOrEmpty(lo.FirstOrEmpty(alias), "default")]
+	if !ok {
+		return &mongo.Client{}
+	}
+	return client
 }
 
 // Same as 'GetConnection' method
