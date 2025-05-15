@@ -70,9 +70,7 @@ var UserModel = elemental.NewModel[User]("User", elemental.NewSchema(map[string]
 	"Name": {
 		Type:     reflect.String,
 		Required: true,
-		Index: options.IndexOptions{
-			Unique: lo.ToPtr(true),
-		},
+		Index:    options.Index().SetUnique(true),
 	},
 	"Age": {
 		Type:    reflect.Int,

@@ -8,7 +8,6 @@ import (
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Schema struct {
@@ -44,11 +43,11 @@ func (s Schema) syncIndexes(reflectedBaseType reflect.Type, databaseOverride, co
 	collection := UseDatabase(database, connection).Collection(collectionName)
 	collection.Indexes().DropAll(context.Background())
 	for field, definition := range s.Definitions {
-		if (definition.Index != options.IndexOptions{}) {
+		if definition.Index != nil {
 			reflectedField, _ := reflectedBaseType.FieldByName(field)
 			indexModel := mongo.IndexModel{
 				Keys:    bson.D{{Key: cleanBSONTag(reflectedField.Tag.Get("bson")), Value: lo.CoalesceOrEmpty(definition.IndexOrder, 1)}},
-				Options: &definition.Index,
+				Options: definition.Index,
 			}
 			collection.Indexes().CreateOne(context.TODO(), indexModel)
 		}
