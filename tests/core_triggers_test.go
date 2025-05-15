@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/elcengine/elemental/core"
 	"github.com/elcengine/elemental/tests/setup"
-	"github.com/elcengine/elemental/utils"
 	"reflect"
 	"testing"
 
@@ -83,7 +82,7 @@ func TestCoreTriggers(t *testing.T) {
 		})
 		Convey("Listen to document deletion", func() {
 			name := "Kaer Trolde"
-			castle := e_utils.Cast[Castle](CastleModel.FindOne(primitive.M{"name": name}).Exec())
+			castle := CastleModel.FindOne(primitive.M{"name": name}).ExecT()
 			CastleModel.DeleteOne(primitive.M{"name": name}).Exec()
 			SoTimeout(t, func() (ok bool) {
 				if deletedCastleID == castle.ID {

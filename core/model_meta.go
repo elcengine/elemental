@@ -3,8 +3,7 @@ package elemental
 import (
 	"context"
 
-	"github.com/elcengine/elemental/connection"
-	"github.com/elcengine/elemental/utils"
+	e_utils "github.com/elcengine/elemental/utils"
 
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
@@ -13,15 +12,21 @@ import (
 
 // Returns the underlying collection instance this model uses.
 func (m Model[T]) Collection() *mongo.Collection {
-	connection := lo.FromPtr(e_utils.Coalesce(m.temporaryConnection, &m.Schema.Options.Connection))
-	database := lo.FromPtr(e_utils.Coalesce(m.temporaryDatabase, &m.Schema.Options.Database))
-	collection := lo.FromPtr(e_utils.Coalesce(m.temporaryCollection, &m.Schema.Options.Collection))
-	return e_connection.Use(database, connection).Collection(collection)
+	connection := lo.FromPtr(lo.CoalesceOrEmpty(m.temporaryConnection, &m.Schema.Options.Connection))
+	database := lo.FromPtr(lo.CoalesceOrEmpty(m.temporaryDatabase, &m.Schema.Options.Database))
+	collection := lo.FromPtr(lo.CoalesceOrEmpty(m.temporaryCollection, &m.Schema.Options.Collection))
+	return UseDatabase(database, connection).Collection(collection)
 }
 
 // Returns the underlying client instance this model uses
-func (m Model[T]) Connection() mongo.Client {
-	return e_connection.GetConnection(lo.FromPtr(e_utils.Coalesce(m.temporaryConnection, &m.Schema.Options.Connection)))
+func (m Model[T]) Connection() *mongo.Client {
+	return GetConnection(lo.FromPtr(lo.CoalesceOrEmpty(m.temporaryConnection, &m.Schema.Options.Connection)))
+}
+
+// Returns the underlying client instance this model uses
+// This method is an alias for Connection() and is kept for clarity to indicate that this retrieves a client instance
+func (m Model[T]) Client() *mongo.Client {
+	return m.Connection()
 }
 
 // Returns the underlying database instance this model uses
@@ -39,7 +44,7 @@ func (m Model[T]) EstimatedDocumentCount(ctx ...context.Context) int64 {
 func (m Model[T]) Stats(ctx ...context.Context) CollectionStats {
 	result := m.Database().RunCommand(e_utils.DefaultCTX(ctx), bson.M{"collStats": m.Schema.Options.Collection})
 	var stats CollectionStats
-	e_utils.Must(result.Decode(&stats))
+	lo.Must0(result.Decode(&stats))
 	return stats
 }
 

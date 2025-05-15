@@ -17,7 +17,7 @@ func structToMap(obj any) map[string]any {
 	}
 
 	// Iterate through the fields of the struct
-	for i := 0; i < v.NumField(); i++ {
+	for i := range v.NumField() {
 		field := v.Type().Field(i)
 		fieldName := field.Name
 		fieldValue := v.Field(i).Interface()
@@ -26,17 +26,8 @@ func structToMap(obj any) map[string]any {
 	return result
 }
 
-// Function to convert map[string]Field to map[string]any
-func convertMap(original map[string]Field) map[string]any {
-	result := make(map[string]any)
-	for key, field := range original {
-		result[key] = field
-	}
-	return result
-}
-
 // Function to convert primitive.D to map[string]any
-func convertDToMap(doc primitive.D) map[string]any {
+func convertDocToMap(doc primitive.D) map[string]any {
 	result := make(map[string]any)
 	for _, elem := range doc {
 		result[elem.Key] = elem.Value

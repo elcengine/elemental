@@ -29,15 +29,15 @@ func TestCoreReadSelect(t *testing.T) {
 				}
 			}
 			Convey("In conjunction with a map input", func() {
-				users := UserModel.Find().Select(primitive.M{"name": 1}).Limit(limit).Exec().([]User)
+				users := UserModel.Find().Select(primitive.M{"name": 1}).Limit(limit).ExecTT()
 				assert(users)
 			})
 			Convey("In conjunction with a slice input", func() {
-				users := UserModel.Find().Select([]string{"name"}).Limit(limit).Exec().([]User)
+				users := UserModel.Find().Select([]string{"name"}).Limit(limit).ExecTT()
 				assert(users)
 			})
 			Convey("In conjunction with a string input", func() {
-				users := UserModel.Find().Select("name").Limit(limit).Exec().([]User)
+				users := UserModel.Find().Select("name").Limit(limit).ExecTT()
 				assert(users)
 			})
 		})
@@ -52,19 +52,19 @@ func TestCoreReadSelect(t *testing.T) {
 				}
 			}
 			Convey("In conjunction with a map input", func() {
-				users := UserModel.Find().Select(primitive.M{"name": 1, "_id": 0}).Limit(limit).Exec().([]User)
+				users := UserModel.Find().Select(primitive.M{"name": 1, "_id": 0}).Limit(limit).ExecTT()
 				assert(users)
 			})
 			Convey("In conjunction with a slice input", func() {
-				users := UserModel.Find().Select([]string{"name", "-_id"}).Limit(limit).Exec().([]User)
+				users := UserModel.Find().Select([]string{"name", "-_id"}).Limit(limit).ExecTT()
 				assert(users)
 			})
 			Convey("In conjunction with a string input (spaces)", func() {
-				users := UserModel.Find().Select("name -_id").Limit(limit).Exec().([]User)
+				users := UserModel.Find().Select("name -_id").Limit(limit).ExecTT()
 				assert(users)
 			})
 			Convey("In conjunction with a string input (commas)", func() {
-				users := UserModel.Find().Select("name, -_id").Limit(limit).Exec().([]User)
+				users := UserModel.Find().Select("name, -_id").Limit(limit).ExecTT()
 				assert(users)
 			})
 		})
@@ -78,15 +78,15 @@ func TestCoreReadSelect(t *testing.T) {
 				}
 			}
 			Convey("In conjunction with a map input", func() {
-				users := UserModel.Find().Select(primitive.M{"name": 1, "age": 1}).Limit(limit).Exec().([]User)
+				users := UserModel.Find().Select(primitive.M{"name": 1, "age": 1}).Limit(limit).ExecTT()
 				assert(users)
 			})
 			Convey("In conjunction with a slice input", func() {
-				users := UserModel.Find().Select([]string{"name", "age"}).Limit(limit).Exec().([]User)
+				users := UserModel.Find().Select([]string{"name", "age"}).Limit(limit).ExecTT()
 				assert(users)
 			})
 			Convey("In conjunction with a string input", func() {
-				users := UserModel.Find().Select("name age").Limit(limit).Exec().([]User)
+				users := UserModel.Find().Select("name age").Limit(limit).ExecTT()
 				assert(users)
 			})
 		})

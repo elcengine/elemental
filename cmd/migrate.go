@@ -1,10 +1,10 @@
+//nolint:gocritic
 package e_cmd
 
 import (
 	"fmt"
-	e_connection "github.com/elcengine/elemental/connection"
-	e_utils "github.com/elcengine/elemental/utils"
-	"io/ioutil"
+	"github.com/elcengine/elemental/core"
+	"github.com/elcengine/elemental/utils"
 	"log"
 	"os"
 	"os/exec"
@@ -18,15 +18,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	TargetSeed    = "seed"
+	TargetMigrate = "migrate"
+)
+
 func run(rollback bool, target string) {
 	cfg := readConfigFile()
-	e_connection.ConnectURI(cfg.ConnectionStr)
-	defer e_connection.Disconnect()
 	dir := cfg.MigrationsDir
-	if target == "seed" {
+	if target == TargetSeed {
 		dir = cfg.SeedsDir
 	}
-	files, err := ioutil.ReadDir(dir)
+	files, err := os.ReadDir(dir)
 	if err != nil {
 		log.Fatalf("Failed to read %ss: %v", target, err)
 	}
@@ -50,8 +53,7 @@ import (
 	"strconv"
 	"time"
 	"go.mongodb.org/mongo-driver/mongo"
-	"github.com/samber/lo"
-	"github.com/elcengine/elemental/connection"
+	"github.com/elcengine/elemental/core"
 	"github.com/elcengine/elemental/database/%ss"
 )
 
@@ -59,31 +61,35 @@ import (
 		fileName = strings.TrimSuffix(fileName, ".go")
 		parts := strings.Split(fileName, "_")
 		timestampStr := parts[len(parts)-1]
-		return lo.Must(strconv.ParseInt(timestampStr, 10, 64))
+		timestamp, err := strconv.ParseInt(timestampStr, 10, 64)
+		if err != nil {
+			panic(err)
+		}
+		return timestamp
 }
 
 func main() {
-	client := e_connection.ConnectURI("%s")
-	db := e_connection.UseDefault()
+	client := elemental.Connect("%s")
+	db := elemental.UseDefaultDatabase()
 	go db.Collection("%s").Indexes().CreateOne(context.Background(), mongo.IndexModel{
-		Keys: map[string]interface{}{"type": 1},
+		Keys: map[string]any{"type": 1},
 	})
 	files := []string{%s}
 	functions := []func(context.Context, *mongo.Database, *mongo.Client){%s}
 	ctx := context.Background()
 	for i, f := range files {
 		functionToRun := functions[i]
-		var entry = map[string]interface{}{}
-		db.Collection("%s").FindOne(ctx, map[string]interface{}{"name": f, "type": "%s"}).Decode(&entry)
+		var entry = map[string]any{}
+		db.Collection("%s").FindOne(ctx, map[string]any{"name": f, "type": "%s"}).Decode(&entry)
 		if %t {
 			if entry["name"] != nil {
 				functionToRun(ctx, db, &client)
-				db.Collection("%s").DeleteOne(ctx, map[string]interface{}{"name": f})
+				db.Collection("%s").DeleteOne(ctx, map[string]any{"name": f})
 			}
 		} else {
 			if entry["name"] == nil {
 				functionToRun(ctx, db, &client)
-				db.Collection("%s").InsertOne(ctx, map[string]interface{}{
+				db.Collection("%s").InsertOne(ctx, map[string]any{
 					"name": f,
 					"type": "%s",
 					"created_at": time.Now(),
@@ -94,10 +100,10 @@ func main() {
 }
 `,
 		target, cfg.ConnectionStr, cfg.ChangelogCollection,
-		strings.Join(lo.Map(files, func(file os.FileInfo, index int) string {
+		strings.Join(lo.Map(files, func(file os.DirEntry, index int) string {
 			return fmt.Sprintf("\"%s\"", strings.TrimSuffix(file.Name(), ".go"))
 		}), ","),
-		strings.Join(lo.Map(files, func(file os.FileInfo, index int) string {
+		strings.Join(lo.Map(files, func(file os.DirEntry, index int) string {
 			if rollback {
 				return fmt.Sprintf("%ss.Down_%d", target, extractTimestamp(file.Name()))
 			} else {
@@ -108,10 +114,13 @@ func main() {
 		target,
 		rollback, cfg.ChangelogCollection, cfg.ChangelogCollection, target,
 	)
+	elemental.Connect(cfg.ConnectionStr)
+	defer elemental.Disconnect()
 	os.MkdirAll(".elemental/"+target+"s", os.ModePerm)
 	e_utils.CreateAndWriteToFile(fmt.Sprintf(".elemental/%ss/main.go", target), template)
 	err = exec.Command("go", "run", ".elemental/"+target+"s/main.go").Run()
 	if err != nil {
+		elemental.Disconnect()
 		log.Fatalf("Failed to run %ss: %s", target, err.Error())
 	} else {
 		if rollback {
@@ -128,7 +137,7 @@ func create(args []string, target string) {
 		log.Fatalf("Please provide a name for the %s", target)
 	}
 	cfg := readConfigFile()
-	if target != "seed" {
+	if target != TargetSeed {
 		os.MkdirAll(cfg.MigrationsDir, os.ModePerm)
 	} else {
 		os.MkdirAll(cfg.SeedsDir, os.ModePerm)
@@ -137,19 +146,19 @@ func create(args []string, target string) {
 	var template = fmt.Sprintf(`package %ss
 
 import (
-"context"
-"go.mongodb.org/mongo-driver/mongo"
+	"context"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func Up_%s(ctx context.Context, db *mongo.Database, client *mongo.Client) {
-// Write your %s here
+	// Write your %s here
 }
 
 func Down_%s(ctx context.Context, db *mongo.Database, client *mongo.Client) {
-// Write your rollback here
+	// Write your rollback here
 }`, target, timestamp, target, timestamp)
 	dir := cfg.MigrationsDir
-	if target == "seed" {
+	if target == TargetSeed {
 		dir = cfg.SeedsDir
 	}
 	outputFile := dir + "/" + args[0] + "_" + timestamp + ".go"

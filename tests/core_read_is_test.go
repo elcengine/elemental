@@ -20,11 +20,11 @@ func TestCoreReadIs(t *testing.T) {
 
 	Convey("Read users where", t, func() {
 		Convey("Name is of type string", func() {
-			users := UserModel.Where("name").IsType(bson.TypeString).Exec().([]User)
+			users := UserModel.Where("name").IsType(bson.TypeString).ExecTT()
 			So(len(users), ShouldEqual, len(e_mocks.Users))
 		})
 		Convey("School is null", func() {
-			users := UserModel.Where("school").IsNull().Exec().([]User)
+			users := UserModel.Where("school").IsNull().ExecTT()
 			So(len(users), ShouldEqual, len(lo.Filter(e_mocks.Users, func(u User, _ int) bool {
 				return u.School == nil
 			})))

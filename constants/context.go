@@ -1,3 +1,3 @@
 package e_constants
 
-const CTXUser = "user"
+const CtxUser = "user"

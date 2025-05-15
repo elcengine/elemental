@@ -1,0 +1,6 @@
+{
+  "connection_str": "mongodb+srv://akalankaperera128:pFAnQVXE6vrbcXNk@default.ynr156r.mongodb.net/elemental",
+  "migrations_dir": "database/migrations",
+  "seeds_dir": "database/seeds",
+  "changelog_collection": "changelog"
+}

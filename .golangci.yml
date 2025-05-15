@@ -8,11 +8,16 @@ linters:
     - dogsled
     - errcheck
     - errorlint
+    - err113
     - exhaustruct
+    - forbidigo
+    - forcetypeassert
     - funlen
     - gochecknoglobals
+    - gochecknoinits
     - gocyclo
     - gocognit
+    - godot
     - gosec
     - gomoddirectives
     - ireturn
@@ -21,10 +26,19 @@ linters:
     - nlreturn
     - noctx
     - nonamedreturns
+    - paralleltest
     - perfsprint
     - revive
     - tagalign
     - tagliatelle
+    - testpackage
     - varnamelen
     - wrapcheck
     - wsl
+
+  settings:
+    lll:
+      line-length: 180
+    staticcheck:
+      checks:
+        - '-ST1001'

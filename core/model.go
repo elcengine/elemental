@@ -5,9 +5,9 @@ import (
 	"reflect"
 	"strings"
 
-	e_connection "github.com/elcengine/elemental/connection"
 	e_constants "github.com/elcengine/elemental/constants"
 	e_utils "github.com/elcengine/elemental/utils"
+	"github.com/spf13/cast"
 
 	"github.com/gertd/go-pluralize"
 	"github.com/samber/lo"
@@ -18,14 +18,14 @@ import (
 )
 
 type ModelInterface[T any] interface {
-	Exec(...context.Context) any
-	Connection() mongo.Client
+	Exec(ctx ...context.Context) any
+	Connection() *mongo.Client
 }
 
 type Model[T any] struct {
-	Name                string
-	Schema              Schema
-	Cloned              bool
+	Name                string // The name of the model
+	Schema              Schema // The underlying schema used by this model
+	Cloned              bool   // Indicates if this model has been cloned at least once
 	pipeline            mongo.Pipeline
 	executor            func(m Model[T], ctx context.Context) any
 	whereField          string
@@ -42,16 +42,21 @@ type Model[T any] struct {
 	deletedAtFieldName  string
 }
 
+var pluralizeClient = pluralize.NewClient()
+
+// Static map of all created models. You can use this map to access models by name.
+// The key is the name of the model and the value is the model itself.
 var Models = make(map[string]any)
 
 // A Predefined model with type map[string]any which can be used to access the Elemental APIs if you don't want to define a schema.
 var NativeModel = NewModel[map[string]any]("ElementalNativeModel", NewSchema(map[string]Field{}))
 
+// NewModel creates a new model with the given name and schema. If a model with the same name already exists, it will return the existing model.
 func NewModel[T any](name string, schema Schema) Model[T] {
 	if _, ok := Models[name]; ok {
 		return e_utils.Cast[Model[T]](Models[name])
 	}
-	schema.Options.Collection, _ = lo.Coalesce(schema.Options.Collection, pluralize.NewClient().Plural(strings.ToLower(name)))
+	schema.Options.Collection = lo.CoalesceOrEmpty(schema.Options.Collection, pluralizeClient.Plural(strings.ToLower(name)))
 	middleware := newMiddleware[T]()
 	model := Model[T]{
 		Name:       name,
@@ -67,13 +72,15 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 		}
 	}
 	if model.Ping() != nil {
-		e_connection.On(event.ConnectionReady, connectionReady)
+		OnConnectionEvent(event.ConnectionReady, connectionReady)
 	} else {
 		connectionReady()
 	}
 	return model
 }
 
+// Extends the query to insert a single document into the collection.
+// This method validates the document against the model schema and panics if any errors are found.
 func (m Model[T]) Create(doc T) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
 		documentToInsert, detailedDocument := enforceSchema(m.Schema, &doc, nil)
@@ -89,13 +96,17 @@ func (m Model[T]) Create(doc T) Model[T] {
 	return m
 }
 
+// Extends the query to insert multiple documents into the collection.
+// This method is an alias for InsertMany and is provided for convenience.
 func (m Model[T]) CreateMany(docs []T) Model[T] {
 	return m.InsertMany(docs)
 }
 
+// Extends the query to insert multiple documents into the collection.
+// This method validates the document against the model schema and panics if any errors are found.
 func (m Model[T]) InsertMany(docs []T) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
-		var documentsToInsert, detailedDocuments []interface{}
+		var documentsToInsert, detailedDocuments []any
 		for _, doc := range docs {
 			documentToInsert, detailedDocument := enforceSchema(m.Schema, &doc, nil)
 			documentsToInsert = append(documentsToInsert, documentToInsert)
@@ -110,6 +121,9 @@ func (m Model[T]) InsertMany(docs []T) Model[T] {
 	return m
 }
 
+// Extends the query with a match stage to find multiple documents in the collection.
+// Optionally accepts one or more queries to filter the results.
+// If multiple queries are provided, they are merged into a single from left to right.
 func (m Model[T]) Find(query ...primitive.M) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var results []T
@@ -125,7 +139,7 @@ func (m Model[T]) Find(query ...primitive.M) Model[T] {
 		m.checkConditionsAndPanic(results)
 		return results
 	}
-	q := e_utils.DefaultQuery(query...)
+	q := e_utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
@@ -133,8 +147,11 @@ func (m Model[T]) Find(query ...primitive.M) Model[T] {
 	return m
 }
 
+// Extends the query with a limit stage to find a single document.
+// It optionally accepts one or more queries to filter the results before limiting.
+// If multiple queries are provided, they are merged into a single from left to right.
 func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
-	q := e_utils.DefaultQuery(query...)
+	q := e_utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
@@ -161,6 +178,7 @@ func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
 	return m
 }
 
+// Extends the query with a match stage to find a document by its ID.
 func (m Model[T]) FindByID(id primitive.ObjectID) Model[T] {
 	q := primitive.M{"_id": id}
 	if m.softDeleteEnabled {
@@ -169,8 +187,11 @@ func (m Model[T]) FindByID(id primitive.ObjectID) Model[T] {
 	return m.FindOne(q)
 }
 
+// Extends the query with a count stage to count the number of documents in the collection.
+// It optionally accepts one or more queries to filter the results before counting.
+// If multiple queries are provided, they are merged into a single from left to right.
 func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
-	q := e_utils.DefaultQuery(query...)
+	q := e_utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
@@ -185,13 +206,19 @@ func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
 		if err != nil {
 			panic(err)
 		}
-		return int64(e_utils.Cast[int32](results[0]["count"]))
+		if len(results) == 0 {
+			return 0
+		}
+		return cast.ToInt64(results[0]["count"])
 	}
 	return m
 }
 
+// Distinct returns a list of distinct values for the given field.
+// It optionally accepts one or more queries to filter the results before getting the distinct values.
+// If multiple queries are provided, they are merged into a single from left to right.
 func (m Model[T]) Distinct(field string, query ...primitive.M) Model[T] {
-	q := e_utils.DefaultQuery(query...)
+	q := e_utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
@@ -215,6 +242,8 @@ func (m Model[T]) Distinct(field string, query ...primitive.M) Model[T] {
 	return m
 }
 
+// Extends the query with a sort stage.
+// The sort stage is used to specify the order in which the results should be returned.
 func (m Model[T]) Sort(args ...any) Model[T] {
 	if len(args) == 1 {
 		for field, order := range e_utils.Cast[primitive.M](args[0]) {
@@ -231,18 +260,23 @@ func (m Model[T]) Sort(args ...any) Model[T] {
 	return m
 }
 
+// Extends the query with a projection stage.
+// The projection stage is used to specify which fields to include or exclude from the results.
 func (m Model[T]) Select(fields ...any) Model[T] {
 	var selection []string
-	if len(fields) == 1 && reflect.TypeOf(fields[0]).Kind() == reflect.String {
+	switch {
+	case len(fields) == 1 && reflect.TypeOf(fields[0]).Kind() == reflect.String:
 		selection = strings.FieldsFunc(fields[0].(string), func(r rune) bool {
 			return r == ',' || r == ' '
 		})
-	} else if len(fields) > 1 {
+	case len(fields) > 1:
 		selection = e_utils.CastSlice[string](fields)
-	} else if reflect.TypeOf(fields[0]).Kind() == reflect.Slice {
+	case reflect.TypeOf(fields[0]).Kind() == reflect.Slice:
 		selection = fields[0].([]string)
 	}
-	if len(selection) > 0 {
+
+	switch {
+	case len(selection) > 0:
 		for _, field := range selection {
 			if strings.HasPrefix(field, "-") {
 				m = m.addToPipeline("$project", field[1:], 0)
@@ -250,7 +284,7 @@ func (m Model[T]) Select(fields ...any) Model[T] {
 				m = m.addToPipeline("$project", field, 1)
 			}
 		}
-	} else if reflect.TypeOf(fields[0]).Kind() == reflect.Map {
+	case reflect.TypeOf(fields[0]).Kind() == reflect.Map:
 		for field, value := range e_utils.Cast[primitive.M](fields[0]) {
 			m = m.addToPipeline("$project", field, value)
 		}
@@ -259,6 +293,7 @@ func (m Model[T]) Select(fields ...any) Model[T] {
 }
 
 // Creates a clone of the current model with the same query pipeline and options as has been set on the current model.
+// Invoking this method will set the Cloned flag of the newly created model to true.
 func (m Model[T]) Clone() Model[T] {
 	return Model[T]{
 		Name:                m.Name,

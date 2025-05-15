@@ -2,7 +2,6 @@ package e_tests
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	elemental "github.com/elcengine/elemental/core"
@@ -13,10 +12,6 @@ import (
 
 func TestTransaction(t *testing.T) {
 	t.Parallel()
-
-	if os.Getenv("CI") == "" {
-		t.Skip("Skipping test in non-CI environment")
-	}
 
 	e_test_setup.Connection(t.Name())
 
@@ -39,9 +34,9 @@ func TestTransaction(t *testing.T) {
 				)
 				So(results, ShouldHaveLength, 2)
 				So(errors, ShouldBeEmpty)
-				yennefer := UserModel.FindOne().Where("name", "Yennefer").Exec()
+				yennefer := UserModel.FindOne().Where("name", "Yennefer").ExecPtr()
 				So(yennefer, ShouldNotBeNil)
-				triss := UserModel.FindOne().Where("name", "Triss").SetDatabase(SECONDARY_DB).Exec()
+				triss := UserModel.FindOne().Where("name", "Triss").SetDatabase(SECONDARY_DB).ExecPtr()
 				So(triss, ShouldNotBeNil)
 			})
 			Convey("Should rollback if one of the operations fail", func() {
@@ -57,9 +52,9 @@ func TestTransaction(t *testing.T) {
 					}),
 				)
 				So(errors, ShouldNotBeEmpty)
-				eskel := UserModel.FindOne().Where("name", "Eskel").Exec()
+				eskel := UserModel.FindOne().Where("name", "Eskel").ExecPtr()
 				So(eskel, ShouldBeNil)
-				eredin := UserModel.FindOne().SetDatabase(SECONDARY_DB).Where("name", "Eredin").Exec()
+				eredin := UserModel.FindOne().SetDatabase(SECONDARY_DB).Where("name", "Eredin").ExecPtr()
 				So(eredin, ShouldBeNil)
 			})
 		})

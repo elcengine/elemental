@@ -4,7 +4,7 @@ import (
 	robocron "github.com/robfig/cron/v3"
 )
 
-var cron = robocron.New()
+var cron = robocron.New(robocron.WithSeconds())
 
 // Marks this query to be executed on a given schedule.
 // For the schedule format, see https://pkg.go.dev/github.com/robfig/cron/v3#hdr-CRON_Expression_Format

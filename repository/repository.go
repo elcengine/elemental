@@ -1,26 +1,31 @@
+// Deprecated: This package is not being maintained anymore, use at your own risk.
 package e_repository
 
 import (
 	"context"
 	"errors"
-	"fmt"
-	"github.com/elcengine/elemental/connection"
 	"log"
+
+	elemental "github.com/elcengine/elemental/core"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// A lightweight repository powered by Elemental.
+// This has no overhead of a model or schema definition. It's just a simple interface for CRUD operations.
 type Repository[T any] struct {
 	collection string
 }
 
+// NewRepository creates a new repository for the given collection.
+// The type parameter T is the type of the document in the collection.
 func NewRepository[T any](collection string) Repository[T] {
 	return Repository[T]{collection: collection}
 }
 
 func (r Repository[T]) Create(payload T) primitive.ObjectID {
-	result, err := e_connection.UseDefault().Collection(r.collection).InsertOne(context.TODO(), payload)
+	result, err := elemental.UseDefaultDatabase().Collection(r.collection).InsertOne(context.TODO(), payload)
 	if err != nil {
 		panic(err)
 	}
@@ -29,10 +34,10 @@ func (r Repository[T]) Create(payload T) primitive.ObjectID {
 
 func (r Repository[T]) FindOne(query primitive.M) *T {
 	model := new(T)
-	doc := e_connection.UseDefault().Collection(r.collection).FindOne(context.Background(), query)
+	doc := elemental.UseDefaultDatabase().Collection(r.collection).FindOne(context.Background(), query)
 	if doc.Err() != nil {
 		if errors.Is(doc.Err(), mongo.ErrNoDocuments) {
-			log.Fatal(fmt.Sprintf("%v %s", r, doc.Err().Error()))
+			log.Fatalf("%v %s", r, doc.Err().Error())
 			return nil
 		}
 		panic(doc.Err())
@@ -47,7 +52,7 @@ func (r Repository[T]) FindByID(id primitive.ObjectID) *T {
 
 func (r Repository[T]) FindAll() []T {
 	var users []T
-	cursor, err := e_connection.UseDefault().Collection(r.collection).Find(context.Background(), primitive.M{})
+	cursor, err := elemental.UseDefaultDatabase().Collection(r.collection).Find(context.Background(), primitive.M{})
 	if err != nil {
 		panic(err)
 	}
@@ -56,14 +61,14 @@ func (r Repository[T]) FindAll() []T {
 }
 
 func (r Repository[T]) Update(id primitive.ObjectID, payload T) {
-	_, err := e_connection.UseDefault().Collection(r.collection).UpdateOne(context.Background(), primitive.M{"_id": id}, primitive.M{"$set": payload})
+	_, err := elemental.UseDefaultDatabase().Collection(r.collection).UpdateOne(context.Background(), primitive.M{"_id": id}, primitive.M{"$set": payload})
 	if err != nil {
 		panic(err)
 	}
 }
 
 func (r Repository[T]) Delete(id primitive.ObjectID) {
-	_, err := e_connection.UseDefault().Collection(r.collection).DeleteOne(context.Background(), primitive.M{"_id": id})
+	_, err := elemental.UseDefaultDatabase().Collection(r.collection).DeleteOne(context.Background(), primitive.M{"_id": id})
 	if err != nil {
 		panic(err)
 	}

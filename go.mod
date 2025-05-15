@@ -5,17 +5,18 @@ go 1.23
 toolchain go1.23.5
 
 require (
-	github.com/akalanka47000/go-modkit/parallel_convey v1.0.1
+	github.com/akalanka47000/go-modkit/parallel_convey v1.1.1
 	github.com/creasty/defaults v1.7.0
 	github.com/gertd/go-pluralize v0.2.1
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/samber/lo v1.39.0
+	github.com/samber/lo v1.50.0
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/spf13/cast v1.6.0
 	github.com/spf13/cobra v1.8.0
 	go.mongodb.org/mongo-driver v1.14.0
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
@@ -50,7 +51,6 @@ require (
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
 	golang.org/x/crypto v0.19.0 // indirect
-	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f
-	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/sync v0.11.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 )

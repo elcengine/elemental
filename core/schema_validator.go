@@ -34,13 +34,13 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 		createdAt, _ := (*reflectedEntityType).FieldByName("CreatedAt")
 		updatedAt, _ := (*reflectedEntityType).FieldByName("UpdatedAt")
 		if id.Type != nil {
-			SetDefault(&entityToInsert, id.Tag.Get("bson"), primitive.NewObjectID())
+			setDefault(&entityToInsert, id.Tag.Get("bson"), primitive.NewObjectID())
 		}
 		if createdAt.Type != nil {
-			SetDefault(&entityToInsert, createdAt.Tag.Get("bson"), time.Now())
+			setDefault(&entityToInsert, createdAt.Tag.Get("bson"), time.Now())
 		}
 		if updatedAt.Type != nil {
-			SetDefault(&entityToInsert, updatedAt.Tag.Get("bson"), time.Now())
+			setDefault(&entityToInsert, updatedAt.Tag.Get("bson"), time.Now())
 		}
 	}
 	detailedEntity := lo.Assign(entityToInsert)
@@ -57,12 +57,15 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 				detailedEntity[fieldBsonName] = definition.Default
 			}
 		}
-		if definition.Type != reflect.Invalid && ((reflectedField.Type.Kind() == reflect.Ptr && reflectedField.Type.Elem().Kind() != definition.Type) || (reflectedField.Type.Kind() != reflect.Ptr && reflectedField.Type.Kind() != definition.Type)) {
+		if definition.Type != reflect.Invalid &&
+			((reflectedField.Type.Kind() == reflect.Ptr && reflectedField.Type.Elem().Kind() != definition.Type) ||
+				(reflectedField.Type.Kind() != reflect.Ptr && reflectedField.Type.Kind() != definition.Type)) {
 			panic(fmt.Sprintf("Field %s has an invalid type. It must be of type %s", field, definition.Type.String()))
 		}
 		if definition.Type == reflect.Struct && definition.Schema != nil {
 			subdocumentField, _ := (*reflectedEntityType).FieldByName(field)
-			entityToInsert[fieldBsonName], detailedEntity[fieldBsonName] = enforceSchema(*definition.Schema, e_utils.Cast[*bson.M](entityToInsert[fieldBsonName]), &subdocumentField.Type, false)
+			entityToInsert[fieldBsonName], detailedEntity[fieldBsonName] =
+				enforceSchema(*definition.Schema, e_utils.Cast[*bson.M](entityToInsert[fieldBsonName]), &subdocumentField.Type, false)
 			continue
 		}
 		if definition.Type == reflect.Struct && (definition.Ref != "" || definition.Collection != "") && entityToInsert[fieldBsonName] != nil {
@@ -93,10 +96,10 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 }
 
 func cleanBSONTag(tag string) string {
-	return strings.Replace(tag, ",omitempty", "", -1)
+	return strings.ReplaceAll(tag, ",omitempty", "")
 }
 
-func SetDefault[T any](entity *bson.M, field string, defaultValue T) {
+func setDefault[T any](entity *bson.M, field string, defaultValue T) {
 	if entity != nil {
 		if e_utils.IsEmpty((*entity)[field]) {
 			(*entity)[field] = defaultValue

@@ -1,3 +1,4 @@
+//nolint:goconst
 package filter_query
 
 import (
@@ -16,17 +17,14 @@ var complexOperators = []string{"and", "or"}
 func extractFieldName(input string) string {
 	re := regexp.MustCompile(`^[^\[]+\[(.+?)\]$`)
 	matches := re.FindStringSubmatch(input)
-	if len(matches) > 1 {
-		return matches[1]
-	}
-	panic("Invalid field name")
+	return lo.NthOrEmpty(matches, 1)
 }
 
 func replaceOperator(value string, operator string) string {
 	return value[len(operator)+1 : len(value)-1]
 }
 
-func parseOperatorValue(value any, operator string) interface{} {
+func parseOperatorValue(value any, operator string) any {
 	if operator != "" {
 		value = replaceOperator(cast.ToString(value), operator)
 	}
@@ -34,46 +32,48 @@ func parseOperatorValue(value any, operator string) interface{} {
 		value = cast.ToFloat64(value)
 	} else {
 		time, err := cast.ToTimeE(value)
-		if err == nil {
+		switch {
+		case err == nil:
 			value = time
-		} else if regexp.MustCompile(`^[0-9a-fA-F]{24}$`).MatchString(cast.ToString(value)) {
+		case regexp.MustCompile(`^[0-9a-fA-F]{24}$`).MatchString(cast.ToString(value)):
 			value, err = primitive.ObjectIDFromHex(cast.ToString(value))
 			if err != nil {
 				value = cast.ToString(value)
 			}
-		} else {
+		default:
 			value = cast.ToString(value)
 		}
 	}
 	return value
 }
 
-func mapValue(value any) interface{} {
-	if strings.HasPrefix(cast.ToString(value), "eq(") {
+func mapValue(value any) any {
+	switch {
+	case strings.HasPrefix(cast.ToString(value), "eq("):
 		value = parseOperatorValue(value, "eq")
 		if value == "true" || value == "false" {
 			return bson.M{"$eq": value == "true"}
 		}
 		return bson.M{"$eq": value}
-	} else if strings.HasPrefix(cast.ToString(value), "ne(") {
+	case strings.HasPrefix(cast.ToString(value), "ne("):
 		return bson.M{"$ne": parseOperatorValue(value, "ne")}
-	} else if strings.HasPrefix(cast.ToString(value), "gt(") {
+	case strings.HasPrefix(cast.ToString(value), "gt("):
 		return bson.M{"$gt": parseOperatorValue(value, "gt")}
-	} else if strings.HasPrefix(cast.ToString(value), "gte(") {
+	case strings.HasPrefix(cast.ToString(value), "gte("):
 		return bson.M{"$gte": parseOperatorValue(value, "gte")}
-	} else if strings.HasPrefix(cast.ToString(value), "lt(") {
+	case strings.HasPrefix(cast.ToString(value), "lt("):
 		return bson.M{"$lt": parseOperatorValue(value, "lt")}
-	} else if strings.HasPrefix(cast.ToString(value), "lte(") {
+	case strings.HasPrefix(cast.ToString(value), "lte("):
 		return bson.M{"$lte": parseOperatorValue(value, "lte")}
-	} else if strings.HasPrefix(cast.ToString(value), "in(") {
-		return bson.M{"$in": lo.Map(strings.Split(replaceOperator(cast.ToString(value), "in"), ","), func(value string, index int) interface{} {
+	case strings.HasPrefix(cast.ToString(value), "in("):
+		return bson.M{"$in": lo.Map(strings.Split(replaceOperator(cast.ToString(value), "in"), ","), func(value string, index int) any {
 			return parseOperatorValue(value, "")
 		})}
-	} else if strings.HasPrefix(cast.ToString(value), "nin(") {
-		return bson.M{"$nin": lo.Map(strings.Split(replaceOperator(cast.ToString(value), "nin"), ","), func(value string, index int) interface{} {
+	case strings.HasPrefix(cast.ToString(value), "nin("):
+		return bson.M{"$nin": lo.Map(strings.Split(replaceOperator(cast.ToString(value), "nin"), ","), func(value string, index int) any {
 			return parseOperatorValue(value, "")
 		})}
-	} else if strings.HasPrefix(cast.ToString(value), "reg(") {
+	case strings.HasPrefix(cast.ToString(value), "reg("):
 		result := strings.Split(replaceOperator(cast.ToString(value), "reg"), "...[")
 		regex := primitive.Regex{Pattern: result[0]}
 		if len(result) > 1 {
@@ -81,19 +81,19 @@ func mapValue(value any) interface{} {
 			regex.Options = modifiers[:len(modifiers)-1]
 		}
 		return bson.M{"$regex": regex}
-	} else if strings.HasPrefix(cast.ToString(value), "exists(") {
+	case strings.HasPrefix(cast.ToString(value), "exists("):
 		return bson.M{"$exists": parseOperatorValue(value, "exists") == "true"}
-	}
-	if value == "true" || value == "false" {
+	case value == "true" || value == "false":
 		return value == "true"
+	default:
+		return value
 	}
-	return value
 }
 
 func mapFilters(filter bson.M) bson.M {
 	for key, value := range filter {
 		if slices.Contains(complexOperators, key) {
-			filter["$"+key] = lo.Map(strings.Split(cast.ToString(value), ","), func(kv string, index int) interface{} {
+			filter["$"+key] = lo.Map(strings.Split(cast.ToString(value), ","), func(kv string, index int) any {
 				key, value := strings.Split(kv, "=")[0], strings.Split(kv, "=")[1]
 				return bson.M{key: mapValue(value)}
 			})
@@ -104,7 +104,7 @@ func mapFilters(filter bson.M) bson.M {
 			})
 			if complexOp != "" && found {
 				values := strings.Split(cast.ToString(parseOperatorValue(value, complexOp)), ",")
-				filter["$"+complexOp] = lo.Map(values, func(subValue string, index int) interface{} {
+				filter["$"+complexOp] = lo.Map(values, func(subValue string, index int) any {
 					return bson.M{key: mapValue(subValue)}
 				})
 				delete(filter, key)

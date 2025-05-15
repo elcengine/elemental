@@ -22,7 +22,7 @@ func (m Model[T]) populate(value any) Model[T] {
 	if path != nil {
 		var sample [0]T
 		modelType := reflect.TypeOf(sample).Elem()
-		for i := 0; i < modelType.NumField(); i++ {
+		for i := range modelType.NumField() {
 			field := modelType.Field(i)
 			if field.Tag.Get("bson") == *path {
 				fieldname = &field.Name
@@ -68,6 +68,8 @@ func (m Model[T]) populate(value any) Model[T] {
 	return m
 }
 
+// Finds and attaches the referenced documents to the main document returned by the query.
+// The fields to populate must have a 'Collection' or 'Ref' property in their schema definition.
 func (m Model[T]) Populate(values ...any) Model[T] {
 	if len(values) == 1 && reflect.ValueOf(values[0]).Kind() == reflect.String && (strings.Contains(values[0].(string), ",") || strings.Contains(values[0].(string), " ")) {
 		values := strings.FieldsFunc(values[0].(string), func(r rune) bool {

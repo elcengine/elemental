@@ -1,10 +1,12 @@
 package e_tests
 
 import (
+	"context"
 	"fmt"
+	"testing"
+
 	"github.com/elcengine/elemental/tests/mocks"
 	"github.com/elcengine/elemental/tests/setup"
-	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -16,7 +18,15 @@ func TestCoreMeta(t *testing.T) {
 
 	UserModel := UserModel.SetDatabase(t.Name())
 
+	UserModel.SyncIndexes()
+
 	UserModel.InsertMany(e_mocks.Users).Exec()
+
+	Convey("Retrieve the underlying client used by a model", t, func() {
+		client := UserModel.Client()
+		So(client, ShouldNotBeNil)
+		So(client.Ping(context.Background(), nil), ShouldBeNil)
+	})
 
 	Convey("Metadata", t, func() {
 		Convey(fmt.Sprintf("Estimated document count should be %d", len(e_mocks.Users)), func() {
@@ -49,7 +59,7 @@ func TestCoreMeta(t *testing.T) {
 			})
 			Convey("Just the index count", func() {
 				size := UserModel.NumberOfIndexes()
-				So(size, ShouldBeGreaterThanOrEqualTo, 1)
+				So(size, ShouldEqual, 2)
 			})
 		})
 	})
