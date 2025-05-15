@@ -3,8 +3,6 @@ package e_cmd
 
 import (
 	"fmt"
-	"github.com/elcengine/elemental/core"
-	"github.com/elcengine/elemental/utils"
 	"log"
 	"os"
 	"os/exec"
@@ -12,6 +10,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/elcengine/elemental/core"
+	"github.com/elcengine/elemental/utils"
 
 	"github.com/samber/lo"
 	"github.com/spf13/cast"
@@ -45,6 +46,8 @@ func run(rollback bool, target string) {
 		return file1Timestamp < file2Timestamp
 	})
 
+	module := string(lo.Must(exec.Command("go", "list", "-m").Output()))
+
 	var template = fmt.Sprintf(`package main 
 
 import (
@@ -54,7 +57,7 @@ import (
 	"time"
 	"go.mongodb.org/mongo-driver/mongo"
 	"github.com/elcengine/elemental/core"
-	"github.com/elcengine/elemental/database/%ss"
+	"%s"
 )
 
  func extractTimestamp(fileName string) int64 {
@@ -99,7 +102,8 @@ func main() {
 	}
 }
 `,
-		target, cfg.ConnectionStr, cfg.ChangelogCollection,
+		strings.TrimSpace(module)+"/"+dir,
+		cfg.ConnectionStr, cfg.ChangelogCollection,
 		strings.Join(lo.Map(files, func(file os.DirEntry, index int) string {
 			return fmt.Sprintf("\"%s\"", strings.TrimSuffix(file.Name(), ".go"))
 		}), ","),
