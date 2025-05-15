@@ -53,7 +53,6 @@ import (
 	"strconv"
 	"time"
 	"go.mongodb.org/mongo-driver/mongo"
-	"github.com/samber/lo"
 	"github.com/elcengine/elemental/core"
 	"github.com/elcengine/elemental/database/%ss"
 )
@@ -62,7 +61,11 @@ import (
 		fileName = strings.TrimSuffix(fileName, ".go")
 		parts := strings.Split(fileName, "_")
 		timestampStr := parts[len(parts)-1]
-		return lo.Must(strconv.ParseInt(timestampStr, 10, 64))
+		timestamp, err := strconv.ParseInt(timestampStr, 10, 64)
+		if err != nil {
+			panic(err)
+		}
+		return timestamp
 }
 
 func main() {

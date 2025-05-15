@@ -12,14 +12,14 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type config struct {
-	ConnectionStr       string `json:"connection_str" yaml:"connection_str"`
-	MigrationsDir       string `json:"migrations_dir" yaml:"migrations_dir"`
-	SeedsDir            string `json:"seeds_dir" yaml:"seeds_dir"`
-	ChangelogCollection string `json:"changelog_collection" yaml:"changelog_collection"`
+type Config struct {
+	ConnectionStr       string `json:"connection_str" yaml:"connection_str"`             // The connection string to connect with the data source
+	MigrationsDir       string `json:"migrations_dir" yaml:"migrations_dir"`             // The directory where migration files are stored
+	SeedsDir            string `json:"seeds_dir" yaml:"seeds_dir"`                       // The directory where seed files are stored
+	ChangelogCollection string `json:"changelog_collection" yaml:"changelog_collection"` // The collection where changelogs are stored in the database
 }
 
-var rootCmd = &cobra.Command{
+var RootCmd = &cobra.Command{
 	Use:   "elemental",
 	Short: "Your next gen MongoDB ODM",
 	Long:  `Elemental is a user database ODM that allows you to interact with your database in a much more user friendly way than standard database drivers`,
@@ -39,19 +39,19 @@ If you encounter any issues, please report them at "https://github.com/go-elemen
 }
 
 func init() {
-	rootCmd.AddCommand(initCmd)
-	rootCmd.AddCommand(migrateCmd)
-	rootCmd.AddCommand(seedCmd)
+	RootCmd.AddCommand(initCmd)
+	RootCmd.AddCommand(migrateCmd)
+	RootCmd.AddCommand(seedCmd)
 }
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	if err := RootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-func configWithDefaults(conf *config) config {
+func configWithDefaults(conf *Config) Config {
 	if conf.MigrationsDir == "" {
 		conf.MigrationsDir = "database/migrations"
 	}
@@ -64,8 +64,8 @@ func configWithDefaults(conf *config) config {
 	return *conf
 }
 
-func readConfigFile() config {
-	var conf *config
+func readConfigFile() Config {
+	var conf Config
 
 	dir, err := os.Getwd()
 	if err != nil {
@@ -100,5 +100,5 @@ func readConfigFile() config {
 	if conf.ConnectionStr == "" {
 		log.Fatal("Connection string is required in the config file")
 	}
-	return configWithDefaults(conf)
+	return configWithDefaults(&conf)
 }
