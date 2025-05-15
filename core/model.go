@@ -206,6 +206,9 @@ func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
 		if err != nil {
 			panic(err)
 		}
+		if len(results) == 0 {
+			return 0
+		}
 		return cast.ToInt64(results[0]["count"])
 	}
 	return m
