@@ -63,7 +63,7 @@ func (m Model[T]) Exec(ctx ...context.Context) any {
 	}
 	if m.schedule != nil {
 		id, err := cron.AddFunc(*m.schedule, func() {
-			m.executor(m, e_utils.DefaultCTX(ctx))
+			m.executor(m, e_utils.CtxOrDefault(ctx))
 		})
 		if err != nil {
 			panic(err)
@@ -71,7 +71,7 @@ func (m Model[T]) Exec(ctx ...context.Context) any {
 		cron.Start()
 		return cast.ToInt(id)
 	}
-	return m.executor(m, e_utils.DefaultCTX(ctx))
+	return m.executor(m, e_utils.CtxOrDefault(ctx))
 }
 
 // ExecT is a convenience method that executes the query and returns the first result.

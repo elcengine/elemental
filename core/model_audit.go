@@ -2,9 +2,10 @@ package elemental
 
 import (
 	"context"
-	"github.com/elcengine/elemental/constants"
-	"github.com/elcengine/elemental/utils"
 	"reflect"
+
+	e_constants "github.com/elcengine/elemental/constants"
+	e_utils "github.com/elcengine/elemental/utils"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -46,7 +47,7 @@ var AuditModel = NewModel[Audit]("Audit", NewSchema(map[string]Field{
 
 // Enables auditing for the current model.
 func (m Model[T]) EnableAuditing(ctx ...context.Context) {
-	context := e_utils.DefaultCTX(ctx)
+	context := e_utils.CtxOrDefault(ctx)
 
 	execWithModelOpts := func(q Model[Audit]) {
 		if m.temporaryConnection != nil {
