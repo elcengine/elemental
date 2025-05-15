@@ -1,3 +1,4 @@
+//nolint:dupl
 package e_tests
 
 import (
@@ -21,6 +22,10 @@ func TestCmd(t *testing.T) {
 	os.Chdir("..")
 
 	os.Remove(e_cmd.DefaultConfigFile)
+
+	Convey("Call root command", t, func() {
+		So(e_cmd.Execute, ShouldNotPanic)
+	})
 
 	Convey("Initialize config file", t, func() {
 		_, err := os.Stat(e_cmd.DefaultConfigFile)
