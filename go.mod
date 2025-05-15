@@ -10,6 +10,7 @@ require (
 	github.com/gertd/go-pluralize v0.2.1
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/gofiber/fiber/v2 v2.52.5
+	github.com/joho/godotenv v1.5.1
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/samber/lo v1.50.0
 	github.com/smartystreets/goconvey v1.8.1
@@ -24,7 +25,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/google/uuid v1.5.0 // indirect
+	github.com/google/uuid v1.5.0
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect

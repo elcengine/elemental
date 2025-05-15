@@ -8,8 +8,11 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/joho/godotenv"
+	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
+	"maps"
 )
 
 type Config struct {
@@ -100,5 +103,24 @@ func readConfigFile() Config {
 	if conf.ConnectionStr == "" {
 		log.Fatal("Connection string is required in the config file")
 	}
+
+	envFile := ".env"
+
+	appEnv := os.Getenv("APP_ENV")
+	if appEnv != "" {
+		envFile = fmt.Sprintf(".env.%s", appEnv)
+	}
+	envVars := map[string]string{}
+
+	if _, err := os.Stat(envFile); err == nil {
+		fileVars, _ := godotenv.Read(envFile)
+		maps.Copy(envVars, fileVars)
+	}
+
+	if strings.HasPrefix(conf.ConnectionStr, "<") && strings.HasSuffix(conf.ConnectionStr, ">") {
+		key := strings.Trim(conf.ConnectionStr, "<>")
+		conf.ConnectionStr = lo.CoalesceOrEmpty(envVars[key], os.Getenv(key))
+	}
+
 	return configWithDefaults(&conf)
 }
