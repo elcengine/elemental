@@ -16,7 +16,6 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize elemental with a config file",
 	Run: func(cmd *cobra.Command, args []string) {
-
 		_, err := os.Stat(DefaultConfigFile)
 		if err == nil {
 			return
@@ -35,7 +34,10 @@ var initCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		f.Write(bytes)
+		_, err = f.Write(bytes)
+		if err != nil {
+			log.Fatal(err)
+		}
 		fmt.Println("\033[32mElemental config file created at", DefaultConfigFile, "\033[0m")
 	},
 }

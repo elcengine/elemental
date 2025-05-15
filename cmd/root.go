@@ -65,7 +65,7 @@ func configWithDefaults(conf *Config) Config {
 }
 
 func readConfigFile() Config {
-	var conf *Config
+	var conf Config
 
 	dir, err := os.Getwd()
 	if err != nil {
@@ -100,5 +100,5 @@ func readConfigFile() Config {
 	if conf.ConnectionStr == "" {
 		log.Fatal("Connection string is required in the config file")
 	}
-	return configWithDefaults(conf)
+	return configWithDefaults(&conf)
 }
