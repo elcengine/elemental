@@ -3,6 +3,7 @@ on:
   pull_request:
     branches:
       - main
+      - blizzard
 
 jobs:
     lint:
