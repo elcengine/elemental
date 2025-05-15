@@ -27,6 +27,13 @@ Elemental is inspired by multiple ODMs and ORMs such as [Mongoose](https://mongo
 go get github.com/elcengine/elemental
 ```
 
+## CLI Installation
+Elemental also provides a CLI to help you with migrations and seeding your database.
+
+```bash
+go install github.com/elcengine/elemental@latest
+```
+
 ## Development Setup
 
 ### Prerequisites
