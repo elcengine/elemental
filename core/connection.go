@@ -152,3 +152,15 @@ func DropAllDatabases(alias ...string) {
 		}
 	}
 }
+
+// Pings the primary server of a given connection or the default connection if no alias is provided
+// This will timeout after 5 seconds
+func Ping(alias ...string) error {
+	client := GetConnection(alias...)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := client.Ping(ctx, readpref.Primary()); err != nil {
+		return err
+	}
+	return nil
+}
