@@ -1,3 +1,3 @@
-package filter_query_middleware
+package fqm
 
 const CtxKey = "elementalFilterQuery"

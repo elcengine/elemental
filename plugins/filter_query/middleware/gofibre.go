@@ -1,4 +1,4 @@
-package filter_query_middleware
+package fqm
 
 import (
 	"github.com/elcengine/elemental/plugins/filter_query"
@@ -19,7 +19,7 @@ import (
 //	})
 func NewGoFiber() func(*fiber.Ctx) error {
 	return func(ctx *fiber.Ctx) error {
-		ctx.Locals(CtxKey, filter_query.Parse(string(ctx.Request().URI().QueryString())))
+		ctx.Locals(CtxKey, fq.Parse(string(ctx.Request().URI().QueryString())))
 		return ctx.Next()
 	}
 }
