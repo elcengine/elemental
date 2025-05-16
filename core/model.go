@@ -13,7 +13,6 @@ import (
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -64,7 +63,7 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 		middleware: &middleware,
 	}
 	Models[name] = model
-	connectionReady := func() {
+	onConnectionComplete := func() {
 		model.CreateCollection()
 		model.SyncIndexes()
 		if model.Schema.Options.Auditing {
@@ -72,9 +71,9 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 		}
 	}
 	if model.Ping() != nil {
-		OnConnectionEvent(event.ConnectionReady, connectionReady)
+		OnConnectionEvent(EventDeploymentDiscovered, onConnectionComplete)
 	} else {
-		connectionReady()
+		onConnectionComplete()
 	}
 	return model
 }

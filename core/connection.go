@@ -81,6 +81,7 @@ func Connect(arg any) mongo.Client {
 	}
 	lo.Must0(client.Ping(ctx, readpref.Primary()))
 	clients[opts.Alias] = client
+	triggerEventIfRegistered(opts.Alias, EventDeploymentDiscovered)
 	return *client
 }
 

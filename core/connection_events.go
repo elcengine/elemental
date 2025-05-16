@@ -2,18 +2,20 @@ package elemental
 
 import "go.mongodb.org/mongo-driver/event"
 
-var eventListeners = make(map[string]map[string]func())
+const EventDeploymentDiscovered = "DeploymentDiscovered"
+
+var eventListeners = make(map[string]map[string]*func())
 
 func triggerEventIfRegistered(alias, eventType string) {
 	if eventListeners[alias][eventType] != nil {
-		eventListeners[alias][eventType]()
+		(*eventListeners[alias][eventType])()
 	}
 }
 
 func defaultPoolMonitor(alias string) *event.PoolMonitor {
 	poolMonitor := &event.PoolMonitor{
 		Event: func(evt *event.PoolEvent) {
-			if eventListeners[alias] != nil {
+			if len(eventListeners[alias]) > 0 {
 				switch evt.Type {
 				case event.ConnectionClosed:
 					triggerEventIfRegistered(alias, event.ConnectionClosed)
@@ -46,7 +48,7 @@ func defaultPoolMonitor(alias string) *event.PoolMonitor {
 
 // Add a listener to a connection event
 //
-// @param event - The event to listen for
+// @param event - The event to listen for. From the default mongo driver event package or from elemental
 //
 // @param handler - The function to call when the event is triggered
 //
@@ -56,9 +58,9 @@ func OnConnectionEvent(event string, handler func(), alias ...string) {
 		alias = []string{"default"}
 	}
 	if eventListeners[alias[0]] == nil {
-		eventListeners[alias[0]] = make(map[string]func())
+		eventListeners[alias[0]] = make(map[string]*func())
 	}
-	eventListeners[alias[0]][event] = handler
+	eventListeners[alias[0]][event] = &handler
 }
 
 // Remove a listener from a connection event
