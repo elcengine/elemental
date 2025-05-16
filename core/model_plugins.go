@@ -10,7 +10,7 @@ import "github.com/elcengine/elemental/plugins/filter_query"
 //
 //	UserModel.QS("filter[name]=John&sort[name]=asc&include=field1&select=field1").ExecTT()
 func (m Model[T]) QS(query string) Model[T] {
-	result := filter_query.Parse(query)
+	result := fq.Parse(query)
 	if len(result.Filters) > 0 {
 		m = m.Find(result.Filters)
 	}

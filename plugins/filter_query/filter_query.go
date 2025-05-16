@@ -1,4 +1,4 @@
-package filter_query
+package fq
 
 import (
 	"strings"

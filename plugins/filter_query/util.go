@@ -1,5 +1,5 @@
 //nolint:goconst
-package filter_query
+package fq
 
 import (
 	"regexp"
