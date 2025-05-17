@@ -4,6 +4,9 @@ import (
 	"context"
 	"reflect"
 
+	"maps"
+
+	"github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -18,9 +21,7 @@ func (m Model[T]) FindOneAndUpdate(query *primitive.M, doc any, opts ...*options
 		return (func() any {
 			var resultDoc T
 			filters := lo.FromPtr(query)
-			for k, v := range m.findMatchStage() {
-				filters[k] = v
-			}
+			maps.Copy(filters, m.findMatchStage())
 			result := m.Collection().FindOneAndUpdate(ctx, filters, primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
 			m.middleware.post.findOneAndUpdate.run(&resultDoc)
 			m.checkConditionsAndPanicForSingleResult(result)
@@ -32,10 +33,11 @@ func (m Model[T]) FindOneAndUpdate(query *primitive.M, doc any, opts ...*options
 }
 
 // Extends the query with an update operation matching the given id
-func (m Model[T]) FindByIDAndUpdate(id primitive.ObjectID, doc any, opts ...*options.FindOneAndUpdateOptions) Model[T] {
+// The id can be a string or an ObjectID.
+func (m Model[T]) FindByIDAndUpdate(id any, doc any, opts ...*options.FindOneAndUpdateOptions) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var resultDoc T
-		result := m.Collection().FindOneAndUpdate(ctx, primitive.M{"_id": id}, primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
+		result := m.Collection().FindOneAndUpdate(ctx, primitive.M{"_id": e_utils.EnsureObjectID(id)}, primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
 		m.checkConditionsAndPanicForSingleResult(result)
 		lo.Must0(result.Decode(&resultDoc))
 		return resultDoc
@@ -52,9 +54,7 @@ func (m Model[T]) UpdateOne(query *primitive.M, doc any, opts ...*options.Update
 		if query != nil {
 			filters = lo.FromPtr(query)
 		}
-		for k, v := range m.findMatchStage() {
-			filters[k] = v
-		}
+		maps.Copy(filters, m.findMatchStage())
 		if m.upsert {
 			if len(opts) == 0 {
 				opts = append(opts, &options.UpdateOptions{Upsert: lo.ToPtr(true)})
@@ -63,7 +63,8 @@ func (m Model[T]) UpdateOne(query *primitive.M, doc any, opts ...*options.Update
 			}
 		}
 		m.middleware.pre.updateOne.run(doc)
-		result, err := m.Collection().UpdateOne(ctx, filters, primitive.M{"$set": m.parseDocument(doc)}, opts...)
+		result, err := m.Collection().UpdateOne(ctx, filters,
+			primitive.M{"$set": m.parseDocument(doc)}, opts...)
 		m.middleware.post.updateOne.run(result, err)
 		m.checkConditionsAndPanicForErr(err)
 		return result
@@ -73,9 +74,11 @@ func (m Model[T]) UpdateOne(query *primitive.M, doc any, opts ...*options.Update
 
 // Extends the query with an update operation matching the given id
 // It updates only the first document that matches the id.
-func (m Model[T]) UpdateByID(id primitive.ObjectID, doc any, opts ...*options.UpdateOptions) Model[T] {
+// The id can be a string or an ObjectID.
+func (m Model[T]) UpdateByID(id any, doc any, opts ...*options.UpdateOptions) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
-		result, err := m.Collection().UpdateOne(ctx, primitive.M{"_id": id}, primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
+		result, err := m.Collection().UpdateOne(ctx, primitive.M{"_id": e_utils.EnsureObjectID(id)},
+			primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
 		m.checkConditionsAndPanicForErr(err)
 		return result
 	}
@@ -102,9 +105,7 @@ func (m Model[T]) UpdateMany(query *primitive.M, doc any, opts ...*options.Updat
 		if query != nil {
 			filters = lo.FromPtr(query)
 		}
-		for k, v := range m.findMatchStage() {
-			filters[k] = v
-		}
+		maps.Copy(filters, m.findMatchStage())
 		result, err := m.Collection().UpdateMany(ctx, filters, primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
 		m.checkConditionsAndPanicForErr(err)
 		return result
@@ -121,10 +122,9 @@ func (m Model[T]) ReplaceOne(query *primitive.M, doc any, opts ...*options.Repla
 		if query != nil {
 			filters = lo.FromPtr(query)
 		}
-		for k, v := range m.findMatchStage() {
-			filters[k] = v
-		}
-		result, err := m.Collection().ReplaceOne(ctx, filters, m.parseDocument(doc), parseUpdateOptions(m, opts)...)
+		maps.Copy(filters, m.findMatchStage())
+		result, err := m.Collection().ReplaceOne(ctx, filters, m.parseDocument(doc),
+			parseUpdateOptions(m, opts)...)
 		m.checkConditionsAndPanicForErr(err)
 		return result
 	}
@@ -132,9 +132,11 @@ func (m Model[T]) ReplaceOne(query *primitive.M, doc any, opts ...*options.Repla
 }
 
 // Extends the query with a replace operation matching the given id
-func (m Model[T]) ReplaceByID(id primitive.ObjectID, doc any, opts ...*options.ReplaceOptions) Model[T] {
+// The id can be a string or an ObjectID.
+func (m Model[T]) ReplaceByID(id any, doc any, opts ...*options.ReplaceOptions) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
-		result, err := m.Collection().ReplaceOne(ctx, primitive.M{"_id": id}, m.parseDocument(doc), parseUpdateOptions(m, opts)...)
+		result, err := m.Collection().ReplaceOne(ctx, primitive.M{"_id": e_utils.EnsureObjectID(id)},
+			m.parseDocument(doc), parseUpdateOptions(m, opts)...)
 		m.checkConditionsAndPanicForErr(err)
 		return result
 	}
@@ -151,9 +153,7 @@ func (m Model[T]) FindOneAndReplace(query *primitive.M, doc any, opts ...*option
 		if query != nil {
 			filters = lo.FromPtr(query)
 		}
-		for k, v := range m.findMatchStage() {
-			filters[k] = v
-		}
+		maps.Copy(filters, m.findMatchStage())
 		res := m.Collection().FindOneAndReplace(ctx, filters, m.parseDocument(doc), opts...)
 		m.middleware.post.findOneAndReplace.run(&resultDoc)
 		m.checkConditionsAndPanicForSingleResult(res)
@@ -165,10 +165,12 @@ func (m Model[T]) FindOneAndReplace(query *primitive.M, doc any, opts ...*option
 
 // Extends the query with a replace operation matching the given id
 // This method will return the replaced document.
-func (m Model[T]) FindByIDAndReplace(id primitive.ObjectID, doc any, opts ...*options.FindOneAndReplaceOptions) Model[T] {
+// The id can be a string or an ObjectID.
+func (m Model[T]) FindByIDAndReplace(id any, doc any, opts ...*options.FindOneAndReplaceOptions) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var resultDoc T
-		res := m.Collection().FindOneAndReplace(ctx, primitive.M{"_id": id}, m.parseDocument(doc), parseUpdateOptions(m, opts)...)
+		res := m.Collection().FindOneAndReplace(ctx, primitive.M{"_id": e_utils.EnsureObjectID(id)},
+			m.parseDocument(doc), parseUpdateOptions(m, opts)...)
 		m.checkConditionsAndPanicForSingleResult(res)
 		lo.Must0(res.Decode(&resultDoc))
 		return resultDoc

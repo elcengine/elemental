@@ -178,8 +178,9 @@ func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
 }
 
 // Extends the query with a match stage to find a document by its ID.
-func (m Model[T]) FindByID(id primitive.ObjectID) Model[T] {
-	q := primitive.M{"_id": id}
+// The id can be a string or an ObjectID.
+func (m Model[T]) FindByID(id any) Model[T] {
+	q := primitive.M{"_id": e_utils.EnsureObjectID(id)}
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}

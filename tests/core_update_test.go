@@ -63,6 +63,14 @@ func TestCoreUpdate(t *testing.T) {
 			}).Exec()
 			updatedUser := UserModel.FindByID(user.ID).ExecT()
 			So(updatedUser.Name, ShouldEqual, "Triss Merigold")
+
+			Convey("Update user by ID (Hex String)", func() {
+				UserModel.UpdateByID(user.ID.Hex(), User{
+					Name: "Triss Merigold the Fearless",
+				}).Exec()
+				updatedUser := UserModel.FindByID(user.ID).ExecT()
+				So(updatedUser.Name, ShouldEqual, "Triss Merigold the Fearless")
+			})
 		})
 		Convey("Update a user document", func() {
 			user := UserModel.FindOne().Where("name", e_mocks.Eredin.Name).ExecT()

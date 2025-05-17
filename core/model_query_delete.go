@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"time"
 
-	e_utils "github.com/elcengine/elemental/utils"
+	"github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -38,11 +38,13 @@ func (m Model[T]) FindOneAndDelete(query ...primitive.M) Model[T] {
 // It deletes only the first document that matches the id.
 // This method will return the deleted document.
 // If the model has soft delete enabled, it will update the document with a deleted_at field instead of deleting it.
-func (m Model[T]) FindByIdAndDelete(id primitive.ObjectID) Model[T] {
+// The id can be a string or an ObjectID.
+func (m Model[T]) FindByIdAndDelete(id any) Model[T] {
 	if m.softDeleteEnabled {
-		return m.FindOneAndUpdate(lo.ToPtr(primitive.M{"_id": id}), m.softDeletePayload())
+		return m.FindOneAndUpdate(lo.ToPtr(primitive.M{"_id": e_utils.EnsureObjectID(id)}),
+			m.softDeletePayload())
 	} else {
-		return m.FindOneAndDelete(primitive.M{"_id": id})
+		return m.FindOneAndDelete(primitive.M{"_id": e_utils.EnsureObjectID(id)})
 	}
 }
 
@@ -71,11 +73,12 @@ func (m Model[T]) DeleteOne(query ...primitive.M) Model[T] {
 // It deletes only the first document that matches the id.
 // This method will not return the deleted document.
 // If the model has soft delete enabled, it will update the document with a deleted_at field instead of deleting it.
-func (m Model[T]) DeleteByID(id primitive.ObjectID) Model[T] {
+// The id can be a string or an ObjectID.
+func (m Model[T]) DeleteByID(id any) Model[T] {
 	if m.softDeleteEnabled {
-		return m.UpdateOne(lo.ToPtr(primitive.M{"_id": id}), m.softDeletePayload())
+		return m.UpdateOne(lo.ToPtr(primitive.M{"_id": e_utils.EnsureObjectID(id)}), m.softDeletePayload())
 	} else {
-		return m.DeleteOne(primitive.M{"_id": id})
+		return m.DeleteOne(primitive.M{"_id": e_utils.EnsureObjectID(id)})
 	}
 }
 

@@ -6,7 +6,8 @@ import (
 	"errors"
 	"log"
 
-	elemental "github.com/elcengine/elemental/core"
+	"github.com/elcengine/elemental/core"
+	"github.com/elcengine/elemental/utils"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -46,8 +47,8 @@ func (r Repository[T]) FindOne(query primitive.M) *T {
 	return model
 }
 
-func (r Repository[T]) FindByID(id primitive.ObjectID) *T {
-	return r.FindOne(primitive.M{"_id": id})
+func (r Repository[T]) FindByID(id any) *T {
+	return r.FindOne(primitive.M{"_id": e_utils.EnsureObjectID(id)})
 }
 
 func (r Repository[T]) FindAll() []T {
@@ -60,15 +61,17 @@ func (r Repository[T]) FindAll() []T {
 	return users
 }
 
-func (r Repository[T]) Update(id primitive.ObjectID, payload T) {
-	_, err := elemental.UseDefaultDatabase().Collection(r.collection).UpdateOne(context.Background(), primitive.M{"_id": id}, primitive.M{"$set": payload})
+func (r Repository[T]) Update(id any, payload T) {
+	_, err := elemental.UseDefaultDatabase().Collection(r.collection).
+		UpdateOne(context.Background(), primitive.M{"_id": e_utils.EnsureObjectID(id)}, primitive.M{"$set": payload})
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (r Repository[T]) Delete(id primitive.ObjectID) {
-	_, err := elemental.UseDefaultDatabase().Collection(r.collection).DeleteOne(context.Background(), primitive.M{"_id": id})
+func (r Repository[T]) Delete(id any) {
+	_, err := elemental.UseDefaultDatabase().Collection(r.collection).
+		DeleteOne(context.Background(), primitive.M{"_id": e_utils.EnsureObjectID(id)})
 	if err != nil {
 		panic(err)
 	}

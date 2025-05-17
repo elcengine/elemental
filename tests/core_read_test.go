@@ -89,6 +89,12 @@ func TestCoreRead(t *testing.T) {
 			userById := UserModel.FindByID(user.ID).ExecPtr()
 			So(userById, ShouldNotBeNil)
 			So(userById.Name, ShouldEqual, e_mocks.Ciri.Name)
+
+			Convey("Find user by ID (Hex String)", func() {
+				userById := UserModel.FindByID(user.ID.Hex()).ExecPtr()
+				So(userById, ShouldNotBeNil)
+				So(userById.Name, ShouldEqual, e_mocks.Ciri.Name)
+			})
 		})
 		Convey("Count users", func() {
 			count := UserModel.CountDocuments().ExecInt()

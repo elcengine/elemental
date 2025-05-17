@@ -1,9 +1,11 @@
 package e_tests
 
 import (
+	"testing"
+
 	"github.com/elcengine/elemental/tests/mocks"
 	"github.com/elcengine/elemental/tests/setup"
-	"testing"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -29,6 +31,14 @@ func TestCoreDelete(t *testing.T) {
 			deletedUser := UserModel.FindByIdAndDelete(user.ID).ExecT()
 			So(deletedUser.Name, ShouldEqual, e_mocks.Geralt.Name)
 			So(UserModel.FindByID(user.ID).Exec(), ShouldBeNil)
+
+			Convey("Find and delete user by ID (Hex String)", func() {
+				user := UserModel.FindOne(primitive.M{"name": e_mocks.Imlerith.Name}).ExecT()
+				So(user.Name, ShouldEqual, e_mocks.Imlerith.Name)
+				deletedUser := UserModel.FindByIdAndDelete(user.ID.Hex()).ExecT()
+				So(deletedUser.Name, ShouldEqual, e_mocks.Imlerith.Name)
+				So(UserModel.FindByID(user.ID).Exec(), ShouldBeNil)
+			})
 		})
 		Convey("Delete a user document", func() {
 			user := UserModel.FindOne().ExecT()
