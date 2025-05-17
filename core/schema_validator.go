@@ -36,6 +36,22 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 		reflectedEntityType = lo.ToPtr(reflect.TypeOf(doc).Elem())
 	}
 
+	if len(defaults) == 0 || defaults[0] {
+		for _, field := range []string{"ID", "CreatedAt", "UpdatedAt"} {
+			if reflectedField, ok := (*reflectedEntityType).FieldByName(field); ok && reflectedField.Type != nil {
+				key := cleanTag(reflectedField.Tag.Get("bson"))
+				if e_utils.IsEmpty(entityToInsert[key]) {
+					switch field {
+					case "ID":
+						entityToInsert[key] = primitive.NewObjectID()
+					case "CreatedAt", "UpdatedAt":
+						entityToInsert[key] = time.Now()
+					}
+				}
+			}
+		}
+	}
+
 	detailedEntity := make(bson.M)
 	maps.Copy(detailedEntity, entityToInsert)
 
@@ -53,18 +69,10 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 				panic(fmt.Errorf("Field %s is required", field))
 			}
 			if definition.Default != nil {
+				entityToInsert[fieldBsonName] = definition.Default
+				detailedEntity[fieldBsonName] = definition.Default
 				val = definition.Default
 			}
-			if len(defaults) == 0 || defaults[0] {
-				switch field {
-				case "ID":
-					val = primitive.NewObjectID()
-				case "CreatedAt", "UpdatedAt":
-					val = time.Now()
-				}
-			}
-			entityToInsert[fieldBsonName] = val
-			detailedEntity[fieldBsonName] = val
 		}
 
 		// Type check
