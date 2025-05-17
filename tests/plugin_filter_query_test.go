@@ -139,6 +139,44 @@ func TestPluginFilterQuery(t *testing.T) {
 		})
 	})
 
+	Convey("Page", t, func() {
+		Convey("When present in query string", func() {
+			result := fq.Parse("page=2")
+			So(result.Page, ShouldEqual, 2)
+		})
+		Convey("When not present in query string", func() {
+			result := fq.Parse("")
+			So(result.Page, ShouldEqual, 0)
+		})
+		Convey("When present in query string with invalid value", func() {
+			result := fq.Parse("page=invalid")
+			So(result.Page, ShouldEqual, 0)
+		})
+		Convey("When present in query string with negative value", func() {
+			result := fq.Parse("page=-1")
+			So(result.Page, ShouldEqual, 0)
+		})
+	})
+
+	Convey("Limit", t, func() {
+		Convey("When present in query string", func() {
+			result := fq.Parse("limit=10")
+			So(result.Limit, ShouldEqual, 10)
+		})
+		Convey("When not present in query string", func() {
+			result := fq.Parse("")
+			So(result.Limit, ShouldEqual, 0)
+		})
+		Convey("When present in query string with invalid value", func() {
+			result := fq.Parse("limit=invalid")
+			So(result.Limit, ShouldEqual, 0)
+		})
+		Convey("When present in query string with negative value", func() {
+			result := fq.Parse("limit=-10")
+			So(result.Limit, ShouldEqual, 0)
+		})
+	})
+
 	Convey("QS", t, func() {
 		Convey("When a filter is present in query string", func() {
 			results := UserModel.QS(fmt.Sprintf("filter[name]=eq(%s)", e_mocks.Caranthir.Name)).ExecTT()

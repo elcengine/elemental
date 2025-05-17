@@ -1,9 +1,9 @@
 package fq
 
 import (
-	"strings"
-
+	"github.com/spf13/cast"
 	"go.mongodb.org/mongo-driver/bson"
+	"strings"
 )
 
 type FilterQueryResult struct {
@@ -13,6 +13,8 @@ type FilterQueryResult struct {
 	Include          []string // Fields to populate/lookup in the result set
 	Select           bson.M   // Fields to select in the result set
 	Prepaginate      bool     // Whether to paginate the results before any lookups
+	Page             int      // The page number for pagination
+	Limit            int      // The page size for pagination
 }
 
 // Parses the given query string into a Elemental FilterQueryResult.
@@ -49,10 +51,10 @@ func Parse(queryString string) FilterQueryResult {
 				}
 			}
 		}
-		if strings.Contains(key, "include") {
+		if key == "include" {
 			result.Include = append(result.Include, strings.Split(value, ",")...)
 		}
-		if strings.Contains(key, "select") {
+		if key == "select" {
 			for _, field := range strings.Split(value, ",") {
 				if strings.HasPrefix(field, "-") {
 					result.Select[field[1:]] = 0
@@ -61,8 +63,14 @@ func Parse(queryString string) FilterQueryResult {
 				}
 			}
 		}
-		if strings.Contains(key, "prepaginate") {
+		if key == "prepaginate" {
 			result.Prepaginate = value == "true"
+		}
+		if key == "page" {
+			result.Page = max(cast.ToInt(value), 0)
+		}
+		if key == "limit" {
+			result.Limit = max(cast.ToInt(value), 0)
 		}
 	}
 	result.Filters = mapFilters(result.Filters)
