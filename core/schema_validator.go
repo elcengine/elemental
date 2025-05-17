@@ -124,7 +124,7 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 			}
 		}
 		if definition.Regex != "" {
-			if matched := lo.Must(regexp.Match(definition.Regex, []byte(cast.ToString(val)))); !matched {
+			if matched := lo.Must(regexp.MatchString(definition.Regex, cast.ToString(val))); !matched {
 				panic(fmt.Errorf("Field %s must match the regex pattern %s", field, definition.Regex))
 			}
 		}

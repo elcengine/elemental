@@ -153,6 +153,5 @@ func TestCoreSchemaOptions(t *testing.T) {
 				}, ShouldNotPanic)
 			})
 		})
-
 	})
 }

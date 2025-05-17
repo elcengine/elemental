@@ -3,6 +3,7 @@ package e_utils
 import (
 	"encoding/json"
 
+	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -18,8 +19,7 @@ func Cast[T any](val any) T {
 // Converts any type to a map[string]any.
 func ToMap(s any) map[string]any {
 	m := make(map[string]any)
-	bytes, _ := json.Marshal(s)
-	json.Unmarshal(bytes, &m)
+	json.Unmarshal(lo.Must(json.Marshal(s)), &m)
 	return m
 }
 
