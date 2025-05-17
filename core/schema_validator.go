@@ -2,10 +2,12 @@ package elemental
 
 import (
 	"fmt"
+	"maps"
 	"reflect"
 	"strings"
 
 	"github.com/elcengine/elemental/utils"
+	"github.com/spf13/cast"
 
 	"regexp"
 	"time"
@@ -17,10 +19,13 @@ import (
 
 func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Type, defaults ...bool) (bson.M, bson.M) {
 	var entityToInsert bson.M
+
+	// Fast return when bypass schema enforcement or value is not a struct
 	if doc != nil && (reflect.TypeOf(doc).Elem().Kind() != reflect.Struct || schema.Options.BypassSchemaEnforcement) {
 		entityToInsert = *e_utils.ToBSONDoc(doc)
 		return entityToInsert, entityToInsert
 	}
+
 	if reflectedEntityType != nil {
 		entityToInsert = e_utils.Cast[bson.M](doc)
 		if entityToInsert == nil {
@@ -30,80 +35,95 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 		entityToInsert = *e_utils.ToBSONDoc(doc)
 		reflectedEntityType = lo.ToPtr(reflect.TypeOf(doc).Elem())
 	}
-	if len(defaults) == 0 || defaults[0] {
-		id, _ := (*reflectedEntityType).FieldByName("ID")
-		createdAt, _ := (*reflectedEntityType).FieldByName("CreatedAt")
-		updatedAt, _ := (*reflectedEntityType).FieldByName("UpdatedAt")
-		if id.Type != nil {
-			setDefault(&entityToInsert, cleanBSONTag(id.Tag.Get("bson")), primitive.NewObjectID())
-		}
-		if createdAt.Type != nil {
-			setDefault(&entityToInsert, cleanBSONTag(createdAt.Tag.Get("bson")), time.Now())
-		}
-		if updatedAt.Type != nil {
-			setDefault(&entityToInsert, cleanBSONTag(updatedAt.Tag.Get("bson")), time.Now())
-		}
-	}
-	detailedEntity := lo.Assign(entityToInsert)
+
+	detailedEntity := make(bson.M)
+	maps.Copy(detailedEntity, entityToInsert)
+
 	for field, definition := range schema.Definitions {
-		reflectedField, _ := (*reflectedEntityType).FieldByName(field)
-		fieldBsonName := reflectedField.Tag.Get("bson")
-		fieldBsonName = cleanBSONTag(fieldBsonName)
-		if e_utils.IsEmpty(entityToInsert[fieldBsonName]) {
+		reflectedField, ok := (*reflectedEntityType).FieldByName(field)
+		if !ok {
+			continue
+		}
+		fieldBsonName := cleanTag(reflectedField.Tag.Get("bson"))
+		val := entityToInsert[fieldBsonName]
+
+		// Required and default checks
+		if e_utils.IsEmpty(val) {
 			if definition.Required {
-				panic(fmt.Sprintf("Field %s is required", field))
+				panic(fmt.Errorf("Field %s is required", field))
 			}
 			if definition.Default != nil {
-				entityToInsert[fieldBsonName] = definition.Default
-				detailedEntity[fieldBsonName] = definition.Default
+				val = definition.Default
+			}
+			if len(defaults) == 0 || defaults[0] {
+				switch field {
+				case "ID":
+					val = primitive.NewObjectID()
+				case "CreatedAt", "UpdatedAt":
+					val = time.Now()
+				}
+			}
+			entityToInsert[fieldBsonName] = val
+			detailedEntity[fieldBsonName] = val
+		}
+
+		// Type check
+		if definition.Type != reflect.Invalid {
+			actualKind := reflectedField.Type.Kind()
+			if actualKind == reflect.Ptr {
+				actualKind = reflectedField.Type.Elem().Kind()
+			}
+			if actualKind != definition.Type {
+				panic(fmt.Errorf("Field %s has an invalid type. It must be of type %s", field, definition.Type.String()))
 			}
 		}
-		if definition.Type != reflect.Invalid &&
-			((reflectedField.Type.Kind() == reflect.Ptr && reflectedField.Type.Elem().Kind() != definition.Type) ||
-				(reflectedField.Type.Kind() != reflect.Ptr && reflectedField.Type.Kind() != definition.Type)) {
-			panic(fmt.Sprintf("Field %s has an invalid type. It must be of type %s", field, definition.Type.String()))
-		}
+
+		// Nested schema validation
 		if definition.Type == reflect.Struct && definition.Schema != nil {
-			subdocumentField, _ := (*reflectedEntityType).FieldByName(field)
+			subdocumentField := reflectedField
 			entityToInsert[fieldBsonName], detailedEntity[fieldBsonName] =
-				enforceSchema(*definition.Schema, e_utils.Cast[*bson.M](entityToInsert[fieldBsonName]), &subdocumentField.Type, false)
+				enforceSchema(*definition.Schema, e_utils.Cast[*bson.M](val), &subdocumentField.Type, false)
 			continue
 		}
-		if definition.Type == reflect.Struct && (definition.Ref != "" || definition.Collection != "") && entityToInsert[fieldBsonName] != nil {
-			subdocumentField, _ := (*reflectedEntityType).FieldByName(field)
-			subdocumentIdField, _ := subdocumentField.Type.FieldByName("ID")
-			entityToInsert = lo.Assign(
-				entityToInsert,
-				bson.M{
-					fieldBsonName: entityToInsert[fieldBsonName].(primitive.M)[subdocumentIdField.Tag.Get("bson")],
-				},
-			)
+
+		// Reference/Collection
+		if definition.Type == reflect.Struct && (definition.Ref != "" || definition.Collection != "") && val != nil {
+			subdocumentField := reflectedField
+			if subdocumentIdField, ok := subdocumentField.Type.FieldByName("ID"); ok {
+				entityToInsert = lo.Assign(
+					entityToInsert,
+					bson.M{
+						fieldBsonName: val.(primitive.M)[subdocumentIdField.Tag.Get("bson")],
+					},
+				)
+			}
 			continue
 		}
-		if definition.Min != 0 && e_utils.Cast[float64](entityToInsert[fieldBsonName]) < definition.Min {
-			panic(fmt.Sprintf("Field %s must be greater than %f", field, definition.Min))
+
+		if definition.Min != 0 {
+			if v := cast.ToFloat64(val); v < definition.Min {
+				panic(fmt.Errorf("Field %s must be greater than or equal to %v", field, definition.Min))
+			}
 		}
-		if definition.Max != 0 && e_utils.Cast[float64](entityToInsert[fieldBsonName]) > definition.Max {
-			panic(fmt.Sprintf("Field %s must be less than %f", field, definition.Max))
+		if definition.Max != 0 {
+			if v := cast.ToFloat64(val); v > definition.Max {
+				panic(fmt.Errorf("Field %s must be less than or equal to %v", field, definition.Max))
+			}
 		}
-		if definition.Length != 0 && int64(len(e_utils.Cast[string](entityToInsert[fieldBsonName]))) > definition.Length {
-			panic(fmt.Sprintf("Field %s must be less than %d characters", field, definition.Length))
+		if definition.Length != 0 {
+			if s := cast.ToString(val); int64(len(s)) > definition.Length {
+				panic(fmt.Errorf("Field %s must be less than or equal to %d characters", field, definition.Length))
+			}
 		}
-		if definition.Regex != "" && lo.Must(regexp.Match(definition.Regex, e_utils.ToJSON(entityToInsert[fieldBsonName]))) {
-			panic(fmt.Sprintf("Field %s must match the regex pattern %s", field, definition.Regex))
+		if definition.Regex != "" {
+			if matched := lo.Must(regexp.Match(definition.Regex, []byte(cast.ToString(val)))); !matched {
+				panic(fmt.Errorf("Field %s must match the regex pattern %s", field, definition.Regex))
+			}
 		}
 	}
 	return entityToInsert, detailedEntity
 }
 
-func cleanBSONTag(tag string) string {
+func cleanTag(tag string) string {
 	return strings.ReplaceAll(tag, ",omitempty", "")
-}
-
-func setDefault[T any](entity *bson.M, field string, defaultValue T) {
-	if entity != nil {
-		if e_utils.IsEmpty((*entity)[field]) {
-			(*entity)[field] = defaultValue
-		}
-	}
 }

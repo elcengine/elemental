@@ -2,10 +2,12 @@ package e_tests
 
 import (
 	"fmt"
-	"github.com/elcengine/elemental/core"
-	"github.com/elcengine/elemental/tests/setup"
 	"reflect"
 	"testing"
+
+	"github.com/elcengine/elemental/core"
+	"github.com/elcengine/elemental/tests/setup"
+	"github.com/google/uuid"
 
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -65,9 +67,92 @@ func TestCoreSchemaOptions(t *testing.T) {
 			So(MonsterModel.Collection().Database().Name(), ShouldEqual, DATABASE)
 		})
 		Convey("Should validate a document against the schema", func() {
-			So(func() {
-				UserModel.Validate(User{})
-			}, ShouldPanicWith, "Field Name is required")
+			Convey("Required field", func() {
+				So(func() {
+					UserModel.Validate(User{})
+				}, ShouldPanicWith, fmt.Errorf("Field Name is required"))
+				So(func() {
+					UserModel.Validate(User{Name: "Geralt"})
+				}, ShouldNotPanic)
+			})
+			Convey("Required field with default", func() {
+				Model := elemental.NewModel[User](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
+					"Name": {
+						Type:     reflect.String,
+						Required: true,
+						Default:  "Placeholder",
+					},
+				}))
+				So(func() {
+					Model.Validate(User{})
+				}, ShouldPanicWith, fmt.Errorf("Field Name is required"))
+				So(func() {
+					UserModel.Validate(User{Name: "Geralt"})
+				}, ShouldNotPanic)
+			})
+			Convey("Min check", func() {
+				Model := elemental.NewModel[User](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
+					"Age": {
+						Type: reflect.Int,
+						Min:  10,
+					},
+				}))
+				So(func() {
+					Model.Validate(User{Age: 5})
+				}, ShouldPanicWith, fmt.Errorf("Field Age must be greater than or equal to 10"))
+				So(func() {
+					Model.Validate(User{Age: 15})
+				}, ShouldNotPanic)
+				So(func() {
+					Model.Validate(User{Age: 10})
+				}, ShouldNotPanic)
+			})
+			Convey("Max check", func() {
+				Model := elemental.NewModel[User](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
+					"Age": {
+						Type: reflect.Int,
+						Max:  120,
+					},
+				}))
+				So(func() {
+					Model.Validate(User{Age: 121})
+				}, ShouldPanicWith, fmt.Errorf("Field Age must be less than or equal to 120"))
+				So(func() {
+					Model.Validate(User{Age: 50})
+				}, ShouldNotPanic)
+				So(func() {
+					Model.Validate(User{Age: 120})
+				}, ShouldNotPanic)
+			})
+			Convey("Length check", func() {
+				Model := elemental.NewModel[User](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
+					"Name": {
+						Type:   reflect.String,
+						Length: 10,
+					},
+				}))
+				So(func() {
+					Model.Validate(User{Name: "Geralt"})
+				}, ShouldNotPanic)
+				So(func() {
+					Model.Validate(User{Name: "Geralt of Rivia"})
+				}, ShouldPanicWith, fmt.Errorf("Field Name must be less than or equal to 10 characters"))
+			})
+			Convey("Regex check", func() {
+				Model := elemental.NewModel[User](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
+					"Name": {
+						Type:  reflect.String,
+						Regex: "^[A-Z]+$",
+					},
+				}))
+				So(func() {
+					Model.Validate(User{Name: "G1Cc"})
+				}, ShouldPanicWith, fmt.Errorf("Field Name must match the regex pattern ^[A-Z]+$"))
+				So(func() {
+					Model.Validate(User{Name: "GERALT"})
+				}, ShouldNotPanic)
+			})
 		})
+
 	})
 }

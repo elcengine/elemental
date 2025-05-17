@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"strings"
 
-	elemental "github.com/elcengine/elemental/core"
-	e_utils "github.com/elcengine/elemental/utils"
+	"github.com/elcengine/elemental/core"
+	"github.com/elcengine/elemental/utils"
 	"github.com/go-playground/validator/v10"
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -29,12 +29,12 @@ func Legitimize(input any) error {
 	for i := range v.NumField() {
 		field := v.Type().Field(i)
 		value := v.Field(i).Interface()
-		vts := strings.Split(field.Tag.Get("augmented_validate"), ";")
-		for _, vt := range vts {
-			if vt == "" {
+		tags := strings.Split(field.Tag.Get("augmented_validate"), ";")
+		for _, t := range tags {
+			if t == "" {
 				continue
 			}
-			tagSections := strings.Split(vt, "=")
+			tagSections := strings.Split(t, "=")
 			tag := tagSections[0]
 			definition := tagSections[1]
 			definitionSections := strings.Split(definition, "->")
@@ -64,10 +64,7 @@ func Legitimize(input any) error {
 			}
 
 			getReferenceField := func() string {
-				if reference != "" {
-					return reference
-				}
-				return fieldName
+				return lo.CoalesceOrEmpty(reference, fieldName)
 			}
 
 			getReferenceFieldValue := func() any {
