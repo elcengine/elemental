@@ -11,9 +11,9 @@ import (
 // Usage:
 //
 //	app := fiber.New()
-//	app.Use(filter_query_middleware.NewGoFiber())
+//	app.Use(fqm.NewGoFiber())
 //	app.Get("/users", func(ctx *fiber.Ctx) error {
-//		q := ctx.Locals(filter_query_middleware.CtxKey).(filter_query.FilterQueryResult)
+//		q := ctx.Locals(fqm.CtxKey).(fq.FilterQueryResult)
 //		users := UserModel.Find(q.Filters).Sort(q.Sorts).Select(q.Select).Populate(q.Include...).ExecTT()
 //		return ctx.JSON(users)
 //	})
