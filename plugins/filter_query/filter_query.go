@@ -51,10 +51,10 @@ func Parse(queryString string) FilterQueryResult {
 				}
 			}
 		}
-		if strings.Contains(key, "include") {
+		if key == "include" {
 			result.Include = append(result.Include, strings.Split(value, ",")...)
 		}
-		if strings.Contains(key, "select") {
+		if key == "select" {
 			for _, field := range strings.Split(value, ",") {
 				if strings.HasPrefix(field, "-") {
 					result.Select[field[1:]] = 0
@@ -63,20 +63,14 @@ func Parse(queryString string) FilterQueryResult {
 				}
 			}
 		}
-		if strings.Contains(key, "prepaginate") {
+		if key == "prepaginate" {
 			result.Prepaginate = value == "true"
 		}
-		if strings.Contains(key, "page") {
-			result.Page = cast.ToInt(value)
-			if result.Page < 0 {
-				result.Page = 0
-			}
+		if key == "page" {
+			result.Page = max(cast.ToInt(value), 0)
 		}
-		if strings.Contains(key, "limit") {
-			result.Limit = cast.ToInt(value)
-			if result.Limit < 0 {
-				result.Limit = 0
-			}
+		if key == "limit" {
+			result.Limit = max(cast.ToInt(value), 0)
 		}
 	}
 	result.Filters = mapFilters(result.Filters)
