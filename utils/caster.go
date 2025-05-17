@@ -2,6 +2,8 @@ package e_utils
 
 import (
 	"encoding/json"
+
+	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -14,29 +16,10 @@ func Cast[T any](val any) T {
 	return zero
 }
 
-// Converts any type to a given type based on their json representation. It partially fills the target in case they are not directly compatible.
-func CastJSON[T any](val any) T {
-	return FromJSON[T](ToJSON(val))
-}
-
-// Converts a given value to a byte array.
-func ToJSON(val any) []byte {
-	//nolint:errchkjson
-	bytes, _ := json.Marshal(val)
-	return bytes
-}
-
-// Converts a byte array to a given type.
-func FromJSON[T any](bytes []byte) T {
-	var v T
-	json.Unmarshal(bytes, &v)
-	return v
-}
-
 // Converts any type to a map[string]any.
 func ToMap(s any) map[string]any {
 	m := make(map[string]any)
-	json.Unmarshal(ToJSON(s), &m)
+	json.Unmarshal(lo.Must(json.Marshal(s)), &m)
 	return m
 }
 

@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/elcengine/elemental/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -97,7 +98,7 @@ func (c ClusterOp[T]) Exec() any {
 		fmt.Println("result is nil")
 		return nil
 	}
-	rmap := structToMap(r)
+	rmap := e_utils.ToMap(r)
 	*c.result = &rmap
 	for _, op := range c.operations {
 		(op)()
