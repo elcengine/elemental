@@ -20,8 +20,6 @@ func TestCoreSchedule(t *testing.T) {
 			Name: uuid.NewString(),
 		}).Schedule("*/2 * * * * *").ExecInt()
 
-		defer KingdomModel.Unschedule(id)
-
 		for i := range 3 {
 			SoTimeout(t, func() (ok bool) {
 				if len(KingdomModel.Find().ExecTT()) >= i {
@@ -31,5 +29,9 @@ func TestCoreSchedule(t *testing.T) {
 			})
 			time.Sleep(2 * time.Second)
 		}
+
+		KingdomModel.Unschedule(id)
+
+		time.Sleep(1 * time.Second)
 	})
 }
