@@ -16,10 +16,11 @@ import (
 )
 
 func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Type, defaults ...bool) (bson.M, bson.M) {
-	if doc != nil && reflect.TypeOf(doc).Elem().Kind() != reflect.Struct {
-		return *e_utils.ToBSONDoc(doc), *e_utils.ToBSONDoc(doc)
-	}
 	var entityToInsert bson.M
+	if doc != nil && (reflect.TypeOf(doc).Elem().Kind() != reflect.Struct || schema.Options.BypassSchemaEnforcement) {
+		entityToInsert = *e_utils.ToBSONDoc(doc)
+		return entityToInsert, entityToInsert
+	}
 	if reflectedEntityType != nil {
 		entityToInsert = e_utils.Cast[bson.M](doc)
 		if entityToInsert == nil {
@@ -34,13 +35,13 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 		createdAt, _ := (*reflectedEntityType).FieldByName("CreatedAt")
 		updatedAt, _ := (*reflectedEntityType).FieldByName("UpdatedAt")
 		if id.Type != nil {
-			setDefault(&entityToInsert, id.Tag.Get("bson"), primitive.NewObjectID())
+			setDefault(&entityToInsert, cleanBSONTag(id.Tag.Get("bson")), primitive.NewObjectID())
 		}
 		if createdAt.Type != nil {
-			setDefault(&entityToInsert, createdAt.Tag.Get("bson"), time.Now())
+			setDefault(&entityToInsert, cleanBSONTag(createdAt.Tag.Get("bson")), time.Now())
 		}
 		if updatedAt.Type != nil {
-			setDefault(&entityToInsert, updatedAt.Tag.Get("bson"), time.Now())
+			setDefault(&entityToInsert, cleanBSONTag(updatedAt.Tag.Get("bson")), time.Now())
 		}
 	}
 	detailedEntity := lo.Assign(entityToInsert)
