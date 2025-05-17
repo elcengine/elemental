@@ -22,7 +22,8 @@ func (m Model[T]) FindOneAndUpdate(query *primitive.M, doc any, opts ...*options
 			var resultDoc T
 			filters := lo.FromPtr(query)
 			maps.Copy(filters, m.findMatchStage())
-			result := m.Collection().FindOneAndUpdate(ctx, filters, primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
+			result := m.Collection().FindOneAndUpdate(ctx, filters,
+				primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
 			m.middleware.post.findOneAndUpdate.run(&resultDoc)
 			m.checkConditionsAndPanicForSingleResult(result)
 			lo.Must0(result.Decode(&resultDoc))
@@ -37,7 +38,8 @@ func (m Model[T]) FindOneAndUpdate(query *primitive.M, doc any, opts ...*options
 func (m Model[T]) FindByIDAndUpdate(id any, doc any, opts ...*options.FindOneAndUpdateOptions) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var resultDoc T
-		result := m.Collection().FindOneAndUpdate(ctx, primitive.M{"_id": e_utils.EnsureObjectID(id)}, primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
+		result := m.Collection().FindOneAndUpdate(ctx, primitive.M{"_id": e_utils.EnsureObjectID(id)},
+			primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
 		m.checkConditionsAndPanicForSingleResult(result)
 		lo.Must0(result.Decode(&resultDoc))
 		return resultDoc
@@ -55,16 +57,9 @@ func (m Model[T]) UpdateOne(query *primitive.M, doc any, opts ...*options.Update
 			filters = lo.FromPtr(query)
 		}
 		maps.Copy(filters, m.findMatchStage())
-		if m.upsert {
-			if len(opts) == 0 {
-				opts = append(opts, &options.UpdateOptions{Upsert: lo.ToPtr(true)})
-			} else {
-				opts[0].SetUpsert(true)
-			}
-		}
 		m.middleware.pre.updateOne.run(doc)
 		result, err := m.Collection().UpdateOne(ctx, filters,
-			primitive.M{"$set": m.parseDocument(doc)}, opts...)
+			primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
 		m.middleware.post.updateOne.run(result, err)
 		m.checkConditionsAndPanicForErr(err)
 		return result
