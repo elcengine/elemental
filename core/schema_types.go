@@ -6,11 +6,12 @@ import (
 )
 
 type SchemaOptions struct {
-	Collection        string                          // Custom collection name, if not set, the lowercase pluralized name of the model will be used.
-	CollectionOptions options.CreateCollectionOptions // Plain mongo driver collection options if you want to set them
-	Database          string                          // Custom database name, if not set, the default database will be used
-	Connection        string                          // Custom connection alias, if not set, the default connection will be used
-	Auditing          bool                            // Whether to enable auditing for this model
+	Collection              string                          // Custom collection name, if not set, the lowercase pluralized name of the model will be used.
+	CollectionOptions       options.CreateCollectionOptions // Plain mongo driver collection options if you want to set them
+	Database                string                          // Custom database name, if not set, the default database will be used
+	Connection              string                          // Custom connection alias, if not set, the default connection will be used
+	Auditing                bool                            // Whether to enable auditing for this model
+	BypassSchemaEnforcement bool                            // Whether to bypass schema enforcement when creating a new document
 }
 
 type Field struct {
