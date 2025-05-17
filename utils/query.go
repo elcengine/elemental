@@ -14,7 +14,11 @@ func MergedQueryOrDefault(query []primitive.M) primitive.M {
 
 func EnsureObjectID(id any) primitive.ObjectID {
 	if idStr, ok := id.(string); ok {
-		return lo.Must(primitive.ObjectIDFromHex(idStr))
+		parsed, err := primitive.ObjectIDFromHex(idStr)
+		if err != nil {
+			return primitive.NilObjectID
+		}
+		return parsed
 	} else if idRaw, ok := id.(primitive.ObjectID); ok {
 		return idRaw
 	} else if idPtr, ok := id.(*primitive.ObjectID); ok {

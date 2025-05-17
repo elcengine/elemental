@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/elcengine/elemental/utils"
+	e_utils "github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -39,7 +39,7 @@ func (m Model[T]) FindOneAndDelete(query ...primitive.M) Model[T] {
 // This method will return the deleted document.
 // If the model has soft delete enabled, it will update the document with a deleted_at field instead of deleting it.
 // The id can be a string or an ObjectID.
-func (m Model[T]) FindByIdAndDelete(id any) Model[T] {
+func (m Model[T]) FindByIDAndDelete(id any) Model[T] {
 	if m.softDeleteEnabled {
 		return m.FindOneAndUpdate(lo.ToPtr(primitive.M{"_id": e_utils.EnsureObjectID(id)}),
 			m.softDeletePayload())
