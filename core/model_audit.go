@@ -7,6 +7,7 @@ import (
 
 	e_constants "github.com/elcengine/elemental/constants"
 	e_utils "github.com/elcengine/elemental/utils"
+	"github.com/samber/lo"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -61,12 +62,14 @@ func (m Model[T]) EnableAuditing(ctx ...context.Context) {
 		q.Exec(context)
 	}
 
+	userFallback := "System"
+
 	m.OnInsert(func(doc T) {
 		execWithModelOpts(AuditModel.Create(Audit{
 			Entity:    m.Name,
 			Type:      AuditTypeInsert,
 			Document:  *e_utils.ToBSONDoc(doc),
-			User:      e_utils.Cast[string](context.Value(e_constants.CtxUser)),
+			User:      lo.CoalesceOrEmpty(e_utils.Cast[string](context.Value(e_constants.CtxUser)), userFallback),
 			CreatedAt: time.Now(),
 		}))
 	}, TriggerOptions{Context: &context, Filter: &primitive.M{"ns.coll": primitive.M{"$eq": m.Collection().Name()}}})
@@ -75,7 +78,7 @@ func (m Model[T]) EnableAuditing(ctx ...context.Context) {
 			Entity:    m.Name,
 			Type:      AuditTypeUpdate,
 			Document:  *e_utils.ToBSONDoc(doc),
-			User:      e_utils.Cast[string](context.Value(e_constants.CtxUser)),
+			User:      lo.CoalesceOrEmpty(e_utils.Cast[string](context.Value(e_constants.CtxUser)), userFallback),
 			CreatedAt: time.Now(),
 		}))
 	}, TriggerOptions{Context: &context, Filter: &primitive.M{"ns.coll": primitive.M{"$eq": m.Collection().Name()}}})
@@ -84,7 +87,7 @@ func (m Model[T]) EnableAuditing(ctx ...context.Context) {
 			Entity:    m.Name,
 			Type:      AuditTypeDelete,
 			Document:  map[string]any{"_id": id},
-			User:      e_utils.Cast[string](context.Value(e_constants.CtxUser)),
+			User:      lo.CoalesceOrEmpty(e_utils.Cast[string](context.Value(e_constants.CtxUser)), userFallback),
 			CreatedAt: time.Now(),
 		}))
 	}, TriggerOptions{Context: &context, Filter: &primitive.M{"ns.coll": primitive.M{"$eq": m.Collection().Name()}}})
