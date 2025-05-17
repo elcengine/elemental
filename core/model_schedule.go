@@ -16,6 +16,9 @@ func (m Model[T]) Schedule(spec string) Model[T] {
 // Unschedule a query that was previously scheduled.
 func (m Model[T]) Unschedule(id int) {
 	cron.Remove(robocron.EntryID(id))
+	if len(cron.Entries()) == 0 {
+		cron.Stop()
+	}
 }
 
 // Unschedule all queries that were previously scheduled.
