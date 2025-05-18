@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	elemental "github.com/elcengine/elemental/core"
 	ts "github.com/elcengine/elemental/tests/fixtures/setup"
@@ -97,6 +98,12 @@ func TestCoreTriggers(t *testing.T) {
 			SoTimeout(t, func() bool {
 				return collectionDropped
 			})
+		})
+		Convey("Invalidate triggers", func() {
+			CastleModel.InvalidateTriggers()
+			CastleModel.Create(Castle{Name: "Mont Crane"}).Exec()
+			time.Sleep(3 * time.Second)
+			So(insertedCastle.Name, ShouldEqual, "Aretuza") // Last inserted castle should be the same since trigger shouldn't be called
 		})
 	})
 }
