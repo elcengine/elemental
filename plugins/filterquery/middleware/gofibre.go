@@ -1,12 +1,12 @@
 package fqm
 
 import (
-	"github.com/elcengine/elemental/plugins/filter_query"
+	"github.com/elcengine/elemental/plugins/filterquery"
 	"github.com/gofiber/fiber/v2"
 )
 
 // NewGoFiber is a middleware for Fiber that parses the query string and stores the result in the context.
-// It uses the filter_query plugin to parse the query string and apply filters, sorting, lookups, and projections to the final query.
+// It uses the filterquery plugin to parse the query string and apply filters, sorting, lookups, and projections to the final query.
 //
 // Usage:
 //

@@ -1,9 +1,10 @@
 package elemental
 
 import (
-	"github.com/elcengine/elemental/utils"
 	"reflect"
 	"strings"
+
+	"github.com/elcengine/elemental/utils"
 
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,10 +15,10 @@ func (m Model[T]) populate(value any) Model[T] {
 	var path, selectField, fieldname *string
 	if reflect.ValueOf(value).Kind() == reflect.Map {
 		populate := value.(primitive.M)
-		path = lo.ToPtr(e_utils.Cast[string](populate["path"]))
-		selectField = lo.ToPtr(e_utils.Cast[string](populate["select"]))
+		path = lo.ToPtr(utils.Cast[string](populate["path"]))
+		selectField = lo.ToPtr(utils.Cast[string](populate["select"]))
 	} else {
-		path = lo.ToPtr(e_utils.Cast[string](value))
+		path = lo.ToPtr(utils.Cast[string](value))
 	}
 	if path != nil {
 		var sample [0]T

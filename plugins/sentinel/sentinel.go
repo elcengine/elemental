@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/elcengine/elemental/core"
+	elemental "github.com/elcengine/elemental/core"
 	"github.com/elcengine/elemental/utils"
 	"github.com/go-playground/validator/v10"
 	"github.com/samber/lo"
@@ -24,7 +24,7 @@ func Legitimize(input any) error {
 	}
 	v := reflect.ValueOf(input)
 
-	inputMap := e_utils.ToMap(input)
+	inputMap := utils.ToMap(input)
 
 	for i := range v.NumField() {
 		field := v.Type().Field(i)
@@ -78,45 +78,45 @@ func Legitimize(input any) error {
 			case "unique":
 				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{fieldName: value})).Exec()
 				if doc != nil {
-					return fmt.Errorf("Key: '%s.%s' Error:Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+					return fmt.Errorf("key: '%s.%s' error: Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
 				}
 			case "exists":
 				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{fieldName: value})).Exec()
 				if doc == nil {
-					return fmt.Errorf("Key: '%s.%s' Error:Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+					return fmt.Errorf("key: '%s.%s' error: Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
 				}
 			case "greater_than":
 				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{getReferenceField(): getReferenceFieldValue()})).Exec()
-				if doc == nil || e_utils.LTE(value, e_utils.Cast[map[string]any](doc)[fieldName]) {
-					return fmt.Errorf("Key: '%s.%s' Error:Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+				if doc == nil || utils.LTE(value, utils.Cast[map[string]any](doc)[fieldName]) {
+					return fmt.Errorf("key: '%s.%s' error: Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
 				}
 			case "greater_than_or_equal_to":
 				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{getReferenceField(): getReferenceFieldValue()})).Exec()
-				if doc == nil || e_utils.LT(value, e_utils.Cast[map[string]any](doc)[fieldName]) {
-					return fmt.Errorf("Key: '%s.%s' Error:Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+				if doc == nil || utils.LT(value, utils.Cast[map[string]any](doc)[fieldName]) {
+					return fmt.Errorf("key: '%s.%s' error: Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
 				}
 			case "less_than":
 				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{getReferenceField(): getReferenceFieldValue()})).Exec()
-				if doc == nil || e_utils.GTE(value, e_utils.Cast[map[string]any](doc)[fieldName]) {
-					return fmt.Errorf("Key: '%s.%s' Error:Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+				if doc == nil || utils.GTE(value, utils.Cast[map[string]any](doc)[fieldName]) {
+					return fmt.Errorf("key: '%s.%s' error: Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
 				}
 			case "less_than_or_equal_to":
 				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{getReferenceField(): getReferenceFieldValue()})).Exec()
-				if doc == nil || e_utils.GT(value, e_utils.Cast[map[string]any](doc)[fieldName]) {
-					return fmt.Errorf("Key: '%s.%s' Error:Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+				if doc == nil || utils.GT(value, utils.Cast[map[string]any](doc)[fieldName]) {
+					return fmt.Errorf("key: '%s.%s' error: Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
 				}
 			case "equals":
 				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{getReferenceField(): getReferenceFieldValue()})).Exec()
-				if doc == nil || !e_utils.EQ(value, e_utils.Cast[map[string]any](doc)[fieldName]) {
-					return fmt.Errorf("Key: '%s.%s' Error:Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+				if doc == nil || !utils.EQ(value, utils.Cast[map[string]any](doc)[fieldName]) {
+					return fmt.Errorf("key: '%s.%s' error: Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
 				}
 			case "not_equals":
 				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{getReferenceField(): getReferenceFieldValue()})).Exec()
-				if doc != nil && e_utils.EQ(value, e_utils.Cast[map[string]any](doc)[fieldName]) {
-					return fmt.Errorf("Key: '%s.%s' Error:Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+				if doc != nil && utils.EQ(value, utils.Cast[map[string]any](doc)[fieldName]) {
+					return fmt.Errorf("key: '%s.%s' error: Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
 				}
 			default:
-				return fmt.Errorf("Unknown augmented validation tag: %s", tag)
+				return fmt.Errorf("unknown augmented validation tag: %s", tag)
 			}
 		}
 	}

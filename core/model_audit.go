@@ -2,15 +2,15 @@ package elemental
 
 import (
 	"context"
+	"github.com/elcengine/elemental/utils"
+	"github.com/samber/lo"
 	"reflect"
 	"time"
 
-	e_constants "github.com/elcengine/elemental/constants"
-	e_utils "github.com/elcengine/elemental/utils"
-	"github.com/samber/lo"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+const CtxUser = "user"
 
 type AuditType string
 
@@ -50,7 +50,7 @@ var AuditModel = NewModel[Audit]("Audit", NewSchema(map[string]Field{
 
 // Enables auditing for the current model.
 func (m Model[T]) EnableAuditing(ctx ...context.Context) {
-	context := e_utils.CtxOrDefault(ctx)
+	context := utils.CtxOrDefault(ctx)
 
 	execWithModelOpts := func(q Model[Audit]) {
 		if m.temporaryConnection != nil {
@@ -68,8 +68,8 @@ func (m Model[T]) EnableAuditing(ctx ...context.Context) {
 		execWithModelOpts(AuditModel.Create(Audit{
 			Entity:    m.Name,
 			Type:      AuditTypeInsert,
-			Document:  *e_utils.ToBSONDoc(doc),
-			User:      lo.CoalesceOrEmpty(e_utils.Cast[string](context.Value(e_constants.CtxUser)), userFallback),
+			Document:  *utils.ToBSONDoc(doc),
+			User:      lo.CoalesceOrEmpty(utils.Cast[string](context.Value(CtxUser)), userFallback),
 			CreatedAt: time.Now(),
 		}))
 	}, TriggerOptions{Context: &context, Filter: &primitive.M{"ns.coll": primitive.M{"$eq": m.Collection().Name()}}})
@@ -77,8 +77,8 @@ func (m Model[T]) EnableAuditing(ctx ...context.Context) {
 		execWithModelOpts(AuditModel.Create(Audit{
 			Entity:    m.Name,
 			Type:      AuditTypeUpdate,
-			Document:  *e_utils.ToBSONDoc(doc),
-			User:      lo.CoalesceOrEmpty(e_utils.Cast[string](context.Value(e_constants.CtxUser)), userFallback),
+			Document:  *utils.ToBSONDoc(doc),
+			User:      lo.CoalesceOrEmpty(utils.Cast[string](context.Value(CtxUser)), userFallback),
 			CreatedAt: time.Now(),
 		}))
 	}, TriggerOptions{Context: &context, Filter: &primitive.M{"ns.coll": primitive.M{"$eq": m.Collection().Name()}}})
@@ -87,7 +87,7 @@ func (m Model[T]) EnableAuditing(ctx ...context.Context) {
 			Entity:    m.Name,
 			Type:      AuditTypeDelete,
 			Document:  map[string]any{"_id": id},
-			User:      lo.CoalesceOrEmpty(e_utils.Cast[string](context.Value(e_constants.CtxUser)), userFallback),
+			User:      lo.CoalesceOrEmpty(utils.Cast[string](context.Value(CtxUser)), userFallback),
 			CreatedAt: time.Now(),
 		}))
 	}, TriggerOptions{Context: &context, Filter: &primitive.M{"ns.coll": primitive.M{"$eq": m.Collection().Name()}}})

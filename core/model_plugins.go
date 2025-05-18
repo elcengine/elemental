@@ -1,10 +1,10 @@
 package elemental
 
-import "github.com/elcengine/elemental/plugins/filter_query"
+import "github.com/elcengine/elemental/plugins/filterquery"
 
 // QS allows you to construct an Elemental query directly from a request's query string.
 //
-// It uses the filter_query plugin to parse the query string and apply filters, sorting, lookups, and projections to the final query.
+// It uses the filterquery plugin to parse the query string and apply filters, sorting, lookups, and projections to the final query.
 //
 // Usage:
 //

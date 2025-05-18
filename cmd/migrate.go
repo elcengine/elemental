@@ -1,5 +1,5 @@
 //nolint:gocritic
-package e_cmd
+package cmd
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/elcengine/elemental/core"
+	elemental "github.com/elcengine/elemental/core"
 	"github.com/elcengine/elemental/utils"
 
 	"github.com/samber/lo"
@@ -121,7 +121,7 @@ func main() {
 	elemental.Connect(cfg.ConnectionStr)
 	defer elemental.Disconnect()
 	os.MkdirAll(".elemental/"+target+"s", os.ModePerm)
-	e_utils.CreateAndWriteToFile(fmt.Sprintf(".elemental/%ss/main.go", target), template)
+	utils.CreateAndWriteToFile(fmt.Sprintf(".elemental/%ss/main.go", target), template)
 	err = exec.Command("go", "run", ".elemental/"+target+"s/main.go").Run()
 	if err != nil {
 		elemental.Disconnect()
@@ -166,7 +166,7 @@ func Down_%s(ctx context.Context, db *mongo.Database, client *mongo.Client) {
 		dir = cfg.SeedsDir
 	}
 	outputFile := dir + "/" + args[0] + "_" + timestamp + ".go"
-	e_utils.CreateAndWriteToFile(outputFile, template)
+	utils.CreateAndWriteToFile(outputFile, template)
 	log.Printf("%s file created at %s", target, outputFile)
 }
 

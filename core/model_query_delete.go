@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"time"
 
-	e_utils "github.com/elcengine/elemental/utils"
+	"github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -17,7 +17,7 @@ import (
 // This method will return the deleted document.
 // If the model has soft delete enabled, it will update the document with a deleted_at field instead of deleting it.
 func (m Model[T]) FindOneAndDelete(query ...primitive.M) Model[T] {
-	q := e_utils.MergedQueryOrDefault(query)
+	q := utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
 		m = m.UpdateOne(&q, m.softDeletePayload())
 	} else {
@@ -41,10 +41,10 @@ func (m Model[T]) FindOneAndDelete(query ...primitive.M) Model[T] {
 // The id can be a string or an ObjectID.
 func (m Model[T]) FindByIDAndDelete(id any) Model[T] {
 	if m.softDeleteEnabled {
-		return m.FindOneAndUpdate(lo.ToPtr(primitive.M{"_id": e_utils.EnsureObjectID(id)}),
+		return m.FindOneAndUpdate(lo.ToPtr(primitive.M{"_id": utils.EnsureObjectID(id)}),
 			m.softDeletePayload())
 	} else {
-		return m.FindOneAndDelete(primitive.M{"_id": e_utils.EnsureObjectID(id)})
+		return m.FindOneAndDelete(primitive.M{"_id": utils.EnsureObjectID(id)})
 	}
 }
 
@@ -54,7 +54,7 @@ func (m Model[T]) FindByIDAndDelete(id any) Model[T] {
 // This method will not return the deleted document.
 // If the model has soft delete enabled, it will update the document with a deleted_at field instead of deleting it.
 func (m Model[T]) DeleteOne(query ...primitive.M) Model[T] {
-	q := e_utils.MergedQueryOrDefault(query)
+	q := utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
 		m = m.UpdateOne(&q, m.softDeletePayload())
 	} else {
@@ -76,9 +76,9 @@ func (m Model[T]) DeleteOne(query ...primitive.M) Model[T] {
 // The id can be a string or an ObjectID.
 func (m Model[T]) DeleteByID(id any) Model[T] {
 	if m.softDeleteEnabled {
-		return m.UpdateOne(lo.ToPtr(primitive.M{"_id": e_utils.EnsureObjectID(id)}), m.softDeletePayload())
+		return m.UpdateOne(lo.ToPtr(primitive.M{"_id": utils.EnsureObjectID(id)}), m.softDeletePayload())
 	} else {
-		return m.DeleteOne(primitive.M{"_id": e_utils.EnsureObjectID(id)})
+		return m.DeleteOne(primitive.M{"_id": utils.EnsureObjectID(id)})
 	}
 }
 
@@ -105,7 +105,7 @@ func (m Model[T]) Delete(doc T) Model[T] {
 // This method will not return the deleted documents.
 // If the model has soft delete enabled, it will update the documents with a deleted_at field instead of deleting them.
 func (m Model[T]) DeleteMany(query ...primitive.M) Model[T] {
-	q := e_utils.MergedQueryOrDefault(query)
+	q := utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
 		m = m.UpdateMany(&q, m.softDeletePayload())
 	} else {

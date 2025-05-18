@@ -1,12 +1,12 @@
-package e_tests
+package tests
 
 import (
 	"os"
 	"testing"
 
 	elemental "github.com/elcengine/elemental/core"
-	e_mocks "github.com/elcengine/elemental/tests/mocks"
-	e_test_setup "github.com/elcengine/elemental/tests/setup"
+	"github.com/elcengine/elemental/tests/fixtures/mocks"
+	ts "github.com/elcengine/elemental/tests/fixtures/setup"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -18,10 +18,10 @@ func TestMultiConnection(t *testing.T) {
 		t.Skip("Skipping test in non-CI environment")
 	}
 
-	e_test_setup.Connection(t.Name())
+	ts.Connection(t.Name())
 
 	elemental.Connect(elemental.ConnectionOptions{
-		URI:   e_mocks.SECONDARY_DATASOURCE,
+		URI:   mocks.SECONDARY_DATASOURCE,
 		Alias: "second",
 	})
 

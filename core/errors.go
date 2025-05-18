@@ -1,4 +1,4 @@
-package e_constants
+package elemental
 
 import "errors"
 

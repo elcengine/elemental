@@ -1,5 +1,5 @@
 //nolint:exhaustive
-package e_utils
+package utils
 
 import (
 	"fmt"

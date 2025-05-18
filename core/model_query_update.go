@@ -38,7 +38,7 @@ func (m Model[T]) FindOneAndUpdate(query *primitive.M, doc any, opts ...*options
 func (m Model[T]) FindByIDAndUpdate(id any, doc any, opts ...*options.FindOneAndUpdateOptions) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var resultDoc T
-		result := m.Collection().FindOneAndUpdate(ctx, primitive.M{"_id": e_utils.EnsureObjectID(id)},
+		result := m.Collection().FindOneAndUpdate(ctx, primitive.M{"_id": utils.EnsureObjectID(id)},
 			primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
 		m.checkConditionsAndPanicForSingleResult(result)
 		lo.Must0(result.Decode(&resultDoc))
@@ -72,7 +72,7 @@ func (m Model[T]) UpdateOne(query *primitive.M, doc any, opts ...*options.Update
 // The id can be a string or an ObjectID.
 func (m Model[T]) UpdateByID(id any, doc any, opts ...*options.UpdateOptions) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
-		result, err := m.Collection().UpdateOne(ctx, primitive.M{"_id": e_utils.EnsureObjectID(id)},
+		result, err := m.Collection().UpdateOne(ctx, primitive.M{"_id": utils.EnsureObjectID(id)},
 			primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
 		m.checkConditionsAndPanicForErr(err)
 		return result
@@ -130,7 +130,7 @@ func (m Model[T]) ReplaceOne(query *primitive.M, doc any, opts ...*options.Repla
 // The id can be a string or an ObjectID.
 func (m Model[T]) ReplaceByID(id any, doc any, opts ...*options.ReplaceOptions) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
-		result, err := m.Collection().ReplaceOne(ctx, primitive.M{"_id": e_utils.EnsureObjectID(id)},
+		result, err := m.Collection().ReplaceOne(ctx, primitive.M{"_id": utils.EnsureObjectID(id)},
 			m.parseDocument(doc), parseUpdateOptions(m, opts)...)
 		m.checkConditionsAndPanicForErr(err)
 		return result
@@ -164,7 +164,7 @@ func (m Model[T]) FindOneAndReplace(query *primitive.M, doc any, opts ...*option
 func (m Model[T]) FindByIDAndReplace(id any, doc any, opts ...*options.FindOneAndReplaceOptions) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var resultDoc T
-		res := m.Collection().FindOneAndReplace(ctx, primitive.M{"_id": e_utils.EnsureObjectID(id)},
+		res := m.Collection().FindOneAndReplace(ctx, primitive.M{"_id": utils.EnsureObjectID(id)},
 			m.parseDocument(doc), parseUpdateOptions(m, opts)...)
 		m.checkConditionsAndPanicForSingleResult(res)
 		lo.Must0(res.Decode(&resultDoc))

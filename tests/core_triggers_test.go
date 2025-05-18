@@ -1,11 +1,12 @@
-package e_tests
+package tests
 
 import (
 	"context"
-	"github.com/elcengine/elemental/core"
-	"github.com/elcengine/elemental/tests/setup"
 	"reflect"
 	"testing"
+
+	elemental "github.com/elcengine/elemental/core"
+	ts "github.com/elcengine/elemental/tests/fixtures/setup"
 
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -14,7 +15,7 @@ import (
 func TestCoreTriggers(t *testing.T) {
 	t.Parallel()
 
-	e_test_setup.Connection(t.Name())
+	ts.Connection(t.Name())
 
 	CastleModel := elemental.NewModel[Castle]("Castle-For-Triggers", elemental.NewSchema(map[string]elemental.Field{
 		"Name": {

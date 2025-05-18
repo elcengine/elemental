@@ -1,16 +1,16 @@
-package e_tests
+package tests
 
 import (
 	"os"
 	"testing"
 
-	e_test_setup "github.com/elcengine/elemental/tests/setup"
+	ts "github.com/elcengine/elemental/tests/fixtures/setup"
 )
 
 func TestMain(m *testing.M) {
 	code := m.Run()
 
-	e_test_setup.Teardown()
+	ts.Teardown()
 
 	os.Exit(code)
 }

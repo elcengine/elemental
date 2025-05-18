@@ -1,19 +1,19 @@
-package e_tests
+package tests
 
 import (
 	"reflect"
 	"testing"
 
-	"github.com/akalanka47000/go-modkit/parallel_convey"
-	"github.com/elcengine/elemental/core"
-	"github.com/elcengine/elemental/tests/setup"
+	pc "github.com/akalanka47000/go-modkit/parallel_convey"
+	elemental "github.com/elcengine/elemental/core"
+	ts "github.com/elcengine/elemental/tests/fixtures/setup"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func TestCoreAudit(t *testing.T) {
 	t.Parallel()
 
-	e_test_setup.Connection(t.Name())
+	ts.Connection(t.Name())
 
 	entity := "Kingdom-For-Audit"
 

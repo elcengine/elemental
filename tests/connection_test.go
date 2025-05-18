@@ -1,13 +1,12 @@
-package e_tests
+package tests
 
 import (
 	"fmt"
 	"strings"
 	"testing"
 
-	e_constants "github.com/elcengine/elemental/constants"
-	elemental "github.com/elcengine/elemental/core"
-	e_mocks "github.com/elcengine/elemental/tests/mocks"
+	"github.com/elcengine/elemental/core"
+	"github.com/elcengine/elemental/tests/fixtures/mocks"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -24,7 +23,7 @@ func TestConnection(t *testing.T) {
 
 			defer elemental.RemoveConnectionEvent(event.ConnectionCreated)
 
-			client := elemental.Connect(strings.Replace(e_mocks.DEFAULT_DATASOURCE, e_mocks.DEFAULT_DB_NAME, t.Name(), 1))
+			client := elemental.Connect(strings.Replace(mocks.DEFAULT_DATASOURCE, mocks.DEFAULT_DB_NAME, t.Name(), 1))
 			So(client, ShouldNotBeNil)
 
 			Convey("Should use the default database", func() {
@@ -42,7 +41,7 @@ func TestConnection(t *testing.T) {
 			})
 		})
 		Convey("Connect with a URI specified within client options", func() {
-			opts := options.Client().ApplyURI(strings.Replace(e_mocks.DEFAULT_DATASOURCE, e_mocks.DEFAULT_DB_NAME, t.Name(), 1))
+			opts := options.Client().ApplyURI(strings.Replace(mocks.DEFAULT_DATASOURCE, mocks.DEFAULT_DB_NAME, t.Name(), 1))
 			client := elemental.Connect(elemental.ConnectionOptions{
 				ClientOptions: opts,
 			})
@@ -51,12 +50,12 @@ func TestConnection(t *testing.T) {
 		Convey("Connect with no URI", func() {
 			So(func() {
 				elemental.Connect(elemental.ConnectionOptions{})
-			}, ShouldPanicWith, e_constants.ErrURIRequired)
+			}, ShouldPanicWith, elemental.ErrURIRequired)
 		})
 		Convey("Connect with invalid argument", func() {
 			So(func() {
 				elemental.Connect(123)
-			}, ShouldPanicWith, e_constants.ErrInvalidConnectionArgument)
+			}, ShouldPanicWith, elemental.ErrInvalidConnectionArgument)
 		})
 	})
 }

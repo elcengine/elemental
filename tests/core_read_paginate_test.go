@@ -1,11 +1,11 @@
-package e_tests
+package tests
 
 import (
 	"testing"
 
 	elemental "github.com/elcengine/elemental/core"
-	e_mocks "github.com/elcengine/elemental/tests/mocks"
-	e_test_setup "github.com/elcengine/elemental/tests/setup"
+	"github.com/elcengine/elemental/tests/fixtures/mocks"
+	ts "github.com/elcengine/elemental/tests/fixtures/setup"
 
 	"github.com/samber/lo"
 	. "github.com/smartystreets/goconvey/convey"
@@ -14,7 +14,7 @@ import (
 func TestCoreReadPaginate(t *testing.T) {
 	t.Parallel()
 
-	e_test_setup.SeededConnection(t.Name())
+	ts.SeededConnection(t.Name())
 
 	UserModel := UserModel.SetDatabase(t.Name())
 
@@ -25,13 +25,13 @@ func TestCoreReadPaginate(t *testing.T) {
 			So(result.TotalPages, ShouldEqual, 4)
 			So(result.Page, ShouldEqual, 1)
 			So(result.Limit, ShouldEqual, 2)
-			So(result.TotalDocs, ShouldEqual, len(e_mocks.Users))
+			So(result.TotalDocs, ShouldEqual, len(mocks.Users))
 			So(result.HasPrev, ShouldBeFalse)
 			So(result.HasNext, ShouldBeTrue)
 			So(result.NextPage, ShouldEqual, lo.ToPtr[int64](2))
 			So(result.PrevPage, ShouldBeNil)
-			So(result.Docs[0].Name, ShouldEqual, e_mocks.Ciri.Name)
-			So(result.Docs[1].Name, ShouldEqual, e_mocks.Geralt.Name)
+			So(result.Docs[0].Name, ShouldEqual, mocks.Ciri.Name)
+			So(result.Docs[1].Name, ShouldEqual, mocks.Geralt.Name)
 		})
 		Convey("Second page", func() {
 			result := UserModel.Find().Paginate(2, 2).Exec().(elemental.PaginateResult[User])
@@ -39,13 +39,13 @@ func TestCoreReadPaginate(t *testing.T) {
 			So(result.TotalPages, ShouldEqual, 4)
 			So(result.Page, ShouldEqual, 2)
 			So(result.Limit, ShouldEqual, 2)
-			So(result.TotalDocs, ShouldEqual, len(e_mocks.Users))
+			So(result.TotalDocs, ShouldEqual, len(mocks.Users))
 			So(result.HasPrev, ShouldBeTrue)
 			So(result.HasNext, ShouldBeTrue)
 			So(result.NextPage, ShouldEqual, lo.ToPtr[int64](3))
 			So(result.PrevPage, ShouldEqual, lo.ToPtr[int64](1))
-			So(result.Docs[0].Name, ShouldEqual, e_mocks.Eredin.Name)
-			So(result.Docs[1].Name, ShouldEqual, e_mocks.Caranthir.Name)
+			So(result.Docs[0].Name, ShouldEqual, mocks.Eredin.Name)
+			So(result.Docs[1].Name, ShouldEqual, mocks.Caranthir.Name)
 		})
 		Convey("Last page", func() {
 			result := UserModel.Find().Paginate(4, 2).Exec().(elemental.PaginateResult[User])
@@ -53,12 +53,12 @@ func TestCoreReadPaginate(t *testing.T) {
 			So(result.TotalPages, ShouldEqual, 4)
 			So(result.Page, ShouldEqual, 4)
 			So(result.Limit, ShouldEqual, 2)
-			So(result.TotalDocs, ShouldEqual, len(e_mocks.Users))
+			So(result.TotalDocs, ShouldEqual, len(mocks.Users))
 			So(result.HasPrev, ShouldBeTrue)
 			So(result.HasNext, ShouldBeFalse)
 			So(result.NextPage, ShouldBeNil)
 			So(result.PrevPage, ShouldEqual, lo.ToPtr[int64](3))
-			So(result.Docs[0].Name, ShouldEqual, e_mocks.Vesemir.Name)
+			So(result.Docs[0].Name, ShouldEqual, mocks.Vesemir.Name)
 		})
 	})
 }

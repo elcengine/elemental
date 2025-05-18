@@ -1,11 +1,11 @@
-package e_tests
+package tests
 
 import (
 	"context"
 	"slices"
 	"testing"
 
-	"github.com/elcengine/elemental/tests/setup"
+	ts "github.com/elcengine/elemental/tests/fixtures/setup"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -14,7 +14,7 @@ import (
 func TestCoreActions(t *testing.T) {
 	t.Parallel()
 
-	e_test_setup.Connection(t.Name())
+	ts.Connection(t.Name())
 
 	UserModel := UserModel.SetDatabase(t.Name())
 

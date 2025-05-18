@@ -1,17 +1,18 @@
-package e_tests
+package tests
 
 import (
-	e_test_setup "github.com/elcengine/elemental/tests/setup"
-	"github.com/google/uuid"
-	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 	"time"
+
+	ts "github.com/elcengine/elemental/tests/fixtures/setup"
+	"github.com/google/uuid"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestCoreSchedule(t *testing.T) {
 	t.Parallel()
 
-	e_test_setup.Connection(t.Name())
+	ts.Connection(t.Name())
 
 	KingdomModel := KingdomModel.SetDatabase(t.Name())
 

@@ -1,7 +1,7 @@
 package elemental
 
 import (
-	e_utils "github.com/elcengine/elemental/utils"
+	"github.com/elcengine/elemental/utils"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -71,7 +71,7 @@ func (m Model[T]) PreUpdateOne(f func(doc any) bool) {
 
 func (m Model[T]) PostUpdateOne(f func(result *mongo.UpdateResult, err error) bool) {
 	m.middleware.post.updateOne.functions = append(m.middleware.post.updateOne.functions, func(args ...any) bool {
-		return f(args[0].(*mongo.UpdateResult), e_utils.Cast[error](args[1]))
+		return f(args[0].(*mongo.UpdateResult), utils.Cast[error](args[1]))
 	})
 }
 
@@ -83,7 +83,7 @@ func (m Model[T]) PreDeleteOne(f func(filters primitive.M) bool) {
 
 func (m Model[T]) PostDeleteOne(f func(result *mongo.DeleteResult, err error) bool) {
 	m.middleware.post.deleteOne.functions = append(m.middleware.post.deleteOne.functions, func(args ...any) bool {
-		return f(args[0].(*mongo.DeleteResult), e_utils.Cast[error](args[1]))
+		return f(args[0].(*mongo.DeleteResult), utils.Cast[error](args[1]))
 	})
 }
 
@@ -95,7 +95,7 @@ func (m Model[T]) PreDeleteMany(f func(filters primitive.M) bool) {
 
 func (m Model[T]) PostDeleteMany(f func(result *mongo.DeleteResult, err error) bool) {
 	m.middleware.post.deleteMany.functions = append(m.middleware.post.deleteMany.functions, func(args ...any) bool {
-		return f(args[0].(*mongo.DeleteResult), e_utils.Cast[error](args[1]))
+		return f(args[0].(*mongo.DeleteResult), utils.Cast[error](args[1]))
 	})
 }
 

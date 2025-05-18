@@ -5,7 +5,7 @@ import (
 	"reflect"
 
 	"github.com/creasty/defaults"
-	e_utils "github.com/elcengine/elemental/utils"
+	"github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -38,7 +38,7 @@ func (s Schema) Field(path string) *Field {
 }
 
 func (s Schema) syncIndexes(reflectedBaseType reflect.Type, databaseOverride, connectionOverride, collectionOverride string, ctx ...context.Context) {
-	defaultedCtx := e_utils.CtxOrDefault(ctx)
+	defaultedCtx := utils.CtxOrDefault(ctx)
 	database := lo.CoalesceOrEmpty(databaseOverride, s.Options.Database)
 	connection := lo.CoalesceOrEmpty(connectionOverride, s.Options.Connection)
 	collectionName := lo.CoalesceOrEmpty(collectionOverride, s.Options.Collection)
