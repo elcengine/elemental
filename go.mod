@@ -1,8 +1,6 @@
 module github.com/elcengine/elemental
 
-go 1.23
-
-toolchain go1.23.5
+go 1.24
 
 require (
 	github.com/akalanka47000/go-modkit/parallel_convey v1.1.1
