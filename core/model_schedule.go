@@ -8,8 +8,12 @@ var cron = robocron.New(robocron.WithSeconds())
 
 // Marks this query to be executed on a given schedule.
 // For the schedule format, see https://pkg.go.dev/github.com/robfig/cron/v3#hdr-CRON_Expression_Format
-func (m Model[T]) Schedule(spec string) Model[T] {
+// Optionally accepts a function to be called on an execution error/panic.
+func (m Model[T]) Schedule(spec string, onExecutionError ...func(any)) Model[T] {
 	m.schedule = &spec
+	if len(onExecutionError) > 0 {
+		m.onScheduleExecError = &onExecutionError[0]
+	}
 	return m
 }
 

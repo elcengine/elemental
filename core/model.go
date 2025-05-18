@@ -37,6 +37,7 @@ type Model[T any] struct {
 	temporaryDatabase   *string
 	temporaryCollection *string
 	schedule            *string
+	onScheduleExecError *func(any)
 	softDeleteEnabled   bool
 	deletedAtFieldName  string
 }

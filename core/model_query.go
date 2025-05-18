@@ -63,7 +63,14 @@ func (m Model[T]) Exec(ctx ...context.Context) any {
 	}
 	if m.schedule != nil {
 		id, err := cron.AddFunc(*m.schedule, func() {
-			m.executor(m, e_utils.CtxOrDefault(ctx))
+			lo.TryCatchWithErrorValue(func() error {
+				m.executor(m, e_utils.CtxOrDefault(ctx))
+				return nil
+			}, func(err any) {
+				if m.onScheduleExecError != nil {
+					(*m.onScheduleExecError)(err)
+				}
+			})
 		})
 		if err != nil {
 			panic(err)
