@@ -23,6 +23,9 @@ jobs:
         - name: Checkout repository
           uses: actions/checkout@v4
 
+        - name: Disable Go toolchain auto-upgrade
+          run: echo "GOTOOLCHAIN=local" >> $GITHUB_ENV
+
         - name: Set up Golang ${{ matrix.go-version }}
           uses: actions/setup-go@v5
           with:
