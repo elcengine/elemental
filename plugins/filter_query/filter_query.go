@@ -13,8 +13,8 @@ type FilterQueryResult struct {
 	Include          []string // Fields to populate/lookup in the result set
 	Select           bson.M   // Fields to select in the result set
 	Prepaginate      bool     // Whether to paginate the results before any lookups
-	Page             int      // The page number for pagination
-	Limit            int      // The page size for pagination
+	Page             int64    // The page number for pagination
+	Limit            int64    // The page size for pagination
 }
 
 // Parses the given query string into a Elemental FilterQueryResult.
@@ -67,10 +67,10 @@ func Parse(queryString string) FilterQueryResult {
 			result.Prepaginate = value == "true"
 		}
 		if key == "page" {
-			result.Page = max(cast.ToInt(value), 0)
+			result.Page = max(cast.ToInt64(value), 0)
 		}
 		if key == "limit" {
-			result.Limit = max(cast.ToInt(value), 0)
+			result.Limit = max(cast.ToInt64(value), 0)
 		}
 	}
 	result.Filters = mapFilters(result.Filters)

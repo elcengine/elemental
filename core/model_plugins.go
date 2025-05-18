@@ -34,5 +34,8 @@ func (m Model[T]) QSR(result fq.FilterQueryResult) Model[T] {
 	if len(result.Select) > 0 {
 		m = m.Select(result.Select)
 	}
+	if result.Page > 0 && result.Limit > 0 {
+		m = m.Paginate(result.Page, result.Limit)
+	}
 	return m
 }
