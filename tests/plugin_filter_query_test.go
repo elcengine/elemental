@@ -1,12 +1,12 @@
-package e_tests
+package tests
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/elcengine/elemental/plugins/filter_query"
-	e_mocks "github.com/elcengine/elemental/tests/mocks"
-	e_test_setup "github.com/elcengine/elemental/tests/setup"
+	fq "github.com/elcengine/elemental/plugins/filterquery"
+	"github.com/elcengine/elemental/tests/fixtures/mocks"
+	ts "github.com/elcengine/elemental/tests/fixtures/setup"
 
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson"
@@ -16,7 +16,7 @@ import (
 func TestPluginFilterQuery(t *testing.T) {
 	t.Parallel()
 
-	e_test_setup.SeededConnection(t.Name())
+	ts.SeededConnection(t.Name())
 
 	UserModel := UserModel.SetDatabase(t.Name())
 
@@ -179,32 +179,32 @@ func TestPluginFilterQuery(t *testing.T) {
 
 	Convey("QS", t, func() {
 		Convey("When a filter is present in query string", func() {
-			results := UserModel.QS(fmt.Sprintf("filter[name]=eq(%s)", e_mocks.Caranthir.Name)).ExecTT()
+			results := UserModel.QS(fmt.Sprintf("filter[name]=eq(%s)", mocks.Caranthir.Name)).ExecTT()
 			So(results, ShouldHaveLength, 1)
-			So(results[0].Name, ShouldEqual, e_mocks.Caranthir.Name)
+			So(results[0].Name, ShouldEqual, mocks.Caranthir.Name)
 		})
 		Convey("When a secondary filter is present in query string", func() {
-			results := UserModel.QS(fmt.Sprintf("secondaryFilter[name]=eq(%s)", e_mocks.Vesemir.Name)).ExecTT()
+			results := UserModel.QS(fmt.Sprintf("secondaryFilter[name]=eq(%s)", mocks.Vesemir.Name)).ExecTT()
 			So(results, ShouldHaveLength, 1)
-			So(results[0].Name, ShouldEqual, e_mocks.Vesemir.Name)
+			So(results[0].Name, ShouldEqual, mocks.Vesemir.Name)
 		})
 		Convey("When a sort is present in query string", func() {
 			results := UserModel.QS("sort[name]=desc").ExecTT()
-			So(results, ShouldHaveLength, len(e_mocks.Users))
-			So(results[0].Name, ShouldEqual, e_mocks.Yennefer.Name)
+			So(results, ShouldHaveLength, len(mocks.Users))
+			So(results[0].Name, ShouldEqual, mocks.Yennefer.Name)
 		})
 		Convey("When a select is present in query string", func() {
-			results := UserModel.QS(fmt.Sprintf("select=age&filter[name]=eq(%s)", e_mocks.Geralt.Name)).ExecTT()
+			results := UserModel.QS(fmt.Sprintf("select=age&filter[name]=eq(%s)", mocks.Geralt.Name)).ExecTT()
 			So(results, ShouldHaveLength, 1)
 			So(results[0].ID, ShouldNotBeZeroValue)
 			So(results[0].Name, ShouldBeZeroValue)
-			So(results[0].Age, ShouldEqual, e_mocks.Geralt.Age)
+			So(results[0].Age, ShouldEqual, mocks.Geralt.Age)
 		})
 		Convey("When a page and limit are present in query string", func() {
 			result := UserModel.QS("page=1&limit=2").ExecTP()
 			So(result.Docs, ShouldHaveLength, 2)
-			So(result.Docs[0].Name, ShouldEqual, e_mocks.Ciri.Name)
-			So(result.Docs[1].Name, ShouldEqual, e_mocks.Geralt.Name)
+			So(result.Docs[0].Name, ShouldEqual, mocks.Ciri.Name)
+			So(result.Docs[1].Name, ShouldEqual, mocks.Geralt.Name)
 		})
 	})
 }

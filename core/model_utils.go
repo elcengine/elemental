@@ -4,7 +4,7 @@ import (
 	"context"
 	"reflect"
 
-	e_utils "github.com/elcengine/elemental/utils"
+	"github.com/elcengine/elemental/utils"
 
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,7 +17,7 @@ func (m Model[T]) addToFilters(key string, value any) Model[T] {
 	stage := "$match"
 	foundMatchStage := false
 	m.pipeline = lo.Map(m.pipeline, func(stg bson.D, _ int) bson.D {
-		filters := e_utils.Cast[primitive.M](e_utils.CastBSON[bson.M](stg)[stage])
+		filters := utils.Cast[primitive.M](utils.CastBSON[bson.M](stg)[stage])
 		if filters != nil {
 			foundMatchStage = true
 			if m.orConditionActive {
@@ -71,7 +71,7 @@ func (m Model[T]) addToFilters(key string, value any) Model[T] {
 func (m Model[T]) addToPipeline(stage, key string, value any) Model[T] {
 	foundStage := false
 	m.pipeline = lo.Map(m.pipeline, func(stg bson.D, _ int) bson.D {
-		stageObject := e_utils.Cast[bson.D](e_utils.CastBSON[bson.D](stg).Map()[stage])
+		stageObject := utils.Cast[bson.D](utils.CastBSON[bson.D](stg).Map()[stage])
 		if stageObject != nil {
 			foundStage = true
 			if stageObject.Map()[key] == nil {
@@ -126,9 +126,9 @@ func (m Model[T]) parseDocument(doc any) primitive.M {
 		doc = reflect.ValueOf(doc).Elem().Interface()
 	}
 	if reflect.TypeOf(doc).Kind() == reflect.Map {
-		return e_utils.Cast[primitive.M](doc)
+		return utils.Cast[primitive.M](doc)
 	}
-	result := e_utils.ToBSONDoc(doc)
+	result := utils.ToBSONDoc(doc)
 	for k, v := range *result {
 		if !reflect.ValueOf(v).IsValid() || reflect.ValueOf(v).IsZero() {
 			delete(*result, k)

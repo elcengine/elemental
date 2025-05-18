@@ -98,7 +98,7 @@ func (c ClusterOp[T]) Exec() any {
 		fmt.Println("result is nil")
 		return nil
 	}
-	rmap := e_utils.ToMap(r)
+	rmap := utils.ToMap(r)
 	*c.result = &rmap
 	for _, op := range c.operations {
 		(op)()

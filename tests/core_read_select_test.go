@@ -1,10 +1,10 @@
-package e_tests
+package tests
 
 import (
 	"fmt"
 	"testing"
 
-	e_test_setup "github.com/elcengine/elemental/tests/setup"
+	ts "github.com/elcengine/elemental/tests/fixtures/setup"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -12,7 +12,7 @@ import (
 func TestCoreReadSelect(t *testing.T) {
 	t.Parallel()
 
-	e_test_setup.SeededConnection(t.Name())
+	ts.SeededConnection(t.Name())
 
 	UserModel := UserModel.SetDatabase(t.Name())
 

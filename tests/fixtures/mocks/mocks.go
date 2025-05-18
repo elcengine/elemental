@@ -1,9 +1,10 @@
-package e_mocks
+// Sample data to be used within test suites.
+package mocks
 
 import (
 	"os"
 
-	e_test_base "github.com/elcengine/elemental/tests/base"
+	"github.com/elcengine/elemental/tests/fixtures"
 	"github.com/samber/lo"
 )
 
@@ -25,37 +26,37 @@ var (
 )
 
 var (
-	Ciri = e_test_base.User{
+	Ciri = fixtures.User{
 		Name: "Ciri",
 	}
-	Geralt = e_test_base.User{
+	Geralt = fixtures.User{
 		Name:       "Geralt",
 		Age:        100,
 		Occupation: "Witcher",
 		Weapons:    []string{"Silver sword", "Mahakaman battle hammer", "Battle Axe", "Crossbow", "Steel sword"},
 		School:     &WolfSchool,
 	}
-	Eredin = e_test_base.User{
+	Eredin = fixtures.User{
 		Name: "Eredin",
 	}
-	Caranthir = e_test_base.User{
+	Caranthir = fixtures.User{
 		Name:       "Caranthir",
 		Age:        120,
 		Occupation: "Mage",
 		Weapons:    []string{"Staff"},
 	}
-	Imlerith = e_test_base.User{
+	Imlerith = fixtures.User{
 		Name:       "Imlerith",
 		Age:        150,
 		Occupation: "General",
 		Weapons:    []string{"Mace", "Battle Axe"},
 	}
-	Yennefer = e_test_base.User{
+	Yennefer = fixtures.User{
 		Name:       "Yennefer",
 		Occupation: "Mage",
 		Age:        100,
 	}
-	Vesemir = e_test_base.User{
+	Vesemir = fixtures.User{
 		Name:       "Vesemir",
 		Occupation: "Witcher",
 		Age:        300,
@@ -65,7 +66,7 @@ var (
 	}
 )
 
-var Users = []e_test_base.User{
+var Users = []fixtures.User{
 	Ciri,
 	Geralt,
 	Eredin,

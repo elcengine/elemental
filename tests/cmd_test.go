@@ -1,5 +1,5 @@
 //nolint:dupl
-package e_tests
+package tests
 
 import (
 	"encoding/json"
@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/elcengine/elemental/cmd"
-	"github.com/elcengine/elemental/core"
-	"github.com/elcengine/elemental/tests/mocks"
+	elemental "github.com/elcengine/elemental/core"
+	"github.com/elcengine/elemental/tests/fixtures/mocks"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -21,30 +21,30 @@ func TestCmd(t *testing.T) {
 
 	os.Chdir("..")
 
-	os.Remove(e_cmd.DefaultConfigFile)
+	os.Remove(cmd.DefaultConfigFile)
 
 	Convey("Call root command", t, func() {
-		So(e_cmd.Execute, ShouldNotPanic)
+		So(cmd.Execute, ShouldNotPanic)
 	})
 
 	Convey("Initialize config file", t, func() {
-		_, err := os.Stat(e_cmd.DefaultConfigFile)
+		_, err := os.Stat(cmd.DefaultConfigFile)
 		So(errors.Is(err, os.ErrNotExist), ShouldBeTrue)
 
-		e_cmd.RootCmd.SetArgs([]string{"init", e_mocks.DEFAULT_DATASOURCE})
-		e_cmd.Execute()
+		cmd.RootCmd.SetArgs([]string{"init", mocks.DEFAULT_DATASOURCE})
+		cmd.Execute()
 
-		_, err = os.Stat(e_cmd.DefaultConfigFile)
+		_, err = os.Stat(cmd.DefaultConfigFile)
 		So(errors.Is(err, os.ErrNotExist), ShouldBeFalse)
 
-		file, err := os.ReadFile(e_cmd.DefaultConfigFile)
+		file, err := os.ReadFile(cmd.DefaultConfigFile)
 		So(err, ShouldBeNil)
 
-		cfg := e_cmd.Config{}
+		cfg := cmd.Config{}
 		err = json.Unmarshal(file, &cfg)
 		So(err, ShouldBeNil)
 
-		So(cfg.ConnectionStr, ShouldEqual, e_mocks.DEFAULT_DATASOURCE)
+		So(cfg.ConnectionStr, ShouldEqual, mocks.DEFAULT_DATASOURCE)
 	})
 
 	Convey("Migrations and seeds", t, func() {
@@ -70,25 +70,25 @@ func TestCmd(t *testing.T) {
 
 			So(checkIfFileExists(filename, migrationFileDir), ShouldBeFalse)
 
-			e_cmd.RootCmd.SetArgs([]string{"migrate", "create", filename})
-			e_cmd.Execute()
+			cmd.RootCmd.SetArgs([]string{"migrate", "create", filename})
+			cmd.Execute()
 
 			So(checkIfFileExists(filename, migrationFileDir), ShouldBeTrue)
 
 			Convey("Run migration", func() {
-				e_cmd.RootCmd.SetArgs([]string{"migrate", "up"})
-				e_cmd.Execute()
+				cmd.RootCmd.SetArgs([]string{"migrate", "up"})
+				cmd.Execute()
 
-				elemental.Connect(e_mocks.DEFAULT_DATASOURCE)
+				elemental.Connect(mocks.DEFAULT_DATASOURCE)
 
 				So(elemental.NativeModel.SetCollection("changelog").
 					CountDocuments(primitive.M{"type": "migration"}).ExecInt(), ShouldEqual, 1)
 
 				Convey("Rollback migration", func() {
-					e_cmd.RootCmd.SetArgs([]string{"migrate", "down"})
-					e_cmd.Execute()
+					cmd.RootCmd.SetArgs([]string{"migrate", "down"})
+					cmd.Execute()
 
-					elemental.Connect(e_mocks.DEFAULT_DATASOURCE)
+					elemental.Connect(mocks.DEFAULT_DATASOURCE)
 
 					So(elemental.NativeModel.SetCollection("changelog").
 						CountDocuments(primitive.M{"type": "migration"}).ExecInt(), ShouldEqual, 0)
@@ -103,25 +103,25 @@ func TestCmd(t *testing.T) {
 
 			So(checkIfFileExists(filename, seedFileDir), ShouldBeFalse)
 
-			e_cmd.RootCmd.SetArgs([]string{"seed", "create", filename})
-			e_cmd.Execute()
+			cmd.RootCmd.SetArgs([]string{"seed", "create", filename})
+			cmd.Execute()
 
 			So(checkIfFileExists(filename, seedFileDir), ShouldBeTrue)
 
 			Convey("Run seed", func() {
-				e_cmd.RootCmd.SetArgs([]string{"seed", "up"})
-				e_cmd.Execute()
+				cmd.RootCmd.SetArgs([]string{"seed", "up"})
+				cmd.Execute()
 
-				elemental.Connect(e_mocks.DEFAULT_DATASOURCE)
+				elemental.Connect(mocks.DEFAULT_DATASOURCE)
 
 				So(elemental.NativeModel.SetCollection("changelog").
 					CountDocuments(primitive.M{"type": "seed"}).ExecInt(), ShouldEqual, 1)
 
 				Convey("Rollback seed", func() {
-					e_cmd.RootCmd.SetArgs([]string{"seed", "down"})
-					e_cmd.Execute()
+					cmd.RootCmd.SetArgs([]string{"seed", "down"})
+					cmd.Execute()
 
-					elemental.Connect(e_mocks.DEFAULT_DATASOURCE)
+					elemental.Connect(mocks.DEFAULT_DATASOURCE)
 
 					So(elemental.NativeModel.SetCollection("changelog").
 						CountDocuments(primitive.M{"type": "seed"}).ExecInt(), ShouldEqual, 0)

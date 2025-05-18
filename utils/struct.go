@@ -1,12 +1,13 @@
 //nolint:exhaustive
-package e_utils
+package utils
 
 import (
 	"fmt"
-	"github.com/samber/lo"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"reflect"
 	"strconv"
+
+	"github.com/samber/lo"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func setField(field reflect.Value, val string) error {
@@ -56,8 +57,8 @@ func IsEmpty(value any) bool {
 	if reflectedValueType == reflect.TypeOf(&dateTime) || reflectedValueType == reflect.TypeOf(dateTime) {
 		return value.(primitive.DateTime).Time().IsZero()
 	}
-	var objectId primitive.ObjectID
-	if reflectedValueType == reflect.TypeOf(&objectId) || reflectedValueType == reflect.TypeOf(objectId) {
+	var objectID primitive.ObjectID
+	if reflectedValueType == reflect.TypeOf(&objectID) || reflectedValueType == reflect.TypeOf(objectID) {
 		return value.(primitive.ObjectID).IsZero()
 	}
 	return false

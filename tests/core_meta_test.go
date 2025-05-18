@@ -1,12 +1,12 @@
-package e_tests
+package tests
 
 import (
 	"context"
 	"fmt"
 	"testing"
 
-	"github.com/elcengine/elemental/tests/mocks"
-	"github.com/elcengine/elemental/tests/setup"
+	"github.com/elcengine/elemental/tests/fixtures/mocks"
+	ts "github.com/elcengine/elemental/tests/fixtures/setup"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -14,13 +14,13 @@ import (
 func TestCoreMeta(t *testing.T) {
 	t.Parallel()
 
-	e_test_setup.Connection(t.Name())
+	ts.Connection(t.Name())
 
 	UserModel := UserModel.SetDatabase(t.Name())
 
 	UserModel.SyncIndexes()
 
-	UserModel.InsertMany(e_mocks.Users).Exec()
+	UserModel.InsertMany(mocks.Users).Exec()
 
 	Convey("Retrieve the underlying client used by a model", t, func() {
 		client := UserModel.Client()
@@ -29,14 +29,14 @@ func TestCoreMeta(t *testing.T) {
 	})
 
 	Convey("Metadata", t, func() {
-		Convey(fmt.Sprintf("Estimated document count should be %d", len(e_mocks.Users)), func() {
+		Convey(fmt.Sprintf("Estimated document count should be %d", len(mocks.Users)), func() {
 			count := UserModel.EstimatedDocumentCount()
-			So(count, ShouldEqual, len(e_mocks.Users))
+			So(count, ShouldEqual, len(mocks.Users))
 		})
 		Convey("Stats", func() {
 			Convey("As a whole", func() {
 				stats := UserModel.Stats()
-				So(stats.Count, ShouldEqual, len(e_mocks.Users))
+				So(stats.Count, ShouldEqual, len(mocks.Users))
 				So(stats.AvgObjSize, ShouldBeGreaterThan, 0)
 				So(stats.Size, ShouldBeGreaterThan, 0)
 				So(stats.StorageSize, ShouldBeGreaterThan, 0)

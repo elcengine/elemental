@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	e_utils "github.com/elcengine/elemental/utils"
+	"github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
 	"github.com/spf13/cast"
 )
@@ -64,7 +64,7 @@ func (m Model[T]) Exec(ctx ...context.Context) any {
 	if m.schedule != nil {
 		id, err := cron.AddFunc(*m.schedule, func() {
 			lo.TryCatchWithErrorValue(func() error {
-				m.executor(m, e_utils.CtxOrDefault(ctx))
+				m.executor(m, utils.CtxOrDefault(ctx))
 				return nil
 			}, func(err any) {
 				if m.onScheduleExecError != nil {
@@ -78,7 +78,7 @@ func (m Model[T]) Exec(ctx ...context.Context) any {
 		cron.Start()
 		return cast.ToInt(id)
 	}
-	return m.executor(m, e_utils.CtxOrDefault(ctx))
+	return m.executor(m, utils.CtxOrDefault(ctx))
 }
 
 // ExecT is a convenience method that executes the query and returns the first result.
@@ -86,7 +86,7 @@ func (m Model[T]) Exec(ctx ...context.Context) any {
 // it will return the zero value of the type.
 func (m Model[T]) ExecT(ctx ...context.Context) T {
 	result := m.Exec(ctx...)
-	return e_utils.Cast[T](result)
+	return utils.Cast[T](result)
 }
 
 // ExecPtr is a convenience method that executes the query and returns the first result as a pointer.
@@ -100,7 +100,7 @@ func (m Model[T]) ExecPtr(ctx ...context.Context) *T {
 	if val, ok := result.(*T); ok {
 		return val
 	}
-	return lo.ToPtr(e_utils.Cast[T](result))
+	return lo.ToPtr(utils.Cast[T](result))
 }
 
 // ExecTT is a convenience method that executes the query and returns the results as a slice.
@@ -108,7 +108,7 @@ func (m Model[T]) ExecPtr(ctx ...context.Context) *T {
 // it will return an empty slice.
 func (m Model[T]) ExecTT(ctx ...context.Context) []T {
 	result := m.Exec(ctx...)
-	return e_utils.Cast[[]T](result)
+	return utils.Cast[[]T](result)
 }
 
 // ExecTP is a convenience method that executes the query and returns the results as a PaginateResult.
@@ -116,7 +116,7 @@ func (m Model[T]) ExecTT(ctx ...context.Context) []T {
 // This method is useful for pagination queries.
 func (m Model[T]) ExecTP(ctx ...context.Context) PaginateResult[T] {
 	result := m.Exec(ctx...)
-	return e_utils.Cast[PaginateResult[T]](result)
+	return utils.Cast[PaginateResult[T]](result)
 }
 
 // ExecInt is a convenience method that executes the query and returns the first result as an int.

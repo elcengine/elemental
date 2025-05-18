@@ -1,12 +1,12 @@
-package e_tests
+package tests
 
 import (
 	"fmt"
 	"reflect"
 	"testing"
 
-	"github.com/elcengine/elemental/core"
-	"github.com/elcengine/elemental/tests/setup"
+	elemental "github.com/elcengine/elemental/core"
+	ts "github.com/elcengine/elemental/tests/fixtures/setup"
 	"github.com/google/uuid"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -16,7 +16,7 @@ import (
 func TestCoreSchemaOptions(t *testing.T) {
 	t.Parallel()
 
-	e_test_setup.Connection(t.Name())
+	ts.Connection(t.Name())
 
 	UserModel := UserModel.SetDatabase(t.Name())
 
@@ -70,7 +70,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 			Convey("Required field", func() {
 				So(func() {
 					UserModel.Validate(User{})
-				}, ShouldPanicWith, fmt.Errorf("Field Name is required"))
+				}, ShouldPanicWith, fmt.Errorf("field Name is required"))
 				So(func() {
 					UserModel.Validate(User{Name: "Geralt"})
 				}, ShouldNotPanic)
@@ -85,7 +85,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 				}))
 				So(func() {
 					Model.Validate(User{})
-				}, ShouldPanicWith, fmt.Errorf("Field Name is required"))
+				}, ShouldPanicWith, fmt.Errorf("field Name is required"))
 				So(func() {
 					UserModel.Validate(User{Name: "Geralt"})
 				}, ShouldNotPanic)
@@ -99,7 +99,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 				}))
 				So(func() {
 					Model.Validate(User{Age: 5})
-				}, ShouldPanicWith, fmt.Errorf("Field Age must be greater than or equal to 10"))
+				}, ShouldPanicWith, fmt.Errorf("field Age must be greater than or equal to 10"))
 				So(func() {
 					Model.Validate(User{Age: 15})
 				}, ShouldNotPanic)
@@ -116,7 +116,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 				}))
 				So(func() {
 					Model.Validate(User{Age: 121})
-				}, ShouldPanicWith, fmt.Errorf("Field Age must be less than or equal to 120"))
+				}, ShouldPanicWith, fmt.Errorf("field Age must be less than or equal to 120"))
 				So(func() {
 					Model.Validate(User{Age: 50})
 				}, ShouldNotPanic)
@@ -136,7 +136,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 				}, ShouldNotPanic)
 				So(func() {
 					Model.Validate(User{Name: "Geralt of Rivia"})
-				}, ShouldPanicWith, fmt.Errorf("Field Name must be less than or equal to 10 characters"))
+				}, ShouldPanicWith, fmt.Errorf("field Name must be less than or equal to 10 characters"))
 			})
 			Convey("Regex check", func() {
 				Model := elemental.NewModel[User](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
@@ -147,7 +147,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 				}))
 				So(func() {
 					Model.Validate(User{Name: "G1Cc"})
-				}, ShouldPanicWith, fmt.Errorf("Field Name must match the regex pattern ^[A-Z]+$"))
+				}, ShouldPanicWith, fmt.Errorf("field Name must match the regex pattern ^[A-Z]+$"))
 				So(func() {
 					Model.Validate(User{Name: "GERALT"})
 				}, ShouldNotPanic)

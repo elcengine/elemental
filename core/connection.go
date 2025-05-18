@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/elcengine/elemental/constants"
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/event"
@@ -17,7 +16,8 @@ import (
 	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
 )
 
-const connectionTimeout = 30 * time.Second
+// The default connection timeout for elemental connections
+const ConnectionTimeout = 30 * time.Second
 
 var clients = make(map[string]*mongo.Client)
 var defaultDatabases = make(map[string]string)
@@ -55,7 +55,7 @@ func Connect(arg any) mongo.Client {
 	} else if _, ok := arg.(ConnectionOptions); ok {
 		opts = arg.(ConnectionOptions)
 	} else {
-		panic(e_constants.ErrInvalidConnectionArgument)
+		panic(ErrInvalidConnectionArgument)
 	}
 
 	opts.Alias = lo.CoalesceOrEmpty(opts.Alias, "default")
@@ -64,7 +64,7 @@ func Connect(arg any) mongo.Client {
 		SetPoolMonitor(lo.CoalesceOrEmpty(opts.PoolMonitor, defaultPoolMonitor(opts.Alias)))
 	if clientOpts.GetURI() == "" {
 		if opts.URI == "" {
-			panic(e_constants.ErrURIRequired)
+			panic(ErrURIRequired)
 		}
 		clientOpts = clientOpts.ApplyURI(opts.URI)
 	}
@@ -73,7 +73,7 @@ func Connect(arg any) mongo.Client {
 		panic(err)
 	}
 	defaultDatabases[opts.Alias] = cs.Database
-	ctx, cancel := context.WithTimeout(context.Background(), *lo.CoalesceOrEmpty(clientOpts.ConnectTimeout, lo.ToPtr(connectionTimeout)))
+	ctx, cancel := context.WithTimeout(context.Background(), *lo.CoalesceOrEmpty(clientOpts.ConnectTimeout, lo.ToPtr(ConnectionTimeout)))
 	defer cancel()
 	client, err := mongo.Connect(ctx, clientOpts)
 	if err != nil {

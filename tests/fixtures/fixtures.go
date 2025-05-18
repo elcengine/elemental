@@ -1,12 +1,14 @@
-package e_test_base
+// Shared models and types for all test suites.
+package fixtures
 
 import (
-	"github.com/elcengine/elemental/core"
+	"reflect"
+	"time"
+
+	elemental "github.com/elcengine/elemental/core"
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"reflect"
-	"time"
 )
 
 type User struct {
@@ -64,7 +66,7 @@ type BestiaryWithID struct {
 	MonsterID string             `json:"monster_id" bson:"monster_id"`
 }
 
-var DefaultAge = 18
+const DefaultUserAge = 18
 
 var UserModel = elemental.NewModel[User]("User", elemental.NewSchema(map[string]elemental.Field{
 	"Name": {
@@ -74,7 +76,7 @@ var UserModel = elemental.NewModel[User]("User", elemental.NewSchema(map[string]
 	},
 	"Age": {
 		Type:    reflect.Int,
-		Default: DefaultAge,
+		Default: DefaultUserAge,
 	},
 	"Occupation": {
 		Type: reflect.String,

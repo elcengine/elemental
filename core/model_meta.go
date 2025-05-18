@@ -3,7 +3,7 @@ package elemental
 import (
 	"context"
 
-	e_utils "github.com/elcengine/elemental/utils"
+	"github.com/elcengine/elemental/utils"
 
 	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
@@ -36,13 +36,13 @@ func (m Model[T]) Database() *mongo.Database {
 
 // Returns the count of all documents in a collection or view
 func (m Model[T]) EstimatedDocumentCount(ctx ...context.Context) int64 {
-	count, _ := m.Collection().EstimatedDocumentCount(e_utils.CtxOrDefault(ctx))
+	count, _ := m.Collection().EstimatedDocumentCount(utils.CtxOrDefault(ctx))
 	return count
 }
 
 // Returns statistics about the model collection
 func (m Model[T]) Stats(ctx ...context.Context) CollectionStats {
-	result := m.Database().RunCommand(e_utils.CtxOrDefault(ctx), bson.M{"collStats": m.Schema.Options.Collection})
+	result := m.Database().RunCommand(utils.CtxOrDefault(ctx), bson.M{"collStats": m.Schema.Options.Collection})
 	var stats CollectionStats
 	lo.Must0(result.Decode(&stats))
 	return stats
@@ -50,30 +50,30 @@ func (m Model[T]) Stats(ctx ...context.Context) CollectionStats {
 
 // The total amount of storage in bytes allocated to this collection for document storage
 func (m Model[T]) StorageSize(ctx ...context.Context) int64 {
-	return m.Stats(e_utils.CtxOrDefault(ctx)).StorageSize
+	return m.Stats(utils.CtxOrDefault(ctx)).StorageSize
 }
 
 // The total size in bytes of the data in the collection plus the size of every index on the collection
 func (m Model[T]) TotalSize(ctx ...context.Context) int64 {
-	return m.Stats(e_utils.CtxOrDefault(ctx)).Size
+	return m.Stats(utils.CtxOrDefault(ctx)).Size
 }
 
 // The total size of all indexes for the collection
 func (m Model[T]) TotalIndexSize(ctx ...context.Context) int64 {
-	return m.Stats(e_utils.CtxOrDefault(ctx)).TotalIndexSize
+	return m.Stats(utils.CtxOrDefault(ctx)).TotalIndexSize
 }
 
 // The average size of each document in the collection
 func (m Model[T]) AvgObjSize(ctx ...context.Context) int64 {
-	return m.Stats(e_utils.CtxOrDefault(ctx)).AvgObjSize
+	return m.Stats(utils.CtxOrDefault(ctx)).AvgObjSize
 }
 
 // Returns true if the model collection is a capped collection, otherwise returns false
 func (m Model[T]) IsCapped(ctx ...context.Context) bool {
-	return m.Stats(e_utils.CtxOrDefault(ctx)).Capped
+	return m.Stats(utils.CtxOrDefault(ctx)).Capped
 }
 
 // Returns the number of indexes in the model collection
 func (m Model[T]) NumberOfIndexes(ctx ...context.Context) int64 {
-	return m.Stats(e_utils.CtxOrDefault(ctx)).NumberOfIndexes
+	return m.Stats(utils.CtxOrDefault(ctx)).NumberOfIndexes
 }

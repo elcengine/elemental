@@ -1,4 +1,4 @@
-package e_cmd
+package cmd
 
 import (
 	"encoding/json"
@@ -8,11 +8,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	"maps"
+
 	"github.com/joho/godotenv"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
-	"maps"
 )
 
 type Config struct {

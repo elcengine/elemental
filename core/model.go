@@ -2,12 +2,10 @@ package elemental
 
 import (
 	"context"
+	"github.com/elcengine/elemental/utils"
+	"github.com/spf13/cast"
 	"reflect"
 	"strings"
-
-	e_constants "github.com/elcengine/elemental/constants"
-	e_utils "github.com/elcengine/elemental/utils"
-	"github.com/spf13/cast"
 
 	"github.com/gertd/go-pluralize"
 	"github.com/samber/lo"
@@ -40,6 +38,7 @@ type Model[T any] struct {
 	onScheduleExecError *func(any)
 	softDeleteEnabled   bool
 	deletedAtFieldName  string
+	triggerExit         chan bool
 }
 
 var pluralizeClient = pluralize.NewClient()
@@ -54,14 +53,15 @@ var NativeModel = NewModel[map[string]any]("ElementalNativeModel", NewSchema(map
 // NewModel creates a new model with the given name and schema. If a model with the same name already exists, it will return the existing model.
 func NewModel[T any](name string, schema Schema) Model[T] {
 	if _, ok := Models[name]; ok {
-		return e_utils.Cast[Model[T]](Models[name])
+		return utils.Cast[Model[T]](Models[name])
 	}
 	schema.Options.Collection = lo.CoalesceOrEmpty(schema.Options.Collection, pluralizeClient.Plural(strings.ToLower(name)))
 	middleware := newMiddleware[T]()
 	model := Model[T]{
-		Name:       name,
-		Schema:     schema,
-		middleware: &middleware,
+		Name:        name,
+		Schema:      schema,
+		middleware:  &middleware,
+		triggerExit: make(chan bool, 1),
 	}
 	Models[name] = model
 	onConnectionComplete := func() {
@@ -84,7 +84,7 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 func (m Model[T]) Create(doc T) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
 		documentToInsert, detailedDocument := enforceSchema(m.Schema, &doc, nil)
-		detailedDocumentEntity := e_utils.CastBSON[T](detailedDocument)
+		detailedDocumentEntity := utils.CastBSON[T](detailedDocument)
 		m.middleware.pre.save.run(detailedDocumentEntity)
 		_, err := m.Collection().InsertOne(ctx, documentToInsert)
 		if err != nil {
@@ -116,7 +116,7 @@ func (m Model[T]) InsertMany(docs []T) Model[T] {
 		if err != nil {
 			panic(err)
 		}
-		return e_utils.CastBSONSlice[T](detailedDocuments)
+		return utils.CastBSONSlice[T](detailedDocuments)
 	}
 	return m
 }
@@ -139,7 +139,7 @@ func (m Model[T]) Find(query ...primitive.M) Model[T] {
 		m.checkConditionsAndPanic(results)
 		return results
 	}
-	q := e_utils.MergedQueryOrDefault(query)
+	q := utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
@@ -151,7 +151,7 @@ func (m Model[T]) Find(query ...primitive.M) Model[T] {
 // It optionally accepts one or more queries to filter the results before limiting.
 // If multiple queries are provided, they are merged into a single from left to right.
 func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
-	q := e_utils.MergedQueryOrDefault(query)
+	q := utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
@@ -181,7 +181,7 @@ func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
 // Extends the query with a match stage to find a document by its ID.
 // The id can be a string or an ObjectID.
 func (m Model[T]) FindByID(id any) Model[T] {
-	q := primitive.M{"_id": e_utils.EnsureObjectID(id)}
+	q := primitive.M{"_id": utils.EnsureObjectID(id)}
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
@@ -192,7 +192,7 @@ func (m Model[T]) FindByID(id any) Model[T] {
 // It optionally accepts one or more queries to filter the results before counting.
 // If multiple queries are provided, they are merged into a single from left to right.
 func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
-	q := e_utils.MergedQueryOrDefault(query)
+	q := utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
@@ -219,7 +219,7 @@ func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
 // It optionally accepts one or more queries to filter the results before getting the distinct values.
 // If multiple queries are provided, they are merged into a single from left to right.
 func (m Model[T]) Distinct(field string, query ...primitive.M) Model[T] {
-	q := e_utils.MergedQueryOrDefault(query)
+	q := utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
 		q[m.deletedAtFieldName] = primitive.M{"$exists": false}
 	}
@@ -236,7 +236,7 @@ func (m Model[T]) Distinct(field string, query ...primitive.M) Model[T] {
 		}
 		var distinct []string
 		for _, result := range results {
-			distinct = append(distinct, e_utils.Cast[string](result["_id"]))
+			distinct = append(distinct, utils.Cast[string](result["_id"]))
 		}
 		return distinct
 	}
@@ -247,15 +247,15 @@ func (m Model[T]) Distinct(field string, query ...primitive.M) Model[T] {
 // The sort stage is used to specify the order in which the results should be returned.
 func (m Model[T]) Sort(args ...any) Model[T] {
 	if len(args) == 1 {
-		for field, order := range e_utils.Cast[primitive.M](args[0]) {
+		for field, order := range utils.Cast[primitive.M](args[0]) {
 			m = m.addToPipeline("$sort", field, order)
 		}
 	} else {
 		if (len(args) % 2) != 0 {
-			panic(e_constants.ErrMustPairSortArguments)
+			panic(ErrMustPairSortArguments)
 		}
 		for i := 0; i < len(args); i += 2 {
-			m = m.addToPipeline("$sort", e_utils.Cast[string](args[i]), args[i+1])
+			m = m.addToPipeline("$sort", utils.Cast[string](args[i]), args[i+1])
 		}
 	}
 	return m
@@ -271,7 +271,7 @@ func (m Model[T]) Select(fields ...any) Model[T] {
 			return r == ',' || r == ' '
 		})
 	case len(fields) > 1:
-		selection = e_utils.CastSlice[string](fields)
+		selection = utils.CastSlice[string](fields)
 	case reflect.TypeOf(fields[0]).Kind() == reflect.Slice:
 		selection = fields[0].([]string)
 	}
@@ -286,7 +286,7 @@ func (m Model[T]) Select(fields ...any) Model[T] {
 			}
 		}
 	case reflect.TypeOf(fields[0]).Kind() == reflect.Map:
-		for field, value := range e_utils.Cast[primitive.M](fields[0]) {
+		for field, value := range utils.Cast[primitive.M](fields[0]) {
 			m = m.addToPipeline("$project", field, value)
 		}
 	}

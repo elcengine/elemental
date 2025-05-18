@@ -1,36 +1,40 @@
-package e_tests
+package tests
 
 import (
-	"github.com/elcengine/elemental/tests/base"
-	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 	"time"
+
+	"github.com/elcengine/elemental/tests/fixtures"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
-type Castle = e_test_base.Castle
+type Castle = fixtures.Castle
 
-type Kingdom = e_test_base.Kingdom
+type Kingdom = fixtures.Kingdom
 
-type Monster = e_test_base.Monster
+type Monster = fixtures.Monster
 
-type Bestiary = e_test_base.Bestiary
+type Bestiary = fixtures.Bestiary
 
-type BestiaryWithID = e_test_base.BestiaryWithID
+type BestiaryWithID = fixtures.BestiaryWithID
 
-type MonsterWeakness = e_test_base.MonsterWeakness
+type MonsterWeakness = fixtures.MonsterWeakness
 
-type User = e_test_base.User
+type User = fixtures.User
 
-var UserModel = e_test_base.UserModel
+var UserModel = fixtures.UserModel
 
-var MonsterModel = e_test_base.MonsterModel
+var MonsterModel = fixtures.MonsterModel
 
-var KingdomModel = e_test_base.KingdomModel
+var KingdomModel = fixtures.KingdomModel
 
-var BestiaryModel = e_test_base.BestiaryModel
+var BestiaryModel = fixtures.BestiaryModel
 
-var BestiaryWithIDModel = e_test_base.BestiaryWithIDModel
+var BestiaryWithIDModel = fixtures.BestiaryWithIDModel
 
+// Test helper function to wait for a condition to be true or timeout.
+// It will keep checking the condition every 100 milliseconds until the timeout is reached.
+// If the condition is true, the assertion will pass.
 func SoTimeout(t *testing.T, f func() bool, timeout ...<-chan time.Time) {
 	t.Helper()
 	if len(timeout) == 0 {
@@ -39,7 +43,7 @@ func SoTimeout(t *testing.T, f func() bool, timeout ...<-chan time.Time) {
 	for {
 		select {
 		case <-timeout[0]:
-			t.Fatalf("Timeout waiting for assertion to execute")
+			t.Errorf("Timeout waiting for assertion to execute")
 		default:
 			ok := f()
 			if ok {

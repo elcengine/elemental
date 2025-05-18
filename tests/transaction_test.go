@@ -1,11 +1,11 @@
-package e_tests
+package tests
 
 import (
 	"fmt"
 	"testing"
 
 	elemental "github.com/elcengine/elemental/core"
-	e_test_setup "github.com/elcengine/elemental/tests/setup"
+	ts "github.com/elcengine/elemental/tests/fixtures/setup"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -13,7 +13,7 @@ import (
 func TestTransaction(t *testing.T) {
 	t.Parallel()
 
-	e_test_setup.Connection(t.Name())
+	ts.Connection(t.Name())
 
 	UserModel := UserModel.SetDatabase(t.Name())
 
