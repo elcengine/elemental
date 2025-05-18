@@ -20,6 +20,8 @@ func TestCoreSchedule(t *testing.T) {
 			Name: uuid.NewString(),
 		}).Schedule("*/2 * * * * *").ExecInt()
 
+		defer KingdomModel.Unschedule(id)
+
 		for i := range 3 {
 			SoTimeout(t, func() (ok bool) {
 				if len(KingdomModel.Find().ExecTT()) >= i {
@@ -29,9 +31,22 @@ func TestCoreSchedule(t *testing.T) {
 			})
 			time.Sleep(2 * time.Second)
 		}
+	})
+	Convey("Schedule document creation which should error out", t, func() {
+		executionErrorOcurred := false
+		id := KingdomModel.SetConnection("I don't exist").Create(Kingdom{
+			Name: uuid.NewString(),
+		}).Schedule("*/2 * * * * *", func(a any) {
+			executionErrorOcurred = true
+		}).ExecInt()
 
-		KingdomModel.Unschedule(id)
+		defer KingdomModel.Unschedule(id)
 
-		time.Sleep(1 * time.Second)
+		SoTimeout(t, func() (ok bool) {
+			if executionErrorOcurred {
+				ok = true
+			}
+			return
+		})
 	})
 }
