@@ -86,10 +86,7 @@ func (m Model[T]) Create(doc T) Model[T] {
 		documentToInsert, detailedDocument := enforceSchema(m.Schema, &doc, nil)
 		detailedDocumentEntity := utils.CastBSON[T](detailedDocument)
 		m.middleware.pre.save.run(detailedDocumentEntity)
-		_, err := m.Collection().InsertOne(ctx, documentToInsert)
-		if err != nil {
-			panic(err)
-		}
+		lo.Must(m.Collection().InsertOne(ctx, documentToInsert))
 		m.middleware.post.save.run(detailedDocumentEntity)
 		return detailedDocumentEntity
 	}
@@ -112,10 +109,7 @@ func (m Model[T]) InsertMany(docs []T) Model[T] {
 			documentsToInsert = append(documentsToInsert, documentToInsert)
 			detailedDocuments = append(detailedDocuments, detailedDocument)
 		}
-		_, err := m.Collection().InsertMany(ctx, documentsToInsert)
-		if err != nil {
-			panic(err)
-		}
+		lo.Must(m.Collection().InsertMany(ctx, documentsToInsert))
 		return utils.CastBSONSlice[T](detailedDocuments)
 	}
 	return m
@@ -127,14 +121,8 @@ func (m Model[T]) InsertMany(docs []T) Model[T] {
 func (m Model[T]) Find(query ...primitive.M) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var results []T
-		cursor, err := m.Collection().Aggregate(ctx, m.pipeline)
-		if err != nil {
-			panic(err)
-		}
-		err = cursor.All(ctx, &results)
-		if err != nil {
-			panic(err)
-		}
+		cursor := lo.Must(m.Collection().Aggregate(ctx, m.pipeline))
+		m.checkConditionsAndPanicForErr(cursor.All(ctx, &results))
 		m.middleware.post.find.run(results)
 		m.checkConditionsAndPanic(results)
 		return results
@@ -161,14 +149,8 @@ func (m Model[T]) FindOne(query ...primitive.M) Model[T] {
 	)
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var results []T
-		cursor, err := m.Collection().Aggregate(ctx, m.pipeline)
-		if err != nil {
-			panic(err)
-		}
-		err = cursor.All(ctx, &results)
-		if err != nil {
-			panic(err)
-		}
+		cursor := lo.Must(m.Collection().Aggregate(ctx, m.pipeline))
+		m.checkConditionsAndPanicForErr(cursor.All(ctx, &results))
 		m.checkConditionsAndPanic(results)
 		if len(results) == 0 {
 			return nil
@@ -199,14 +181,8 @@ func (m Model[T]) CountDocuments(query ...primitive.M) Model[T] {
 	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: q}}, bson.D{{Key: "$count", Value: "count"}})
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var results []map[string]any
-		cursor, err := m.Collection().Aggregate(ctx, m.pipeline)
-		if err != nil {
-			panic(err)
-		}
-		err = cursor.All(ctx, &results)
-		if err != nil {
-			panic(err)
-		}
+		cursor := lo.Must(m.Collection().Aggregate(ctx, m.pipeline))
+		m.checkConditionsAndPanicForErr(cursor.All(ctx, &results))
 		if len(results) == 0 {
 			return 0
 		}
@@ -226,15 +202,9 @@ func (m Model[T]) Distinct(field string, query ...primitive.M) Model[T] {
 	m.pipeline = append(m.pipeline, bson.D{{Key: "$match", Value: q}}, bson.D{{Key: "$group", Value: primitive.M{"_id": "$" + field}}})
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var results []map[string]any
-		cursor, err := m.Collection().Aggregate(ctx, m.pipeline)
-		if err != nil {
-			panic(err)
-		}
-		err = cursor.All(ctx, &results)
-		if err != nil {
-			panic(err)
-		}
-		var distinct []string
+		cursor := lo.Must(m.Collection().Aggregate(ctx, m.pipeline))
+		m.checkConditionsAndPanicForErr(cursor.All(ctx, &results))
+		var distinct = make([]string, len(results))
 		for _, result := range results {
 			distinct = append(distinct, utils.Cast[string](result["_id"]))
 		}
