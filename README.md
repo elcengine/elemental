@@ -37,7 +37,7 @@ go install github.com/elcengine/elemental@latest
 ## Development Setup
 
 ### Prerequisites
- - [Go 1.21 or later](https://golang.org/dl) - The Go programming language
+ - [Go 1.22 or later](https://golang.org/dl) - The Go programming language
  - [Node (optional)](https://nodejs.org/en) - If you want to make use of [commitlint](https://commitlint.js.org)
 
 
