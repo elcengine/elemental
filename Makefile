@@ -11,6 +11,8 @@ test-coverage:
 	make test-lightspeed GO_TEST_ARGS="--cover -coverpkg=./cmd/...,./constants/...,./core/...,./plugins/...,./utils/... --coverprofile=./coverage/coverage.out"
 	go tool cover -html=./coverage/coverage.out -o ./coverage/index.html
 	@echo "\033[0;32mCoverage report generated at ./coverage/index.html.\033[0m"
+benchmark:
+	go test -bench=. -benchtime=10s -tags=benchmark ./tests/benchmarks/... 
 lint:
 	golangci-lint run ./...
 lint-fix:

@@ -12,8 +12,8 @@ jobs:
         strategy:
           matrix:
             go-version:
-              - "1.21"
               - "1.23"
+              - "1.24"
             mongo-version:
               - "6.0"
               - "8.0"
@@ -22,6 +22,11 @@ jobs:
         steps:
         - name: Checkout repository
           uses: actions/checkout@v4
+
+        - name: Disable Go toolchain auto-upgrade
+          run: |
+            echo "GOTOOLCHAIN=local" >> $GITHUB_ENV
+            sed -i 's/^go 1.24$/go ${{ matrix.go-version }}/' go.mod
 
         - name: Set up Golang ${{ matrix.go-version }}
           uses: actions/setup-go@v5

@@ -37,7 +37,7 @@ go install github.com/elcengine/elemental@latest
 ## Development Setup
 
 ### Prerequisites
- - [Go 1.21 or later](https://golang.org/dl) - The Go programming language
+ - [Go 1.23 or later](https://golang.org/dl) - The Go programming language
  - [Node (optional)](https://nodejs.org/en) - If you want to make use of [commitlint](https://commitlint.js.org)
 
 
@@ -47,7 +47,9 @@ go install github.com/elcengine/elemental@latest
 - Run `make test` to run all tests suites.
 - Run `make test-lightspeed` to run the same above tests cost faster at the cost of readability.
 - Run `make test-coverage` to run all test suites and generate a coverage report. Executes with `make test-lightspeed` under the hood.
+- Run `make benchmark` to run all benchmarks.
 - Run `make lint` to run the linter.
+- Run `make format` to format all files.
 
 ## Contributing
 
