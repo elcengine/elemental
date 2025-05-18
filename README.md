@@ -21,6 +21,8 @@ Elemental is inspired by multiple ODMs and ORMs such as [Mongoose](https://mongo
 
 ## [Documentation](https://elcengine.github.io/docs/intro)
 
+- ### [Go Package Reference](https://pkg.go.dev/github.com/elcengine/elemental)
+
 ## Installation
 
 ```bash
