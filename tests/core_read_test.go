@@ -138,7 +138,7 @@ func TestCoreRead(t *testing.T) {
 			}, ShouldPanicWith, elemental.ErrMustPairSortArguments)
 		})
 		Convey("Find all distinct witcher schools", func() {
-			schools := UserModel.Distinct("school").ExecStringSlice()
+			schools := UserModel.Distinct("school").ExecSS()
 			So(schools, ShouldHaveLength, 2)
 			So(schools, ShouldContain, mocks.WolfSchool)
 			So(schools, ShouldContain, "")

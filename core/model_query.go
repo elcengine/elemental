@@ -123,11 +123,11 @@ func (m Model[T]) ExecInt(ctx ...context.Context) int {
 	return cast.ToInt(result)
 }
 
-// ExecStringSlice is a convenience method that executes the query and returns the first result as a slice of strings.
+// ExecSS is a convenience method that executes the query and returns the first result as a slice of strings.
 // It is a type safe method, so you don't need to cast the result. If the query returns nothing
 // it will return an empty slice.
 // This method is useful for queries that return an array of strings, such as distinct queries.
-func (m Model[T]) ExecStringSlice(ctx ...context.Context) []string {
+func (m Model[T]) ExecSS(ctx ...context.Context) []string {
 	result := m.Exec(ctx...)
 	return cast.ToStringSlice(result)
 }
