@@ -9,7 +9,6 @@ import (
 	"github.com/elcengine/elemental/utils"
 	"github.com/spf13/cast"
 
-	"regexp"
 	"time"
 
 	"github.com/samber/lo"
@@ -19,9 +18,10 @@ import (
 
 func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Type, defaults ...bool) (bson.M, bson.M) {
 	var entityToInsert bson.M
+	documentElement := reflect.TypeOf(doc).Elem()
 
 	// Fast return when bypass schema enforcement or value is not a struct
-	if doc != nil && (reflect.TypeOf(doc).Elem().Kind() != reflect.Struct || schema.Options.BypassSchemaEnforcement) {
+	if doc != nil && (documentElement.Kind() != reflect.Struct || schema.Options.BypassSchemaEnforcement) {
 		entityToInsert = *utils.ToBSONDoc(doc)
 		return entityToInsert, entityToInsert
 	}
@@ -33,7 +33,7 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 		}
 	} else {
 		entityToInsert = *utils.ToBSONDoc(doc)
-		reflectedEntityType = lo.ToPtr(reflect.TypeOf(doc).Elem())
+		reflectedEntityType = &documentElement
 	}
 
 	if len(defaults) == 0 || defaults[0] {
@@ -123,8 +123,8 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 				panic(fmt.Errorf("field %s must be less than or equal to %d characters", field, definition.Length))
 			}
 		}
-		if definition.Regex != "" {
-			if matched := lo.Must(regexp.MatchString(definition.Regex, cast.ToString(val))); !matched {
+		if definition.Regex != nil {
+			if matched := definition.Regex.MatchString(cast.ToString(val)); !matched {
 				panic(fmt.Errorf("field %s must match the regex pattern %s", field, definition.Regex))
 			}
 		}

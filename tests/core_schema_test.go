@@ -3,6 +3,7 @@ package tests
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"testing"
 
 	elemental "github.com/elcengine/elemental/core"
@@ -142,7 +143,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 				Model := elemental.NewModel[User](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
 					"Name": {
 						Type:  reflect.String,
-						Regex: "^[A-Z]+$",
+						Regex: regexp.MustCompile("^[A-Z]+$"),
 					},
 				}))
 				So(func() {

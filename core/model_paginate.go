@@ -43,23 +43,17 @@ func (m Model[T]) Paginate(page, limit int64) Model[T] {
 	}}}}
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var results []facetResult[T]
-		cursor, err := m.Collection().Aggregate(ctx, m.pipeline)
-		if err != nil {
-			panic(err)
-		}
-		err = cursor.All(ctx, &results)
-		if err != nil {
-			panic(err)
-		}
+		cursor := lo.Must(m.Collection().Aggregate(ctx, m.pipeline))
+		m.checkConditionsAndPanicForErr(cursor.All(ctx, &results))
 		totalDocs := results[0].Count[0]["count"]
 		totalPages := (totalDocs + limit - 1) / limit
 		var prevPage, nextPage *int64
 		prevPage = lo.ToPtr(page - 1)
-		if lo.FromPtr(prevPage) < 1 {
+		if *prevPage < 1 {
 			prevPage = nil
 		}
 		nextPage = lo.ToPtr(page + 1)
-		if lo.FromPtr(nextPage) > totalPages {
+		if *nextPage > totalPages {
 			nextPage = nil
 		}
 		return PaginateResult[T]{

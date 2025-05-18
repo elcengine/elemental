@@ -49,14 +49,8 @@ func (m Model[T]) Exec(ctx ...context.Context) any {
 	if m.executor == nil {
 		m.executor = func(m Model[T], ctx context.Context) any {
 			var results []T
-			cursor, err := m.Collection().Aggregate(ctx, m.pipeline)
-			if err != nil {
-				panic(err)
-			}
-			err = cursor.All(ctx, &results)
-			if err != nil {
-				panic(err)
-			}
+			cursor := lo.Must(m.Collection().Aggregate(ctx, m.pipeline))
+			lo.Must0(cursor.All(ctx, &results))
 			m.checkConditionsAndPanic(results)
 			return results
 		}

@@ -1,4 +1,5 @@
 GO_TEST_ARGS ?= -tags=unit
+GO_BENCH_ARGS ?= -benchtime=30s
 	
 format:
 	gofmt -w .
@@ -12,7 +13,15 @@ test-coverage:
 	go tool cover -html=./coverage/coverage.out -o ./coverage/index.html
 	@echo "\033[0;32mCoverage report generated at ./coverage/index.html.\033[0m"
 benchmark:
-	go test -bench=. -benchtime=10s -tags=benchmark ./tests/benchmarks/... 
+	go test -bench=. $(GO_BENCH_ARGS) -tags=benchmark ./tests/benchmarks/... 
+b1x:
+	make benchmark GO_BENCH_ARGS="-benchtime=1x"
+b10x:
+	make benchmark GO_BENCH_ARGS="-benchtime=10x"
+b1s:
+	make benchmark GO_BENCH_ARGS="-benchtime=1s"
+b10s:
+	make benchmark GO_BENCH_ARGS="-benchtime=10s"
 lint:
 	golangci-lint run ./...
 lint-fix:
