@@ -11,6 +11,8 @@ import (
 )
 
 func BenchmarkCoreCreate(b *testing.B) {
+	b.ReportAllocs()
+
 	ts.Connection(b.Name())
 
 	UserModel := UserModel.SetDatabase(b.Name())
@@ -23,6 +25,8 @@ func BenchmarkCoreCreate(b *testing.B) {
 }
 
 func BenchmarkCoreCreateDriver(b *testing.B) {
+	b.ReportAllocs()
+
 	ts.Connection(b.Name())
 
 	coll := UserModel.SetDatabase(b.Name()).Collection()
