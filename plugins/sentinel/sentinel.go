@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	elemental "github.com/elcengine/elemental/core"
+	"github.com/elcengine/elemental/core"
 	"github.com/elcengine/elemental/utils"
 	"github.com/go-playground/validator/v10"
 	"github.com/samber/lo"
@@ -78,42 +78,42 @@ func Legitimize(input any) error {
 			case "unique":
 				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{fieldName: value})).Exec()
 				if doc != nil {
-					return fmt.Errorf("key: '%s.%s' error: Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+					return NewFieldError(v.Type().Name(), field.Name, tag)
 				}
 			case "exists":
 				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{fieldName: value})).Exec()
 				if doc == nil {
-					return fmt.Errorf("key: '%s.%s' error: Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+					return NewFieldError(v.Type().Name(), field.Name, tag)
 				}
 			case "greater_than":
 				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{getReferenceField(): getReferenceFieldValue()})).Exec()
 				if doc == nil || utils.LTE(value, utils.Cast[map[string]any](doc)[fieldName]) {
-					return fmt.Errorf("key: '%s.%s' error: Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+					return NewFieldError(v.Type().Name(), field.Name, tag)
 				}
 			case "greater_than_or_equal_to":
 				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{getReferenceField(): getReferenceFieldValue()})).Exec()
 				if doc == nil || utils.LT(value, utils.Cast[map[string]any](doc)[fieldName]) {
-					return fmt.Errorf("key: '%s.%s' error: Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+					return NewFieldError(v.Type().Name(), field.Name, tag)
 				}
 			case "less_than":
 				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{getReferenceField(): getReferenceFieldValue()})).Exec()
 				if doc == nil || utils.GTE(value, utils.Cast[map[string]any](doc)[fieldName]) {
-					return fmt.Errorf("key: '%s.%s' error: Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+					return NewFieldError(v.Type().Name(), field.Name, tag)
 				}
 			case "less_than_or_equal_to":
 				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{getReferenceField(): getReferenceFieldValue()})).Exec()
 				if doc == nil || utils.GT(value, utils.Cast[map[string]any](doc)[fieldName]) {
-					return fmt.Errorf("key: '%s.%s' error: Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+					return NewFieldError(v.Type().Name(), field.Name, tag)
 				}
 			case "equals":
 				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{getReferenceField(): getReferenceFieldValue()})).Exec()
 				if doc == nil || !utils.EQ(value, utils.Cast[map[string]any](doc)[fieldName]) {
-					return fmt.Errorf("key: '%s.%s' error: Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+					return NewFieldError(v.Type().Name(), field.Name, tag)
 				}
 			case "not_equals":
 				doc := augmentedQuery(elemental.NativeModel.FindOne(primitive.M{getReferenceField(): getReferenceFieldValue()})).Exec()
 				if doc != nil && utils.EQ(value, utils.Cast[map[string]any](doc)[fieldName]) {
-					return fmt.Errorf("key: '%s.%s' error: Field validation for '%s' failed on the '%s' tag", v.Type().Name(), field.Name, field.Name, tag)
+					return NewFieldError(v.Type().Name(), field.Name, tag)
 				}
 			default:
 				return fmt.Errorf("unknown augmented validation tag: %s", tag)
@@ -121,4 +121,10 @@ func Legitimize(input any) error {
 		}
 	}
 	return nil
+}
+
+// NewFieldError creates a field error message for the given namespace, field, and tag.
+// It returns an error with a formatted message indicating the validation failure.
+func NewFieldError(namespace, field, tag string) error {
+	return fmt.Errorf("Key: '%s.%s' Error:Field validation for '%s' failed on the '%s' tag", namespace, field, field, tag)
 }

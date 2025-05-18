@@ -36,7 +36,7 @@ func TestRequestValidator(t *testing.T) {
 				Age:  10,
 			}
 			err := sentinel.Legitimize(request)
-			So(err.Error(), ShouldEqual, "key: 'CreateUserDTO.Age' error: Field validation for 'Age' failed on the 'min' tag")
+			So(err.Error(), ShouldEqual, sentinel.NewFieldError("CreateUserDTO", "Age", "min").Error())
 		})
 
 		Convey("Unique document validation", func() {
@@ -50,7 +50,7 @@ func TestRequestValidator(t *testing.T) {
 					Age:  100,
 				}
 				err := sentinel.Legitimize(request)
-				So(err.Error(), ShouldEqual, "key: 'CreateUserDTO.Name' error: Field validation for 'Name' failed on the 'unique' tag")
+				So(err, ShouldEqual, sentinel.NewFieldError("CreateUserDTO", "Name", "unique"))
 			})
 			Convey("Should not return error if document does not exist", func() {
 				request := CreateUserDTO{
@@ -70,7 +70,7 @@ func TestRequestValidator(t *testing.T) {
 					Age:  100,
 				}
 				err := sentinel.Legitimize(request)
-				So(err.Error(), ShouldEqual, "key: 'CreateUserDTOWithModel.Name' error: Field validation for 'Name' failed on the 'unique' tag")
+				So(err, ShouldEqual, sentinel.NewFieldError("CreateUserDTOWithModel", "Name", "unique"))
 			})
 			Convey("Should return error if document already exists - DTO specifying custom field", func() {
 				type CreateUserDTOWithCustomField struct {
@@ -82,7 +82,7 @@ func TestRequestValidator(t *testing.T) {
 					Age:  100,
 				}
 				err := sentinel.Legitimize(request)
-				So(err.Error(), ShouldEqual, "key: 'CreateUserDTOWithCustomField.Name' error: Field validation for 'Name' failed on the 'unique' tag")
+				So(err, ShouldEqual, sentinel.NewFieldError("CreateUserDTOWithCustomField", "Name", "unique"))
 			})
 			Convey("Should return error if document already exists - DTO specifying custom database name", func() {
 				CUSTOM_DB := fmt.Sprintf("%s_%s", t.Name(), "custom_database")
@@ -99,7 +99,7 @@ func TestRequestValidator(t *testing.T) {
 					Age:  100,
 				}).Exec()
 				err := sentinel.Legitimize(request)
-				So(err.Error(), ShouldEqual, "key: 'CreateUserDTOWithCustomDatabase.Name' error: Field validation for 'Name' failed on the 'unique' tag")
+				So(err, ShouldEqual, sentinel.NewFieldError("CreateUserDTOWithCustomDatabase", "Name", "unique"))
 			})
 		})
 
@@ -116,7 +116,7 @@ func TestRequestValidator(t *testing.T) {
 					Occupation: "Druid",
 				}
 				err := sentinel.Legitimize(request)
-				So(err.Error(), ShouldEqual, "key: 'CreateUserDTO.Occupation' error: Field validation for 'Occupation' failed on the 'exists' tag")
+				So(err, ShouldEqual, sentinel.NewFieldError("CreateUserDTO", "Occupation", "exists"))
 			})
 			Convey("Should not return error if document exists", func() {
 				request := CreateUserDTO{
@@ -144,7 +144,7 @@ func TestRequestValidator(t *testing.T) {
 					Income:     50,
 				}
 				err := sentinel.Legitimize(request)
-				So(err.Error(), ShouldEqual, "key: 'CreateUserDTO.Income' error: Field validation for 'Income' failed on the 'greater_than' tag")
+				So(err, ShouldEqual, sentinel.NewFieldError("CreateUserDTO", "Income", "greater_than"))
 			})
 			Convey("Should not return error if document is greater than the specified field", func() {
 				request := CreateUserDTO{
@@ -173,7 +173,7 @@ func TestRequestValidator(t *testing.T) {
 					Income:     99,
 				}
 				err := sentinel.Legitimize(request)
-				So(err.Error(), ShouldEqual, "key: 'CreateUserDTO.Income' error: Field validation for 'Income' failed on the 'greater_than_or_equal_to' tag")
+				So(err, ShouldEqual, sentinel.NewFieldError("CreateUserDTO", "Income", "greater_than_or_equal_to"))
 			})
 			Convey("Should not return error if document is greater than or equal to the specified field", func() {
 				request := CreateUserDTO{
@@ -202,7 +202,7 @@ func TestRequestValidator(t *testing.T) {
 					Income:     150,
 				}
 				err := sentinel.Legitimize(request)
-				So(err.Error(), ShouldEqual, "key: 'CreateUserDTO.Income' error: Field validation for 'Income' failed on the 'less_than' tag")
+				So(err, ShouldEqual, sentinel.NewFieldError("CreateUserDTO", "Income", "less_than"))
 			})
 			Convey("Should not return error if document is less than the specified field", func() {
 				request := CreateUserDTO{
@@ -231,7 +231,7 @@ func TestRequestValidator(t *testing.T) {
 					Income:     151,
 				}
 				err := sentinel.Legitimize(request)
-				So(err.Error(), ShouldEqual, "key: 'CreateUserDTO.Income' error: Field validation for 'Income' failed on the 'less_than_or_equal_to' tag")
+				So(err, ShouldEqual, sentinel.NewFieldError("CreateUserDTO", "Income", "less_than_or_equal_to"))
 			})
 			Convey("Should not return error if document is less than or equal to the specified field", func() {
 				request := CreateUserDTO{
