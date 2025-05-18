@@ -200,5 +200,11 @@ func TestPluginFilterQuery(t *testing.T) {
 			So(results[0].Name, ShouldBeZeroValue)
 			So(results[0].Age, ShouldEqual, e_mocks.Geralt.Age)
 		})
+		Convey("When a page and limit are present in query string", func() {
+			result := UserModel.QS("page=1&limit=2").ExecTP()
+			So(result.Docs, ShouldHaveLength, 2)
+			So(result.Docs[0].Name, ShouldEqual, e_mocks.Ciri.Name)
+			So(result.Docs[1].Name, ShouldEqual, e_mocks.Geralt.Name)
+		})
 	})
 }

@@ -104,6 +104,14 @@ func (m Model[T]) ExecTT(ctx ...context.Context) []T {
 	return e_utils.Cast[[]T](result)
 }
 
+// ExecTP is a convenience method that executes the query and returns the results as a PaginateResult.
+// It is a type safe method, so you don't need to cast the result. If the query returns nothing, it will return an empty PaginateResult.
+// This method is useful for pagination queries.
+func (m Model[T]) ExecTP(ctx ...context.Context) PaginateResult[T] {
+	result := m.Exec(ctx...)
+	return e_utils.Cast[PaginateResult[T]](result)
+}
+
 // ExecInt is a convenience method that executes the query and returns the first result as an int.
 // It is a type safe method, so you don't need to cast the result. If the query returns nothing
 // it will return 0.
