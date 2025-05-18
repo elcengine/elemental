@@ -204,7 +204,7 @@ func (m Model[T]) Distinct(field string, query ...primitive.M) Model[T] {
 		var results []map[string]any
 		cursor := lo.Must(m.Collection().Aggregate(ctx, m.pipeline))
 		m.checkConditionsAndPanicForErr(cursor.All(ctx, &results))
-		var distinct = make([]string, len(results))
+		var distinct = make([]string, 0, len(results))
 		for _, result := range results {
 			distinct = append(distinct, utils.Cast[string](result["_id"]))
 		}
