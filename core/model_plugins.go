@@ -10,7 +10,15 @@ import "github.com/elcengine/elemental/plugins/filter_query"
 //
 //	UserModel.QS("filter[name]=John&sort[name]=asc&include=field1&select=field1").ExecTT()
 func (m Model[T]) QS(query string) Model[T] {
-	result := fq.Parse(query)
+	return m.QSR(fq.Parse(query))
+}
+
+// QSR allows you to construct an Elemental query directly from a FilterQueryResult.
+//
+// Usage:
+//
+//	UserModel.QSR(fq.Parse("filter[name]=John&sort[name]=asc&include=field1&select=field1")).ExecTT()
+func (m Model[T]) QSR(result fq.FilterQueryResult) Model[T] {
 	if len(result.Filters) > 0 {
 		m = m.Find(result.Filters)
 	}
