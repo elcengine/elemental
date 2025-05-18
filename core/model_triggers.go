@@ -118,7 +118,7 @@ func (m Model[T]) OnStreamInvalidate(f func(), opts ...TriggerOptions) *mongo.Ch
 	}, opts...)
 }
 
-// InvalidateTriggers clears all triggers for the model. This includes audits
+// InvalidateTriggers clears all triggers for the model. This includes audits.
 func (m Model[T]) InvalidateTriggers() {
 	m.triggerExit <- true
 }
