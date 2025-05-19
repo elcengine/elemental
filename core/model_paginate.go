@@ -34,13 +34,17 @@ func (m Model[T]) Skip(skip int64) Model[T] {
 // The final result of the query will be a PaginateResult[T] struct containing the documents,
 // total count, current page, limit, total pages, and next/previous page information.
 func (m Model[T]) Paginate(page, limit int64) Model[T] {
-	m = m.Skip((page - 1) * limit).Limit(limit)
-	m.pipeline = []bson.D{{{Key: "$facet", Value: primitive.M{
-		"docs": m.pipeline,
-		"count": []primitive.M{
-			{"$count": "count"},
+	m.pipeline = append(m.pipeline, bson.D{
+		{
+			Key: "$facet",
+			Value: primitive.M{
+				"docs": m.Skip((page - 1) * limit).Limit(limit).pipeline,
+				"count": []primitive.M{
+					{"$count": "count"},
+				},
+			},
 		},
-	}}}}
+	})
 	m.executor = func(m Model[T], ctx context.Context) any {
 		var results []facetResult[T]
 		cursor := lo.Must(m.Collection().Aggregate(ctx, m.pipeline))
