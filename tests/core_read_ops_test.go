@@ -66,6 +66,10 @@ func TestCoreReadOps(t *testing.T) {
 				users := UserModel.Where("age").GreaterThanOrEquals(90).Where("age").LessThanOrEquals(110).ExecTT()
 				So(len(users), ShouldEqual, 2)
 				So(users[0].Name, ShouldEqual, mocks.Geralt.Name)
+
+				users = UserModel.Where("age").GreaterThan(89).Where("age").LessThan(111).ExecTT()
+				So(len(users), ShouldEqual, 2)
+				So(users[0].Name, ShouldEqual, mocks.Geralt.Name)
 			})
 			Convey("In conjuntion with between", func() {
 				users := UserModel.Where("age").Between(90, 110).ExecTT()
@@ -128,6 +132,12 @@ func TestCoreReadOps(t *testing.T) {
 			})
 			Convey("In conjuntion with element match", func() {
 				users := UserModel.Where("weapons").ElementMatches(primitive.M{"$eq": "Battle Axe"}).ExecTT()
+				So(len(users), ShouldEqual, 2)
+				So(users[0].Name, ShouldEqual, mocks.Geralt.Name)
+				So(users[1].Name, ShouldEqual, mocks.Imlerith.Name)
+			})
+			Convey("In conjuntion with has", func() {
+				users := UserModel.Where("weapons").Has("Battle Axe").ExecTT()
 				So(len(users), ShouldEqual, 2)
 				So(users[0].Name, ShouldEqual, mocks.Geralt.Name)
 				So(users[1].Name, ShouldEqual, mocks.Imlerith.Name)

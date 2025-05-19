@@ -95,6 +95,11 @@ func TestCoreRead(t *testing.T) {
 				So(userById, ShouldNotBeNil)
 				So(userById.Name, ShouldEqual, mocks.Ciri.Name)
 			})
+			Convey("Find user by ID (Object ID pointer)", func() {
+				userById := UserModel.FindByID(&user.ID).ExecPtr()
+				So(userById, ShouldNotBeNil)
+				So(userById.Name, ShouldEqual, mocks.Ciri.Name)
+			})
 		})
 		Convey("Count users", func() {
 			count := UserModel.CountDocuments().ExecInt()

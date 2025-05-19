@@ -121,18 +121,16 @@ func (m Model[T]) DeleteMany(query ...primitive.M) Model[T] {
 }
 
 // Enables soft delete for the model.
-func (m Model[T]) EnableSoftDelete() Model[T] {
+func (m *Model[T]) EnableSoftDelete() {
+	m.deletedAtFieldName = "deleted_at"
 	m.softDeleteEnabled = true
-	return m
 }
 
 // Disables soft delete for the model.
-func (m Model[T]) DisableSoftDelete() Model[T] {
+func (m *Model[T]) DisableSoftDelete() {
 	m.softDeleteEnabled = false
-	return m
 }
 
 func (m Model[T]) softDeletePayload() primitive.M {
-	m.deletedAtFieldName = "deleted_at"
 	return primitive.M{m.deletedAtFieldName: time.Now().Format(time.RFC3339)}
 }

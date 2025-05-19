@@ -2,10 +2,11 @@ package elemental
 
 import (
 	"context"
-	"github.com/elcengine/elemental/utils"
-	"github.com/spf13/cast"
 	"reflect"
 	"strings"
+
+	"github.com/elcengine/elemental/utils"
+	"github.com/spf13/cast"
 
 	"github.com/gertd/go-pluralize"
 	"github.com/samber/lo"
@@ -234,30 +235,27 @@ func (m Model[T]) Sort(args ...any) Model[T] {
 // Extends the query with a projection stage.
 // The projection stage is used to specify which fields to include or exclude from the results.
 func (m Model[T]) Select(fields ...any) Model[T] {
+	inputType := reflect.TypeOf(fields[0]).Kind()
+	if inputType == reflect.Map {
+		m.pipeline = append(m.pipeline, bson.D{{Key: "$project", Value: fields[0]}})
+		return m
+	}
 	var selection []string
 	switch {
-	case len(fields) == 1 && reflect.TypeOf(fields[0]).Kind() == reflect.String:
+	case inputType == reflect.Slice:
+		selection = fields[0].([]string)
+	case len(fields) == 1 && inputType == reflect.String:
 		selection = strings.FieldsFunc(fields[0].(string), func(r rune) bool {
 			return r == ',' || r == ' '
 		})
 	case len(fields) > 1:
-		selection = utils.CastSlice[string](fields)
-	case reflect.TypeOf(fields[0]).Kind() == reflect.Slice:
-		selection = fields[0].([]string)
+		selection = cast.ToStringSlice(fields)
 	}
-
-	switch {
-	case len(selection) > 0:
-		for _, field := range selection {
-			if strings.HasPrefix(field, "-") {
-				m = m.addToPipeline("$project", field[1:], 0)
-			} else {
-				m = m.addToPipeline("$project", field, 1)
-			}
-		}
-	case reflect.TypeOf(fields[0]).Kind() == reflect.Map:
-		for field, value := range utils.Cast[primitive.M](fields[0]) {
-			m = m.addToPipeline("$project", field, value)
+	for _, field := range selection {
+		if strings.HasPrefix(field, "-") {
+			m = m.addToPipeline("$project", field[1:], 0)
+		} else {
+			m = m.addToPipeline("$project", field, 1)
 		}
 	}
 	return m
@@ -285,9 +283,4 @@ func (m Model[T]) Clone() Model[T] {
 		softDeleteEnabled:   m.softDeleteEnabled,
 		deletedAtFieldName:  m.deletedAtFieldName,
 	}
-}
-
-// This feature is still experimental and not fully implemented.
-func (m Model[T]) UseCluster(connection *string) ClusterOp[T] {
-	return Cluster(&m, connection)
 }

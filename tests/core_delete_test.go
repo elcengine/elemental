@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"testing"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -51,6 +52,18 @@ func TestCoreDelete(t *testing.T) {
 			So(user.Name, ShouldEqual, mocks.Caranthir.Name)
 			UserModel.DeleteByID(user.ID).Exec()
 			So(UserModel.FindByID(user.ID).Exec(), ShouldBeNil)
+		})
+		Convey("Soft delete a user", func() {
+			UserModel.EnableSoftDelete()
+			defer UserModel.DisableSoftDelete()
+
+			user := UserModel.FindOne(primitive.M{"name": mocks.Vesemir.Name}).ExecPtr()
+			UserModel.DeleteByID(user.ID).Exec()
+			So(UserModel.FindByID(user.ID).Exec(), ShouldBeNil)
+
+			rawUser := map[string]any{}
+			UserModel.Collection().FindOne(context.Background(), primitive.M{"_id": user.ID}).Decode(&rawUser)
+			So(rawUser["deleted_at"], ShouldNotBeNil)
 		})
 		Convey("Delete all remaining users", func() {
 			UserModel.DeleteMany().Exec()
