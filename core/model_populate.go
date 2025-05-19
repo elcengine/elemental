@@ -12,26 +12,27 @@ import (
 )
 
 func (m Model[T]) populate(value any) Model[T] {
-	var path, selectField, fieldname *string
-	if reflect.ValueOf(value).Kind() == reflect.Map {
-		populate := value.(primitive.M)
-		path = lo.ToPtr(utils.Cast[string](populate["path"]))
-		selectField = lo.ToPtr(utils.Cast[string](populate["select"]))
-	} else {
-		path = lo.ToPtr(utils.Cast[string](value))
+	var path, fieldname string
+	var selectField any
+	switch v := value.(type) {
+	case primitive.M:
+		path = utils.Cast[string](v["path"])
+		selectField = v["select"]
+	default:
+		path = utils.Cast[string](value)
 	}
-	if path != nil {
-		var sample [0]T
+	if path != "" {
+		var sample [0]T // Slice of zero length to get the type of T
 		modelType := reflect.TypeOf(sample).Elem()
 		for i := range modelType.NumField() {
 			field := modelType.Field(i)
-			if field.Tag.Get("bson") == *path {
-				fieldname = &field.Name
+			if cleanTag(field.Tag.Get("bson")) == path {
+				fieldname = field.Name
 				break
 			}
 		}
-		if fieldname != nil {
-			schemaField := m.Schema.Field(*fieldname)
+		if fieldname != "" {
+			schemaField := m.Schema.Field(fieldname)
 			if schemaField != nil {
 				collection := schemaField.Collection
 				if lo.IsEmpty(collection) {
@@ -43,9 +44,9 @@ func (m Model[T]) populate(value any) Model[T] {
 				if !lo.IsEmpty(collection) {
 					lookup := primitive.M{
 						"from":         collection,
-						"localField":   *path,
+						"localField":   path,
 						"foreignField": "_id",
-						"as":           *path,
+						"as":           path,
 					}
 					if selectField != nil {
 						lookup["pipeline"] = []primitive.M{
@@ -55,7 +56,7 @@ func (m Model[T]) populate(value any) Model[T] {
 					m.pipeline = append(m.pipeline, bson.D{{Key: "$lookup", Value: lookup}})
 					if schemaField.Type != reflect.Slice {
 						unwind := primitive.M{
-							"path":                       "$" + *path,
+							"path":                       "$" + path,
 							"preserveNullAndEmptyArrays": true,
 						}
 						m.pipeline = append(m.pipeline, bson.D{{Key: "$unwind", Value: unwind}})
@@ -72,17 +73,19 @@ func (m Model[T]) populate(value any) Model[T] {
 // Finds and attaches the referenced documents to the main document returned by the query.
 // The fields to populate must have a 'Collection' or 'Ref' property in their schema definition.
 func (m Model[T]) Populate(values ...any) Model[T] {
-	if len(values) == 1 && reflect.ValueOf(values[0]).Kind() == reflect.String && (strings.Contains(values[0].(string), ",") || strings.Contains(values[0].(string), " ")) {
-		values := strings.FieldsFunc(values[0].(string), func(r rune) bool {
-			return r == ',' || r == ' '
-		})
-		for _, value := range values {
-			m = m.populate(value)
+	if len(values) == 1 {
+		if str, ok := values[0].(string); ok && (strings.Contains(str, ",") || strings.Contains(str, " ")) {
+			parts := strings.FieldsFunc(str, func(r rune) bool {
+				return r == ',' || r == ' '
+			})
+			for _, value := range parts {
+				m = m.populate(value)
+			}
+			return m
 		}
-	} else {
-		for _, value := range values {
-			m = m.populate(value)
-		}
+	}
+	for _, value := range values {
+		m = m.populate(value)
 	}
 	return m
 }

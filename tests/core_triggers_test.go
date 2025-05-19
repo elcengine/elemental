@@ -99,6 +99,10 @@ func TestCoreTriggers(t *testing.T) {
 				return collectionDropped
 			})
 		})
+		Convey("Uninvokable triggers", func() {
+			So(CastleModel.OnCollectionRename(func() {}), ShouldNotBeNil)
+			So(CastleModel.OnStreamInvalidate(func() {}), ShouldNotBeNil)
+		})
 		Convey("Invalidate triggers", func() {
 			CastleModel.InvalidateTriggers()
 			CastleModel.Create(Castle{Name: "Mont Crane"}).Exec()
