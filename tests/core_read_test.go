@@ -74,6 +74,17 @@ func TestCoreRead(t *testing.T) {
 			user := UserModel.FindOne(primitive.M{"age": mocks.Geralt.Age}).ExecPtr()
 			So(user, ShouldNotBeNil)
 			So(user.Name, ShouldEqual, mocks.Geralt.Name)
+			Convey("With or fail", func() {
+				So(func() {
+					UserModel.FindOne(primitive.M{"name": "Yarpen Zigrin"}).OrFail().Exec()
+				}, ShouldPanicWith, errors.New("no results found matching the given query"))
+			})
+			Convey("With or fail and custom error", func() {
+				err := errors.New("no user found")
+				So(func() {
+					UserModel.FindOne(primitive.M{"name": "Yarpen Zigrin"}).OrFail(err).Exec()
+				}, ShouldPanicWith, err)
+			})
 		})
 		Convey("Find a user with a filter query which has no matching documents", func() {
 			user := UserModel.FindOne(primitive.M{"name": "Yarpen Zigrin"}).ExecPtr()
