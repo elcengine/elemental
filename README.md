@@ -11,6 +11,9 @@
   <a aria-label="CI Tests" href="https://github.com/elcengine/elemental/actions/workflows/tests.yml">
     <img alt="" src="https://github.com/elcengine/elemental/actions/workflows/tests.yml/badge.svg">
   </a>
+  <a aria-label="Code Coverage" href="https://codecov.io/gh/elcengine/elemental" >
+    <img src="https://codecov.io/gh/elcengine/elemental/graph/badge.svg?token=A8JF4V5MEY"/>
+  </a>
 </p>
 
 <hr/>
@@ -47,8 +50,8 @@ go install github.com/elcengine/elemental@latest
 
 - Run `make install` to download all dependencies and install the required tools. This is required only once. Afterwards you could use the traditional `go mod tidy` for dependency management.
 - Run `make test` to run all tests suites.
-- Run `make test-lightspeed` to run the same above tests cost faster at the cost of readability.
-- Run `make test-coverage` to run all test suites and generate a coverage report. Executes with `make test-lightspeed` under the hood.
+- Run `make test-lightspeed` to run the same above tests slightly faster at the cost of readability.
+- Run `make test-coverage` to run all test suites and generate a coverage report.
 - Run `make benchmark` to run all benchmarks.
 - Run `make lint` to run the linter.
 - Run `make format` to format all files.
