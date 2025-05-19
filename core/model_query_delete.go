@@ -121,8 +121,8 @@ func (m Model[T]) DeleteMany(query ...primitive.M) Model[T] {
 }
 
 // Enables soft delete for the model.
-func (m *Model[T]) EnableSoftDelete() {
-	m.deletedAtFieldName = "deleted_at"
+func (m *Model[T]) EnableSoftDelete(deletedAtFieldName ...string) {
+	m.deletedAtFieldName = lo.CoalesceOrEmpty(lo.FirstOrEmpty(deletedAtFieldName), "deleted_at")
 	m.softDeleteEnabled = true
 }
 
