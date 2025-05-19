@@ -19,7 +19,7 @@ import (
 func (m Model[T]) FindOneAndDelete(query ...primitive.M) Model[T] {
 	q := utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
-		m = m.UpdateOne(&q, m.softDeletePayload())
+		m = m.FindOneAndUpdate(&q, m.softDeletePayload())
 	} else {
 		m.executor = func(m Model[T], ctx context.Context) any {
 			var doc T
