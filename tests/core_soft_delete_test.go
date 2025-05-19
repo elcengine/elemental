@@ -86,6 +86,8 @@ func TestCoreSoftDelete(t *testing.T) {
 			for _, rawUser := range rawUsers {
 				So(rawUser["deleted_at"], ShouldNotBeNil)
 			}
+
+			So(UserModel.CountDocuments().Exec(), ShouldEqual, 0)
 		})
 	})
 }

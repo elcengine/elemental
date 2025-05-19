@@ -13,6 +13,9 @@ import (
 )
 
 func TestConnection(t *testing.T) {
+	Convey("Ping should fail before connection", t, func() {
+		So(elemental.Ping(), ShouldNotBeNil)
+	})
 	Convey("Connect to a local database", t, func() {
 		Convey("Simplest form of connect with just a URI", func() {
 			connectionCreatedFired := false
