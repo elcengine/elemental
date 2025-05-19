@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/elcengine/elemental/utils"
+	"github.com/samber/lo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -39,12 +40,9 @@ func (m Model[T]) on(event triggerType, f func(change primitive.M), opts ...Trig
 		}
 	}
 	filters["operationType"] = event
-	cs, err := m.Collection().Watch(ctx, mongo.Pipeline{
+	cs := lo.Must(m.Collection().Watch(ctx, mongo.Pipeline{
 		bson.D{{Key: "$match", Value: filters}},
-	}, options.ChangeStream().SetFullDocument(options.UpdateLookup))
-	if err != nil {
-		panic(err)
-	}
+	}, options.ChangeStream().SetFullDocument(options.UpdateLookup)))
 	go func() {
 		for cs.Next(ctx) {
 			var changeDoc bson.M

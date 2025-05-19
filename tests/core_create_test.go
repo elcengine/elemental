@@ -33,7 +33,7 @@ func TestCoreCreate(t *testing.T) {
 			So(user.UpdatedAt.Unix(), ShouldBeBetweenOrEqual, time.Now().Add(-10*time.Second).Unix(), time.Now().Unix())
 		})
 		Convey("Create many users", func() {
-			users := UserModel.InsertMany(mocks.Users[1:]).ExecTT()
+			users := UserModel.CreateMany(mocks.Users[1:]).ExecTT()
 			So(len(users), ShouldEqual, len(mocks.Users[1:]))
 			So(users[0].ID, ShouldNotBeNil)
 			So(users[1].ID, ShouldNotBeNil)

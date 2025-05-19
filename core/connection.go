@@ -68,17 +68,11 @@ func Connect(arg any) mongo.Client {
 		}
 		clientOpts = clientOpts.ApplyURI(opts.URI)
 	}
-	cs, err := connstring.ParseAndValidate(clientOpts.GetURI())
-	if err != nil {
-		panic(err)
-	}
+	cs := lo.Must(connstring.ParseAndValidate(clientOpts.GetURI()))
 	defaultDatabases[opts.Alias] = cs.Database
 	ctx, cancel := context.WithTimeout(context.Background(), *lo.CoalesceOrEmpty(clientOpts.ConnectTimeout, lo.ToPtr(ConnectionTimeout)))
 	defer cancel()
-	client, err := mongo.Connect(ctx, clientOpts)
-	if err != nil {
-		panic(err)
-	}
+	client := lo.Must(mongo.Connect(ctx, clientOpts))
 	lo.Must0(client.Ping(ctx, readpref.Primary()))
 	clients[opts.Alias] = client
 	triggerEventIfRegistered(opts.Alias, EventDeploymentDiscovered)
@@ -141,13 +135,10 @@ func UseDefaultDatabase(alias ...string) *mongo.Database {
 // Drops all databases across a given client or all clients if no alias is provided
 func DropAllDatabases(alias ...string) {
 	for key, client := range clients {
-		if len(alias) > 0 && !lo.Contains(alias, key) {
+		if len(alias) > 0 && !slices.Contains(alias, key) {
 			continue
 		}
-		databases, err := client.ListDatabaseNames(context.Background(), bson.D{{}}, options.ListDatabases().SetNameOnly(true))
-		if err != nil {
-			panic(err)
-		}
+		databases := lo.Must(client.ListDatabaseNames(context.Background(), bson.D{{}}, options.ListDatabases().SetNameOnly(true)))
 		for _, db := range databases {
 			client.Database(db).Drop(context.Background())
 		}

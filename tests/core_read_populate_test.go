@@ -5,6 +5,7 @@ import (
 
 	ts "github.com/elcengine/elemental/tests/fixtures/setup"
 	. "github.com/smartystreets/goconvey/convey"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func TestCoreReadPopulate(t *testing.T) {
@@ -63,18 +64,31 @@ func TestCoreReadPopulate(t *testing.T) {
 			bestiary := BestiaryModel.Find().Populate("monster").Populate("kingdom").ExecTT()
 			So(bestiary, ShouldHaveLength, 3)
 			So(bestiary[0].Monster.Name, ShouldEqual, "Katakan")
+			So(bestiary[0].Monster.Category, ShouldEqual, "Vampire")
 			So(bestiary[0].Kingdom.Name, ShouldEqual, "Nilfgaard")
 		})
 		Convey("Populate with a single call", func() {
 			bestiary := BestiaryModel.Find().Populate("monster", "kingdom").ExecTT()
 			So(bestiary, ShouldHaveLength, 3)
 			So(bestiary[0].Monster.Name, ShouldEqual, "Katakan")
+			So(bestiary[0].Monster.Category, ShouldEqual, "Vampire")
 			So(bestiary[0].Kingdom.Name, ShouldEqual, "Nilfgaard")
 		})
 		Convey("Populate with a single call (Comma separated string)", func() {
 			bestiary := BestiaryModel.Find().Populate("monster kingdom").ExecTT()
 			So(bestiary, ShouldHaveLength, 3)
 			So(bestiary[0].Monster.Name, ShouldEqual, "Katakan")
+			So(bestiary[0].Monster.Category, ShouldEqual, "Vampire")
+			So(bestiary[0].Kingdom.Name, ShouldEqual, "Nilfgaard")
+		})
+		Convey("Populate with select", func() {
+			bestiary := BestiaryModel.Find().Populate(primitive.M{
+				"path":   "monster",
+				"select": primitive.M{"name": 1},
+			}, "kingdom").ExecTT()
+			So(bestiary, ShouldHaveLength, 3)
+			So(bestiary[0].Monster.Name, ShouldEqual, "Katakan")
+			So(bestiary[0].Monster.Category, ShouldEqual, "")
 			So(bestiary[0].Kingdom.Name, ShouldEqual, "Nilfgaard")
 		})
 	})
