@@ -25,26 +25,20 @@ func replaceOperator(value string, operator string) string {
 }
 
 func parseOperatorValue(value any, operator string) any {
+	strVal := cast.ToString(value)
 	if operator != "" {
-		value = replaceOperator(cast.ToString(value), operator)
+		strVal = replaceOperator(strVal, operator)
 	}
-	if regexp.MustCompile(`^[0-9]+$`).MatchString(cast.ToString(value)) {
-		value = cast.ToFloat64(value)
-	} else {
-		time, err := cast.ToTimeE(value)
-		switch {
-		case err == nil:
-			value = time
-		case regexp.MustCompile(`^[0-9a-fA-F]{24}$`).MatchString(cast.ToString(value)):
-			value, err = primitive.ObjectIDFromHex(cast.ToString(value))
-			if err != nil {
-				value = cast.ToString(value)
-			}
-		default:
-			value = cast.ToString(value)
-		}
+	if f, err := cast.ToFloat64E(strVal); err == nil {
+		return f
 	}
-	return value
+	if oid, err := primitive.ObjectIDFromHex(strVal); err == nil {
+		return oid
+	}
+	if t, err := cast.ToTimeE(strVal); err == nil {
+		return t
+	}
+	return strVal
 }
 
 func mapValue(value any) any {

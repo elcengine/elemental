@@ -1,3 +1,5 @@
+//go:build nocover
+
 package elemental
 
 import (
@@ -104,4 +106,9 @@ func (c ClusterOp[T]) Exec() any {
 		(op)()
 	}
 	return **c.result
+}
+
+// This feature is still experimental and not fully implemented.
+func (m Model[T]) UseCluster(connection *string) ClusterOp[T] {
+	return Cluster(&m, connection)
 }

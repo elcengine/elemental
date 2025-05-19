@@ -5,7 +5,10 @@ import (
 	"testing"
 
 	elemental "github.com/elcengine/elemental/core"
+	"github.com/elcengine/elemental/tests/fixtures/mocks"
 	ts "github.com/elcengine/elemental/tests/fixtures/setup"
+	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -58,5 +61,30 @@ func TestTransaction(t *testing.T) {
 				So(eredin, ShouldBeNil)
 			})
 		})
+	})
+
+	Convey("Basic transaction", t, func() {
+		result, err := elemental.Transaction(func(ctx mongo.SessionContext) (any, error) {
+			return UserModel.Create(User{
+				Name: uuid.NewString(),
+			}).Exec(ctx), nil
+		})
+		So(err, ShouldBeNil)
+		So(result, ShouldNotBeNil)
+	})
+
+	Convey("Client transaction", t, func() {
+		alias := uuid.NewString()
+		elemental.Connect(elemental.ConnectionOptions{
+			URI:   mocks.DEFAULT_DATASOURCE,
+			Alias: alias,
+		})
+		result, err := elemental.ClientTransaction(alias, func(ctx mongo.SessionContext) (any, error) {
+			return UserModel.Create(User{
+				Name: uuid.NewString(),
+			}).SetConnection(alias).Exec(ctx), nil
+		})
+		So(err, ShouldBeNil)
+		So(result, ShouldNotBeNil)
 	})
 }

@@ -50,4 +50,17 @@ func TestCoreSchedule(t *testing.T) {
 			return
 		})
 	})
+
+	Convey("Unschedule all queries", t, func() {
+		coll := uuid.NewString()
+		KingdomModel.Create(Kingdom{
+			Name: uuid.NewString(),
+		}).SetCollection(coll).Schedule("*/2 * * * * *").ExecInt()
+
+		KingdomModel.UnscheduleAll()
+
+		time.Sleep(2 * time.Second)
+
+		So(KingdomModel.Find().SetCollection(coll).ExecTT(), ShouldHaveLength, 0)
+	})
 }

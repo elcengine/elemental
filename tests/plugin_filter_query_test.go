@@ -1,12 +1,15 @@
+//nolint:maintidx
 package tests
 
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	fq "github.com/elcengine/elemental/plugins/filterquery"
 	"github.com/elcengine/elemental/tests/fixtures/mocks"
 	ts "github.com/elcengine/elemental/tests/fixtures/setup"
+	"github.com/samber/lo"
 
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson"
@@ -26,6 +29,10 @@ func TestPluginFilterQuery(t *testing.T) {
 				result := fq.Parse("filter[name]=John")
 				So(result.Filters, ShouldResemble, bson.M{"name": "John"})
 			})
+			Convey("Equality with a boolean", func() {
+				result := fq.Parse("filter[active]=true")
+				So(result.Filters, ShouldResemble, bson.M{"active": true})
+			})
 		})
 		Convey("Advanced Syntax", func() {
 			Convey("Equality", func() {
@@ -36,9 +43,22 @@ func TestPluginFilterQuery(t *testing.T) {
 				result := fq.Parse("filter[age]=ne(30)")
 				So(result.Filters, ShouldResemble, bson.M{"age": bson.M{"$ne": 30.0}})
 			})
+			Convey("Equality with a boolean", func() {
+				result := fq.Parse("filter[active]=eq(true)")
+				So(result.Filters, ShouldResemble, bson.M{"active": bson.M{"$eq": true}})
+			})
+			Convey("Equality with ObjectId", func() {
+				id := primitive.NewObjectID()
+				result := fq.Parse(fmt.Sprintf("filter[_id]=eq(%s)", id.Hex()))
+				So(result.Filters, ShouldResemble, bson.M{"_id": bson.M{"$eq": id}})
+			})
 			Convey("Greater Than", func() {
 				result := fq.Parse("filter[age]=gt(30)")
 				So(result.Filters, ShouldResemble, bson.M{"age": bson.M{"$gt": 30.0}})
+			})
+			Convey("Greater Than with Time", func() {
+				result := fq.Parse("filter[createdAt]=gt(2023-01-01T00:00:00Z)")
+				So(result.Filters, ShouldResemble, bson.M{"createdAt": bson.M{"$gt": lo.Must(time.Parse(time.RFC3339, "2023-01-01T00:00:00Z"))}})
 			})
 			Convey("Less Than", func() {
 				result := fq.Parse("filter[age]=lt(30)")
@@ -64,6 +84,10 @@ func TestPluginFilterQuery(t *testing.T) {
 				result := fq.Parse("filter[name]=reg(^J)")
 				So(result.Filters, ShouldResemble, bson.M{"name": bson.M{"$regex": primitive.Regex{Pattern: "^J", Options: ""}}})
 			})
+			Convey("Regex with modifiers", func() {
+				result := fq.Parse("filter[name]=reg(^J...[i])")
+				So(result.Filters, ShouldResemble, bson.M{"name": bson.M{"$regex": primitive.Regex{Pattern: "^J", Options: "i"}}})
+			})
 			Convey("Exists", func() {
 				result := fq.Parse("filter[name]=exists(true)")
 				So(result.Filters, ShouldResemble, bson.M{"name": bson.M{"$exists": true}})
@@ -72,6 +96,29 @@ func TestPluginFilterQuery(t *testing.T) {
 		Convey("When not present in query string", func() {
 			result := fq.Parse("")
 			So(len(result.Filters), ShouldEqual, 0)
+		})
+		Convey("Complex operators", func() {
+			Convey("Or", func() {
+				result := fq.Parse("filter[or]=name=eq(John),age=gt(30)")
+				So(result.Filters, ShouldResemble, bson.M{"$or": []any{
+					bson.M{"name": bson.M{"$eq": "John"}},
+					bson.M{"age": bson.M{"$gt": 30.0}},
+				}})
+			})
+			Convey("Or within values", func() {
+				result := fq.Parse("filter[age]=or(lt(30),gt(40))")
+				So(result.Filters, ShouldResemble, bson.M{"$or": []any{
+					bson.M{"age": bson.M{"$lt": 30.0}},
+					bson.M{"age": bson.M{"$gt": 40.0}},
+				}})
+			})
+			Convey("And", func() {
+				result := fq.Parse("filter[and]=name=eq(John),age=gt(30)")
+				So(result.Filters, ShouldResemble, bson.M{"$and": []any{
+					bson.M{"name": bson.M{"$eq": "John"}},
+					bson.M{"age": bson.M{"$gt": 30.0}},
+				}})
+			})
 		})
 	})
 

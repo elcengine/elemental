@@ -67,6 +67,10 @@ func TestCoreReadSelect(t *testing.T) {
 				users := UserModel.Find().Select("name, -_id").Limit(limit).ExecTT()
 				assert(users)
 			})
+			Convey("In conjunction with variadic arguments", func() {
+				users := UserModel.Find().Select("name", "-_id").Limit(limit).ExecTT()
+				assert(users)
+			})
 		})
 		Convey(fmt.Sprintf("%d user names and ages", limit), func() {
 			assert := func(users []User) {

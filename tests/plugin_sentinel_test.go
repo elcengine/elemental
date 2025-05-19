@@ -129,6 +129,35 @@ func TestRequestValidator(t *testing.T) {
 			})
 		})
 
+		Convey("Equals document validation", func() {
+			type CreateUserDTO struct {
+				Name       string `json:"name"`
+				Age        int    `validate:"max=150,min=18" json:"age"`
+				Occupation string `json:"occupation"`
+				Income     int    `augmented_validate:"equals=occupations->minimum_income" ref:"occupation" json:"income"`
+			}
+			Convey("Should return error if document is not equal to the specified field", func() {
+				request := CreateUserDTO{
+					Name:       mocks.Geralt.Name,
+					Age:        mocks.Geralt.Age,
+					Occupation: mocks.Geralt.Occupation,
+					Income:     50,
+				}
+				err := sentinel.Legitimize(request)
+				So(err, ShouldEqual, sentinel.NewFieldError("CreateUserDTO", "Income", "equals"))
+			})
+			Convey("Should not return error if document is equal to the specified field", func() {
+				request := CreateUserDTO{
+					Name:       mocks.Geralt.Name,
+					Age:        mocks.Geralt.Age,
+					Occupation: mocks.Geralt.Occupation,
+					Income:     100,
+				}
+				err := sentinel.Legitimize(request)
+				So(err, ShouldBeNil)
+			})
+		})
+
 		Convey("Greater than document validation", func() {
 			type CreateUserDTO struct {
 				Name       string `json:"name"`

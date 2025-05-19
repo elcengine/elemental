@@ -36,7 +36,7 @@ func Parse(qs string) Result {
 		}
 		pair := strings.Split(query, "=")
 		key := pair[0]
-		value := pair[1]
+		value := strings.Join(pair[1:], "=")
 		if strings.Contains(key, "filter") {
 			if filterKey := extractFieldName(key); filterKey != "" {
 				result.Filters[filterKey] = value
