@@ -253,5 +253,30 @@ func TestPluginFilterQuery(t *testing.T) {
 			So(result.Docs[0].Name, ShouldEqual, mocks.Ciri.Name)
 			So(result.Docs[1].Name, ShouldEqual, mocks.Geralt.Name)
 		})
+		Convey("When an include is present in query string", func() {
+			MonsterModel := MonsterModel.SetDatabase(t.Name())
+			KingdomModel := KingdomModel.SetDatabase(t.Name())
+			BestiaryModel := BestiaryModel.SetDatabase(t.Name())
+
+			monster := MonsterModel.Create(Monster{
+				Name:     "Katakan",
+				Category: "Vampire",
+			}).ExecT()
+
+			kingdom := KingdomModel.Create(Kingdom{
+				Name: "Nilfgaard",
+			}).ExecT()
+
+			BestiaryModel.Create(Bestiary{
+				Monster: monster,
+				Kingdom: kingdom,
+			}).Exec()
+
+			bestiaries := BestiaryModel.QS("include=monster,kingdom").ExecTT()
+			So(bestiaries, ShouldHaveLength, 1)
+			So(bestiaries[0].Monster.Name, ShouldEqual, monster.Name)
+			So(bestiaries[0].Monster.Category, ShouldEqual, monster.Category)
+			So(bestiaries[0].Kingdom.Name, ShouldEqual, kingdom.Name)
+		})
 	})
 }
