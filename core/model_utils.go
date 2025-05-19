@@ -122,19 +122,21 @@ func (m Model[T]) findMatchStage() bson.M {
 }
 
 func (m Model[T]) parseDocument(doc any) primitive.M {
-	if reflect.TypeOf(doc).Kind() == reflect.Ptr {
+	docType := reflect.TypeOf(doc).Kind()
+	if docType == reflect.Ptr {
 		doc = reflect.ValueOf(doc).Elem().Interface()
 	}
-	if reflect.TypeOf(doc).Kind() == reflect.Map {
+	if docType == reflect.Map {
 		return utils.Cast[primitive.M](doc)
 	}
-	result := utils.ToBSONDoc(doc)
-	for k, v := range *result {
-		if !reflect.ValueOf(v).IsValid() || reflect.ValueOf(v).IsZero() {
-			delete(*result, k)
+	result := *utils.ToBSONDoc(doc)
+	for k, v := range result {
+		fieldValue := reflect.ValueOf(v)
+		if !fieldValue.IsValid() || fieldValue.IsZero() {
+			delete(result, k)
 		}
 	}
-	return *result
+	return result
 }
 
 func parseUpdateOptions[T any, O any](m Model[T], opts []*O) []*O {

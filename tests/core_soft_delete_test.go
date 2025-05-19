@@ -88,6 +88,8 @@ func TestCoreSoftDelete(t *testing.T) {
 			}
 
 			So(UserModel.CountDocuments().Exec(), ShouldEqual, 0)
+
+			So(UserModel.Distinct("name").Exec(), ShouldBeEmpty)
 		})
 	})
 }
