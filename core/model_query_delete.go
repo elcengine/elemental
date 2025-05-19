@@ -19,7 +19,7 @@ import (
 func (m Model[T]) FindOneAndDelete(query ...primitive.M) Model[T] {
 	q := utils.MergedQueryOrDefault(query)
 	if m.softDeleteEnabled {
-		m = m.UpdateOne(&q, m.softDeletePayload())
+		m = m.FindOneAndUpdate(&q, m.softDeletePayload())
 	} else {
 		m.executor = func(m Model[T], ctx context.Context) any {
 			var doc T
@@ -121,8 +121,8 @@ func (m Model[T]) DeleteMany(query ...primitive.M) Model[T] {
 }
 
 // Enables soft delete for the model.
-func (m *Model[T]) EnableSoftDelete() {
-	m.deletedAtFieldName = "deleted_at"
+func (m *Model[T]) EnableSoftDelete(deletedAtFieldName ...string) {
+	m.deletedAtFieldName = lo.CoalesceOrEmpty(lo.FirstOrEmpty(deletedAtFieldName), "deleted_at")
 	m.softDeleteEnabled = true
 }
 
