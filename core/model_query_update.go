@@ -178,8 +178,8 @@ func (m Model[T]) Set(doc any) Model[T] {
 }
 
 func (m Model[T]) Unset(doc any) Model[T] {
-	if reflect.TypeOf(doc).Kind() == reflect.String {
-		doc = primitive.M{doc.(string): ""}
+	if s, ok := doc.(string); ok {
+		doc = primitive.M{s: ""}
 	}
 	return m.setUpdateOperator("$unset", doc)
 }

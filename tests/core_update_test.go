@@ -154,6 +154,13 @@ func TestCoreUpdate(t *testing.T) {
 			updatedUser := UserModel.FindOne().Where("name", mocks.Vesemir.Name).ExecT()
 			So(updatedUser.School, ShouldBeZeroValue)
 		})
+		Convey("Set school of a user using set", func() {
+			UserModel.Where("name", mocks.Vesemir.Name).Set(primitive.M{
+				"school": "Kaer Morhen",
+			}).Exec()
+			updatedUser := UserModel.FindOne().Where("name", mocks.Vesemir.Name).ExecT()
+			So(updatedUser.School, ShouldEqual, lo.ToPtr("Kaer Morhen"))
+		})
 		Convey("Add a weapon to a user", func() {
 			UserModel.Where("name", mocks.Vesemir.Name).Push("weapons", "Xiphos").Exec()
 			updatedUser := UserModel.FindOne().Where("name", mocks.Vesemir.Name).ExecT()
@@ -195,6 +202,24 @@ func TestCoreUpdate(t *testing.T) {
 			UserModel.Where("name", mocks.Vesemir.Name).Shift("weapons").Exec()
 			updatedUser := UserModel.FindOne().Where("name", mocks.Vesemir.Name).ExecT()
 			So(len(updatedUser.Weapons), ShouldEqual, len(user.Weapons)-1)
+		})
+		Convey("Set age of user only if it is greater than current age", func() {
+			UserModel.Where("name", mocks.Vesemir.Name).Max("age", 50).Exec()
+			updatedUser := UserModel.FindOne().Where("name", mocks.Vesemir.Name).ExecT()
+			So(updatedUser.Age, ShouldEqual, mocks.Vesemir.Age)
+
+			UserModel.Where("name", mocks.Vesemir.Name).Max("age", 301).Exec()
+			updatedUser = UserModel.FindOne().Where("name", mocks.Vesemir.Name).ExecT()
+			So(updatedUser.Age, ShouldEqual, 301)
+		})
+		Convey("Set age of user only if it is less than current age", func() {
+			UserModel.Where("name", mocks.Yennefer.Name).Min("age", 200).Exec()
+			updatedUser := UserModel.FindOne().Where("name", mocks.Yennefer.Name).ExecT()
+			So(updatedUser.Age, ShouldEqual, mocks.Yennefer.Age)
+
+			UserModel.Where("name", mocks.Yennefer.Name).Min("age", 80).Exec()
+			updatedUser = UserModel.FindOne().Where("name", mocks.Yennefer.Name).ExecT()
+			So(updatedUser.Age, ShouldEqual, 80)
 		})
 	})
 }
