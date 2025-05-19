@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-type FilterQueryResult struct {
+type Result struct {
 	Filters          bson.M   // Primary filters which are usually evaluated as the first stage of an aggregation query
 	SecondaryFilters bson.M   // Secondary filters which are usually evaluated after any lookups
 	Sorts            bson.M   // Fields to sort by, with 1 or 'asc' for ascending and -1 or 'desc' for descending
@@ -17,14 +17,19 @@ type FilterQueryResult struct {
 	Limit            int64    // The page size for pagination
 }
 
+// Type alias for the Result struct
+//
+// Deprecated: Use Result instead.
+type FilterQueryResult = Result
+
 // Parses the given query string into a Elemental FilterQueryResult.
-func Parse(queryString string) FilterQueryResult {
-	result := FilterQueryResult{}
+func Parse(qs string) Result {
+	result := Result{}
 	result.Filters = bson.M{}
 	result.SecondaryFilters = bson.M{}
 	result.Sorts = bson.M{}
 	result.Select = bson.M{}
-	queries := strings.Split(queryString, "&")
+	queries := strings.Split(qs, "&")
 	for _, query := range queries {
 		if query == "" {
 			continue
