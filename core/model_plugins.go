@@ -1,6 +1,8 @@
 package elemental
 
-import "github.com/elcengine/elemental/plugins/filterquery"
+import (
+	"github.com/elcengine/elemental/plugins/filterquery"
+)
 
 // QS allows you to construct an Elemental query directly from a request's query string.
 //
@@ -23,7 +25,9 @@ func (m Model[T]) QSR(result fq.Result) Model[T] {
 		m = m.Find(result.Filters)
 	}
 	if len(result.Include) > 0 {
-		m = m.Populate(result.Include)
+		for _, field := range result.Include {
+			m = m.Populate(field)
+		}
 	}
 	if len(result.SecondaryFilters) > 0 {
 		m = m.Find(result.SecondaryFilters)

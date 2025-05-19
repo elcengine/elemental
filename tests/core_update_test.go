@@ -56,6 +56,25 @@ func TestCoreUpdate(t *testing.T) {
 			}).Upsert().Exec()
 			So(UserModel.Where("name", "Triss").Exec(), ShouldHaveLength, 1)
 		})
+		Convey("Update user with upsert within options", func() {
+			UserModel.UpdateOne(&primitive.M{"name": "Letho"}, User{
+				Name: "Letho",
+			}, &options.UpdateOptions{
+				Upsert: lo.ToPtr(true),
+			}).Exec()
+			So(UserModel.Where("name", "Letho").Exec(), ShouldHaveLength, 1)
+		})
+		Convey("Update a user with a pointer document", func() {
+			user := User{
+				Name: "Foltest",
+				Age:  50,
+			}
+			UserModel.Create(user).Exec()
+			UserModel.UpdateOne(&primitive.M{"name": user.Name}, &User{
+				Age: 51,
+			}).Exec()
+			So(UserModel.FindOne().Where("name", user.Name).ExecT().Age, ShouldEqual, 51)
+		})
 		Convey("Update user by ID", func() {
 			user := UserModel.FindOne().Where("name", "Triss").ExecT()
 			UserModel.UpdateByID(user.ID, User{
@@ -103,7 +122,7 @@ func TestCoreUpdate(t *testing.T) {
 				Weapons: []string{"Dagger"},
 			}).Exec()
 			users := UserModel.Where("weapons", "Dagger").ExecTT()
-			So(users, ShouldHaveLength, len(mocks.Users)+1)
+			So(users, ShouldHaveLength, len(mocks.Users)+3)
 		})
 		Convey("Increment age of a user", func() {
 			UserModel.Where("name", mocks.Vesemir.Name).Inc("age", 1).Exec()

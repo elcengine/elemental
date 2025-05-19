@@ -36,6 +36,16 @@ func TestCoreMiddleware(t *testing.T) {
 		return true
 	})
 
+	CastleModel.PostSave(func(castle Castle) bool {
+		invokedHooks["postSaveSecond"] = true
+		return false
+	})
+
+	CastleModel.PostSave(func(castle Castle) bool {
+		invokedHooks["postSaveThird"] = true
+		return true
+	})
+
 	CastleModel.PreUpdateOne(func(doc any) bool {
 		invokedHooks["preUpdateOne"] = true
 		return true
@@ -140,6 +150,8 @@ func TestCoreMiddleware(t *testing.T) {
 	Convey("Post hooks", t, func() {
 		Convey("Save", func() {
 			So(invokedHooks["postSave"], ShouldBeTrue)
+			So(invokedHooks["postSaveSecond"], ShouldBeTrue)
+			So(invokedHooks["postSaveThird"], ShouldBeFalse)
 		})
 		Convey("UpdateOne", func() {
 			So(invokedHooks["postUpdateOne"], ShouldBeTrue)

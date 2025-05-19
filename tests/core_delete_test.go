@@ -1,12 +1,14 @@
 package tests
 
 import (
+	"errors"
 	"testing"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/elcengine/elemental/tests/fixtures/mocks"
 	ts "github.com/elcengine/elemental/tests/fixtures/setup"
+	"github.com/google/uuid"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -45,6 +47,21 @@ func TestCoreDelete(t *testing.T) {
 			So(user.Name, ShouldEqual, mocks.Eredin.Name)
 			UserModel.Delete(user).Exec()
 			So(UserModel.FindByID(user.ID).Exec(), ShouldBeNil)
+		})
+		Convey("Delete a user using fail with", func() {
+			user := UserModel.FindOne().ExecT()
+			So(user.Name, ShouldEqual, mocks.Caranthir.Name)
+
+			So(func() {
+				UserModel.SetConnection(uuid.NewString()).DeleteByID(user.ID).OrFail().Exec()
+			}, ShouldPanicWith, errors.New("no results found matching the given query"))
+
+			Convey("With custom error", func() {
+				err := errors.New("some custom error")
+				So(func() {
+					UserModel.SetConnection(uuid.NewString()).DeleteByID(user.ID).OrFail(err).Exec()
+				}, ShouldPanicWith, err)
+			})
 		})
 		Convey("Delete a user by ID", func() {
 			user := UserModel.FindOne().ExecT()
