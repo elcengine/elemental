@@ -7,15 +7,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var dateTime primitive.DateTime
-var objectID primitive.ObjectID
-
-var reflectTypeDateTimePtr = reflect.TypeOf(&dateTime)
-var reflectTypeDateTime = reflect.TypeOf(dateTime)
-
-var reflectTypeObjectIDPtr = reflect.TypeOf(&objectID)
-var reflectTypeObjectID = reflect.TypeOf(objectID)
-
 func IsEmpty(value any) bool {
 	if value == nil {
 		return true
@@ -23,16 +14,15 @@ func IsEmpty(value any) bool {
 	if lo.IsEmpty(value) {
 		return true
 	}
+	if dt, ok := value.(primitive.DateTime); ok {
+		return dt.Time().IsZero()
+	}
+	if oid, ok := value.(primitive.ObjectID); ok {
+		return oid.IsZero()
+	}
 	reflectedValue := reflect.ValueOf(value)
 	if !reflectedValue.IsValid() || reflectedValue.IsZero() {
 		return true
-	}
-	reflectedValueType := reflect.TypeOf(value)
-	if reflectedValueType == reflectTypeDateTimePtr || reflectedValueType == reflectTypeDateTime {
-		return value.(primitive.DateTime).Time().IsZero()
-	}
-	if reflectedValueType == reflectTypeObjectIDPtr || reflectedValueType == reflectTypeObjectID {
-		return value.(primitive.ObjectID).IsZero()
 	}
 	return false
 }
