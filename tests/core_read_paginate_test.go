@@ -6,6 +6,7 @@ import (
 	elemental "github.com/elcengine/elemental/core"
 	"github.com/elcengine/elemental/tests/fixtures/mocks"
 	ts "github.com/elcengine/elemental/tests/fixtures/setup"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/samber/lo"
 	. "github.com/smartystreets/goconvey/convey"
@@ -59,6 +60,19 @@ func TestCoreReadPaginate(t *testing.T) {
 			So(result.NextPage, ShouldBeNil)
 			So(result.PrevPage, ShouldEqual, lo.ToPtr[int64](3))
 			So(result.Docs[0].Name, ShouldEqual, mocks.Vesemir.Name)
+		})
+		Convey("First page with filters", func() {
+			result := UserModel.Find(primitive.M{"name": "Ciri"}).Paginate(1, 2).Exec().(elemental.PaginateResult[User])
+			So(len(result.Docs), ShouldEqual, 1)
+			So(result.TotalPages, ShouldEqual, 1)
+			So(result.Page, ShouldEqual, 1)
+			So(result.Limit, ShouldEqual, 2)
+			So(result.TotalDocs, ShouldEqual, 1)
+			So(result.HasPrev, ShouldBeFalse)
+			So(result.HasNext, ShouldBeFalse)
+			So(result.NextPage, ShouldBeNil)
+			So(result.PrevPage, ShouldBeNil)
+			So(result.Docs[0].Name, ShouldEqual, mocks.Ciri.Name)
 		})
 	})
 }
