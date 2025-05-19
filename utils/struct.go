@@ -14,18 +14,15 @@ func IsEmpty(value any) bool {
 	if lo.IsEmpty(value) {
 		return true
 	}
+	if dt, ok := value.(primitive.DateTime); ok {
+		return dt.Time().IsZero()
+	}
+	if oid, ok := value.(primitive.ObjectID); ok {
+		return oid.IsZero()
+	}
 	reflectedValue := reflect.ValueOf(value)
 	if !reflectedValue.IsValid() || reflectedValue.IsZero() {
 		return true
-	}
-	reflectedValueType := reflect.TypeOf(value)
-	var dateTime primitive.DateTime
-	if reflectedValueType == reflect.TypeOf(&dateTime) || reflectedValueType == reflect.TypeOf(dateTime) {
-		return value.(primitive.DateTime).Time().IsZero()
-	}
-	var objectID primitive.ObjectID
-	if reflectedValueType == reflect.TypeOf(&objectID) || reflectedValueType == reflect.TypeOf(objectID) {
-		return value.(primitive.ObjectID).IsZero()
 	}
 	return false
 }
