@@ -20,24 +20,19 @@ var initCmd = &cobra.Command{
 		if err == nil {
 			return
 		}
+
 		if !os.IsNotExist(err) {
 			log.Fatal(err)
 		}
-		f, err := os.Create(DefaultConfigFile)
-		if err != nil {
-			log.Fatal(err)
-		}
+
+		f := lo.Must(os.Create(DefaultConfigFile))
 		defer f.Close()
-		bytes, err := json.MarshalIndent(configWithDefaults(&Config{
+
+		bytes := lo.Must(json.MarshalIndent(configWithDefaults(&Config{
 			ConnectionStr: lo.FirstOrEmpty(args),
-		}), "", "  ")
-		if err != nil {
-			log.Fatal(err)
-		}
-		_, err = f.Write(bytes)
-		if err != nil {
-			log.Fatal(err)
-		}
+		}), "", "  "))
+		lo.Must(f.Write(bytes))
+
 		fmt.Println("\033[32mElemental config file created at", DefaultConfigFile, "\033[0m")
 	},
 }
