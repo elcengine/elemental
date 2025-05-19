@@ -18,7 +18,7 @@ func (m Model[T]) QS(query string) Model[T] {
 // Usage:
 //
 //	UserModel.QSR(fq.Parse("filter[name]=John&sort[name]=asc&include=field1&select=field1")).ExecTT()
-func (m Model[T]) QSR(result fq.FilterQueryResult) Model[T] {
+func (m Model[T]) QSR(result fq.Result) Model[T] {
 	if len(result.Filters) > 0 {
 		m = m.Find(result.Filters)
 	}
