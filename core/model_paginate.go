@@ -49,7 +49,7 @@ func (m Model[T]) Paginate(page, limit int64) Model[T] {
 		var results []facetResult[T]
 		cursor := lo.Must(m.Collection().Aggregate(ctx, m.pipeline))
 		m.checkConditionsAndPanicForErr(cursor.All(ctx, &results))
-		totalDocs := results[0].Count[0]["count"]
+		totalDocs := lo.FirstOrEmpty(results[0].Count)["count"]
 		totalPages := (totalDocs + limit - 1) / limit
 		var prevPage, nextPage *int64
 		prevPage = lo.ToPtr(page - 1)
