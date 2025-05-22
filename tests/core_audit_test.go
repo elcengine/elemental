@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"reflect"
 	"testing"
 
 	pc "github.com/akalanka47000/go-modkit/parallel_convey"
@@ -19,7 +18,7 @@ func TestCoreAudit(t *testing.T) {
 
 	KingdomModel := elemental.NewModel[Kingdom](entity, elemental.NewSchema(map[string]elemental.Field{
 		"Name": {
-			Type:     reflect.String,
+			Type:     elemental.String,
 			Required: true,
 		},
 	})).SetDatabase(t.Name())

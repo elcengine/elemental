@@ -2,7 +2,6 @@ package tests
 
 import (
 	"fmt"
-	"reflect"
 	"regexp"
 	"testing"
 
@@ -31,7 +30,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 		Convey("Collection should be a plural of the model name if not specified", func() {
 			CastleModel := elemental.NewModel[Castle]("Castle", elemental.NewSchema(map[string]elemental.Field{
 				"Name": {
-					Type:     reflect.String,
+					Type:     elemental.String,
 					Required: true,
 				},
 			})).SetDatabase(t.Name())
@@ -44,7 +43,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 			collectionOptions.SetSizeInBytes(1024)
 			KingdomModel := elemental.NewModel[Kingdom]("Kingdom-Temporary", elemental.NewSchema(map[string]elemental.Field{
 				"Name": {
-					Type:     reflect.String,
+					Type:     elemental.String,
 					Required: true,
 				},
 			}, elemental.SchemaOptions{
@@ -58,7 +57,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 			DATABASE := fmt.Sprintf("%s_%s", t.Name(), "temporary_1")
 			MonsterModel := elemental.NewModel[Monster]("Monster-Temporary", elemental.NewSchema(map[string]elemental.Field{
 				"Name": {
-					Type:     reflect.String,
+					Type:     elemental.String,
 					Required: true,
 				},
 			}, elemental.SchemaOptions{
@@ -79,7 +78,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 			Convey("Required field with default", func() {
 				Model := elemental.NewModel[User](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
 					"Name": {
-						Type:     reflect.String,
+						Type:     elemental.String,
 						Required: true,
 						Default:  "Placeholder",
 					},
@@ -94,7 +93,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 			Convey("Min check", func() {
 				Model := elemental.NewModel[User](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
 					"Age": {
-						Type: reflect.Int,
+						Type: elemental.Int,
 						Min:  10,
 					},
 				}))
@@ -111,7 +110,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 			Convey("Max check", func() {
 				Model := elemental.NewModel[User](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
 					"Age": {
-						Type: reflect.Int,
+						Type: elemental.Int,
 						Max:  120,
 					},
 				}))
@@ -128,7 +127,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 			Convey("Length check", func() {
 				Model := elemental.NewModel[User](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
 					"Name": {
-						Type:   reflect.String,
+						Type:   elemental.String,
 						Length: 10,
 					},
 				}))
@@ -142,7 +141,7 @@ func TestCoreSchemaOptions(t *testing.T) {
 			Convey("Regex check", func() {
 				Model := elemental.NewModel[User](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
 					"Name": {
-						Type:  reflect.String,
+						Type:  elemental.String,
 						Regex: regexp.MustCompile("^[A-Z]+$"),
 					},
 				}))

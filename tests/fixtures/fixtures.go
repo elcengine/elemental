@@ -2,7 +2,6 @@
 package fixtures
 
 import (
-	"reflect"
 	"time"
 
 	elemental "github.com/elcengine/elemental/core"
@@ -70,23 +69,23 @@ const DefaultUserAge = 18
 
 var UserModel = elemental.NewModel[User]("User", elemental.NewSchema(map[string]elemental.Field{
 	"Name": {
-		Type:     reflect.String,
+		Type:     elemental.String,
 		Required: true,
 		Index:    options.Index().SetUnique(true),
 	},
 	"Age": {
-		Type:    reflect.Int,
+		Type:    elemental.Int,
 		Default: DefaultUserAge,
 	},
 	"Occupation": {
-		Type: reflect.String,
+		Type: elemental.String,
 	},
 	"Weapons": {
-		Type:    reflect.Slice,
+		Type:    elemental.Slice,
 		Default: []string{},
 	},
 	"Retired": {
-		Type:    reflect.Bool,
+		Type:    elemental.Bool,
 		Default: false,
 	},
 }, elemental.SchemaOptions{
@@ -95,30 +94,30 @@ var UserModel = elemental.NewModel[User]("User", elemental.NewSchema(map[string]
 
 var MonsterModel = elemental.NewModel[Monster]("Monster", elemental.NewSchema(map[string]elemental.Field{
 	"Name": {
-		Type:     reflect.String,
+		Type:     elemental.String,
 		Required: true,
 	},
 	"Category": {
-		Type: reflect.String,
+		Type: elemental.String,
 	},
 	"Weaknesses": {
-		Type: reflect.Struct,
+		Type: elemental.Struct,
 		Schema: lo.ToPtr(elemental.NewSchema(map[string]elemental.Field{
 			"Oils": {
-				Type: reflect.Slice,
+				Type: elemental.Slice,
 			},
 			"Signs": {
-				Type:    reflect.Slice,
+				Type:    elemental.Slice,
 				Default: []string{"Igni"},
 			},
 			"Decoctions": {
-				Type: reflect.Slice,
+				Type: elemental.Slice,
 			},
 			"Bombs": {
-				Type: reflect.Slice,
+				Type: elemental.Slice,
 			},
 			"InvulnerableTo": {
-				Type:    reflect.Slice,
+				Type:    elemental.Slice,
 				Default: []string{"Steel"},
 			},
 		})),
@@ -129,7 +128,7 @@ var MonsterModel = elemental.NewModel[Monster]("Monster", elemental.NewSchema(ma
 
 var KingdomModel = elemental.NewModel[Kingdom]("Kingdom", elemental.NewSchema(map[string]elemental.Field{
 	"Name": {
-		Type:     reflect.String,
+		Type:     elemental.String,
 		Required: true,
 	},
 }, elemental.SchemaOptions{
@@ -138,11 +137,11 @@ var KingdomModel = elemental.NewModel[Kingdom]("Kingdom", elemental.NewSchema(ma
 
 var BestiaryModel = elemental.NewModel[Bestiary]("Bestiary", elemental.NewSchema(map[string]elemental.Field{
 	"Monster": {
-		Type: reflect.Struct,
+		Type: elemental.Struct,
 		Ref:  "Monster",
 	},
 	"Kingdom": {
-		Type: reflect.Struct,
+		Type: elemental.ObjectID,
 		Ref:  "Kingdom",
 	},
 }, elemental.SchemaOptions{
@@ -151,7 +150,7 @@ var BestiaryModel = elemental.NewModel[Bestiary]("Bestiary", elemental.NewSchema
 
 var BestiaryWithIDModel = elemental.NewModel[BestiaryWithID]("BestiaryWithID", elemental.NewSchema(map[string]elemental.Field{
 	"MonsterID": {
-		Type:    reflect.String,
+		Type:    elemental.String,
 		Ref:     "Monster",
 		IsRefID: true,
 	},

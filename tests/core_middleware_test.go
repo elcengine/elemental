@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"reflect"
 	"testing"
 
 	elemental "github.com/elcengine/elemental/core"
@@ -21,7 +20,7 @@ func TestCoreMiddleware(t *testing.T) {
 
 	CastleModel := elemental.NewModel[Castle]("Castle-For-Middleware", elemental.NewSchema(map[string]elemental.Field{
 		"Name": {
-			Type:     reflect.String,
+			Type:     elemental.String,
 			Required: true,
 		},
 	})).SetDatabase(t.Name())

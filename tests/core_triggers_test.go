@@ -2,7 +2,6 @@ package tests
 
 import (
 	"context"
-	"reflect"
 	"testing"
 	"time"
 
@@ -20,7 +19,7 @@ func TestCoreTriggers(t *testing.T) {
 
 	CastleModel := elemental.NewModel[Castle]("Castle-For-Triggers", elemental.NewSchema(map[string]elemental.Field{
 		"Name": {
-			Type:     reflect.String,
+			Type:     elemental.String,
 			Required: true,
 		},
 	})).SetDatabase(t.Name())
