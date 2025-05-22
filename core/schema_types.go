@@ -17,7 +17,7 @@ type SchemaOptions struct {
 }
 
 type Field struct {
-	Type       reflect.Kind          // Type of the field. Can be any of the reflect.Kind types, or any of the aliases defined in the elemental package such as elemental.ObjectID or a custom reflected type
+	Type       reflect.Kind          // Type of the field. Can be of reflect.Kind, an alias defined within elemental such as elemental.String or a custom reflection
 	Schema     *Schema               // Defines a subschema for the field if it is a subdocument
 	Required   bool                  // Whether the field is required or not when creating a new document
 	Default    any                   // Default value for the field when creating a new document

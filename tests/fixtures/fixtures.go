@@ -141,7 +141,7 @@ var BestiaryModel = elemental.NewModel[Bestiary]("Bestiary", elemental.NewSchema
 		Ref:  "Monster",
 	},
 	"Kingdom": {
-		Type: elemental.ObjectID,
+		Type: elemental.Struct,
 		Ref:  "Kingdom",
 	},
 }, elemental.SchemaOptions{
