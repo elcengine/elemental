@@ -81,24 +81,26 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 			panic(fmt.Errorf("field %s has an invalid type. It must be of type %s", field, definition.Type.String()))
 		}
 
-		// Nested schema validation
-		if definition.Type == reflect.Struct && definition.Schema != nil {
-			subdocumentField := reflectedField
-			entityToInsert[fieldBsonName] = enforceSchema(*definition.Schema, utils.Cast[*bson.M](val), &subdocumentField.Type, false)
-			continue
-		}
-
-		if hasRef && val != nil {
-			subdocumentField := reflectedField
-			if subdocumentIDField, ok := subdocumentField.Type.FieldByName("ID"); ok {
-				entityToInsert = lo.Assign(
-					entityToInsert,
-					bson.M{
-						fieldBsonName: val.(primitive.M)[subdocumentIDField.Tag.Get("bson")],
-					},
-				)
+		if definition.Type == reflect.Struct {
+			// Nested schema validation
+			if definition.Schema != nil {
+				subdocumentField := reflectedField
+				entityToInsert[fieldBsonName] = enforceSchema(*definition.Schema, utils.Cast[*bson.M](val), &subdocumentField.Type, false)
+				continue
 			}
-			continue
+			// Extract subdocument ID if it exists for ObjectID references
+			if hasRef && val != nil && actualType.Kind() == reflect.Struct {
+				subdocumentField := reflectedField
+				if subdocumentIDField, ok := subdocumentField.Type.FieldByName("ID"); ok {
+					entityToInsert = lo.Assign(
+						entityToInsert,
+						bson.M{
+							fieldBsonName: val.(primitive.M)[subdocumentIDField.Tag.Get("bson")],
+						},
+					)
+				}
+				continue
+			}
 		}
 
 		if definition.Min != 0 {
