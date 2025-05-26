@@ -2,12 +2,11 @@ package elemental
 
 import (
 	"context"
-	"reflect"
-
 	"maps"
 
 	"github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -17,18 +16,16 @@ import (
 // It updates only the first document that matches the query.
 func (m Model[T]) FindOneAndUpdate(query *primitive.M, doc any, opts ...*options.FindOneAndUpdateOptions) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
-		m.middleware.pre.findOneAndUpdate.run(doc)
-		return (func() any {
-			var resultDoc T
-			filters := lo.FromPtr(query)
-			maps.Copy(filters, m.findMatchStage())
-			result := m.Collection().FindOneAndUpdate(ctx, filters,
-				primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
-			m.middleware.post.findOneAndUpdate.run(&resultDoc)
-			m.checkConditionsAndPanicForSingleResult(result)
-			lo.Must0(result.Decode(&resultDoc))
-			return resultDoc
-		})()
+		var resultDoc T
+		filters := lo.FromPtr(query)
+		maps.Copy(filters, m.findMatchStage())
+		m.middleware.pre.findOneAndUpdate.run(&filters, &doc)
+		result := m.Collection().FindOneAndUpdate(ctx, filters,
+			primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
+		m.checkConditionsAndPanicForSingleResult(result)
+		lo.Must0(result.Decode(&resultDoc))
+		m.middleware.post.findOneAndUpdate.run(&resultDoc)
+		return resultDoc
 	}
 	return m
 }
@@ -57,7 +54,7 @@ func (m Model[T]) UpdateOne(query *primitive.M, doc any, opts ...*options.Update
 			filters = lo.FromPtr(query)
 		}
 		maps.Copy(filters, m.findMatchStage())
-		m.middleware.pre.updateOne.run(doc)
+		m.middleware.pre.updateOne.run(&doc)
 		result, err := m.Collection().UpdateOne(ctx, filters,
 			primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
 		m.middleware.post.updateOne.run(result, err)
@@ -80,13 +77,18 @@ func (m Model[T]) UpdateByID(id any, doc any, opts ...*options.UpdateOptions) Mo
 	return m
 }
 
-// Extends the query with an update operation matching the id of the given document
+// Extends the query with an upsert operation matching the id of the given document
 func (m Model[T]) Save(doc T) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
-		m.middleware.pre.save.run(doc)
-		m.UpdateByID(reflect.ValueOf(doc).FieldByName("ID").Interface().(primitive.ObjectID), doc).Exec(ctx) //nolint:contextcheck
-		m.middleware.post.save.run(doc)
-		return doc
+		parsedDoc := m.parseDocument(doc)
+		var resultDoc bson.M
+		m.middleware.pre.save.run(&parsedDoc)
+		result := m.Collection().FindOneAndUpdate(ctx, &primitive.M{"_id": parsedDoc["_id"]},
+			primitive.M{"$set": parsedDoc}, options.FindOneAndUpdate().SetUpsert(true))
+		m.checkConditionsAndPanicForSingleResult(result)
+		lo.Must0(result.Decode(&resultDoc))
+		m.middleware.post.save.run(&resultDoc)
+		return utils.CastBSON[T](resultDoc)
 	}
 	return m
 }
@@ -149,10 +151,11 @@ func (m Model[T]) FindOneAndReplace(query *primitive.M, doc any, opts ...*option
 			filters = lo.FromPtr(query)
 		}
 		maps.Copy(filters, m.findMatchStage())
+		m.middleware.pre.findOneAndReplace.run(&filters, &doc)
 		res := m.Collection().FindOneAndReplace(ctx, filters, m.parseDocument(doc), opts...)
-		m.middleware.post.findOneAndReplace.run(&resultDoc)
 		m.checkConditionsAndPanicForSingleResult(res)
 		lo.Must0(res.Decode(&resultDoc))
+		m.middleware.post.findOneAndReplace.run(&resultDoc)
 		return resultDoc
 	}
 	return m

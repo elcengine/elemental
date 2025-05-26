@@ -7,6 +7,7 @@ import (
 	ts "github.com/elcengine/elemental/tests/fixtures/setup"
 
 	. "github.com/smartystreets/goconvey/convey"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -25,22 +26,22 @@ func TestCoreMiddleware(t *testing.T) {
 		},
 	})).SetDatabase(t.Name())
 
-	CastleModel.PreSave(func(castle Castle) bool {
+	CastleModel.PreSave(func(castle *bson.M) bool {
 		invokedHooks["preSave"] = true
 		return true
 	})
 
-	CastleModel.PostSave(func(castle Castle) bool {
+	CastleModel.PostSave(func(castle *bson.M) bool {
 		invokedHooks["postSave"] = true
 		return true
 	})
 
-	CastleModel.PostSave(func(castle Castle) bool {
+	CastleModel.PostSave(func(castle *bson.M) bool {
 		invokedHooks["postSaveSecond"] = true
 		return false
 	})
 
-	CastleModel.PostSave(func(castle Castle) bool {
+	CastleModel.PostSave(func(castle *bson.M) bool {
 		invokedHooks["postSaveThird"] = true
 		return true
 	})
@@ -55,7 +56,7 @@ func TestCoreMiddleware(t *testing.T) {
 		return true
 	})
 
-	CastleModel.PreDeleteOne(func(filters primitive.M) bool {
+	CastleModel.PreDeleteOne(func(filters *primitive.M) bool {
 		invokedHooks["preDeleteOne"] = true
 		return true
 	})
@@ -65,7 +66,7 @@ func TestCoreMiddleware(t *testing.T) {
 		return true
 	})
 
-	CastleModel.PreDeleteMany(func(filters primitive.M) bool {
+	CastleModel.PreDeleteMany(func(filters *primitive.M) bool {
 		invokedHooks["preDeleteMany"] = true
 		return true
 	})
@@ -75,12 +76,12 @@ func TestCoreMiddleware(t *testing.T) {
 		return true
 	})
 
-	CastleModel.PostFind(func(castle []Castle) bool {
+	CastleModel.PostFind(func(castle *[]Castle) bool {
 		invokedHooks["postFind"] = true
 		return true
 	})
 
-	CastleModel.PreFindOneAndUpdate(func(filter primitive.M) bool {
+	CastleModel.PreFindOneAndUpdate(func(filter *primitive.M, doc any) bool {
 		invokedHooks["preFindOneAndUpdate"] = true
 		return true
 	})
@@ -90,13 +91,18 @@ func TestCoreMiddleware(t *testing.T) {
 		return true
 	})
 
-	CastleModel.PreFindOneAndDelete(func(filters primitive.M) bool {
+	CastleModel.PreFindOneAndDelete(func(filters *primitive.M) bool {
 		invokedHooks["preFindOneAndDelete"] = true
 		return true
 	})
 
 	CastleModel.PostFindOneAndDelete(func(castle *Castle) bool {
 		invokedHooks["postFindOneAndDelete"] = true
+		return true
+	})
+
+	CastleModel.PreFindOneAndReplace(func(castle *primitive.M, doc any) bool {
+		invokedHooks["preFindOneAndReplace"] = true
 		return true
 	})
 
@@ -143,6 +149,9 @@ func TestCoreMiddleware(t *testing.T) {
 		})
 		Convey("FindOneAndDelete", func() {
 			So(invokedHooks["preFindOneAndDelete"], ShouldBeTrue)
+		})
+		Convey("FindOneAndReplace", func() {
+			So(invokedHooks["preFindOneAndReplace"], ShouldBeTrue)
 		})
 	})
 

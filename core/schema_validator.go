@@ -2,7 +2,6 @@ package elemental
 
 import (
 	"fmt"
-	"maps"
 	"reflect"
 	"strings"
 
@@ -16,14 +15,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Type, defaults ...bool) (bson.M, bson.M) {
+func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Type, defaults ...bool) bson.M {
 	var entityToInsert bson.M
 	documentElement := reflect.TypeOf(doc).Elem()
 
 	// Fast return when bypass schema enforcement or value is not a struct
 	if doc != nil && (documentElement.Kind() != reflect.Struct || schema.Options.BypassSchemaEnforcement) {
-		entityToInsert = *utils.ToBSONDoc(doc)
-		return entityToInsert, entityToInsert
+		entityToInsert = utils.CastBSON[bson.M](doc)
+		return entityToInsert
 	}
 
 	if reflectedEntityType != nil {
@@ -32,7 +31,7 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 			entityToInsert = make(bson.M)
 		}
 	} else {
-		entityToInsert = *utils.ToBSONDoc(doc)
+		entityToInsert = utils.CastBSON[bson.M](doc)
 		reflectedEntityType = &documentElement
 	}
 
@@ -52,9 +51,6 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 		}
 	}
 
-	detailedEntity := make(bson.M)
-	maps.Copy(detailedEntity, entityToInsert)
-
 	for field, definition := range schema.Definitions {
 		reflectedField, ok := (*reflectedEntityType).FieldByName(field)
 		if !ok {
@@ -70,7 +66,6 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 			}
 			if definition.Default != nil {
 				entityToInsert[fieldBsonName] = definition.Default
-				detailedEntity[fieldBsonName] = definition.Default
 				val = definition.Default
 			}
 		}
@@ -82,21 +77,15 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 		if actualType.Kind() == reflect.Ptr {
 			actualType = actualType.Elem()
 		}
-		if actualType.String() != definition.Type.String() && !hasRef {
+		if actualType.String() != definition.Type.String() && actualType.Kind().String() != definition.Type.String() && !hasRef {
 			panic(fmt.Errorf("field %s has an invalid type. It must be of type %s", field, definition.Type.String()))
 		}
 
 		// Nested schema validation
 		if definition.Type == reflect.Struct && definition.Schema != nil {
 			subdocumentField := reflectedField
-			entityToInsert[fieldBsonName], detailedEntity[fieldBsonName] =
-				enforceSchema(*definition.Schema, utils.Cast[*bson.M](val), &subdocumentField.Type, false)
+			entityToInsert[fieldBsonName] = enforceSchema(*definition.Schema, utils.Cast[*bson.M](val), &subdocumentField.Type, false)
 			continue
-		}
-
-		// Nested ref validation
-		if hasRef {
-
 		}
 
 		if hasRef && val != nil {
@@ -133,7 +122,7 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 			}
 		}
 	}
-	return entityToInsert, detailedEntity
+	return entityToInsert
 }
 
 func cleanTag(tag string) string {

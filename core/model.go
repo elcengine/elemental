@@ -40,6 +40,7 @@ type Model[T any] struct {
 	softDeleteEnabled   bool
 	deletedAtFieldName  string
 	triggerExit         chan bool
+	docReflectType      reflect.Type // The reflect type of a sample document of this model
 }
 
 var pluralizeClient = pluralize.NewClient()
@@ -64,6 +65,7 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 		middleware:  &middleware,
 		triggerExit: make(chan bool, 1),
 	}
+	model.preprocess()
 	Models[name] = model
 	onConnectionComplete := func() {
 		model.CreateCollection()
@@ -84,12 +86,11 @@ func NewModel[T any](name string, schema Schema) Model[T] {
 // This method validates the document against the model schema and panics if any errors are found.
 func (m Model[T]) Create(doc T) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
-		documentToInsert, detailedDocument := enforceSchema(m.Schema, &doc, nil)
-		detailedDocumentEntity := utils.CastBSON[T](detailedDocument)
-		m.middleware.pre.save.run(detailedDocumentEntity)
+		documentToInsert := enforceSchema(m.Schema, &doc, nil)
+		m.middleware.pre.save.run(&documentToInsert)
 		lo.Must(m.Collection().InsertOne(ctx, documentToInsert))
-		m.middleware.post.save.run(detailedDocumentEntity)
-		return detailedDocumentEntity
+		m.middleware.post.save.run(&documentToInsert)
+		return utils.CastBSON[T](documentToInsert)
 	}
 	return m
 }
@@ -104,14 +105,12 @@ func (m Model[T]) CreateMany(docs []T) Model[T] {
 // This method validates the document against the model schema and panics if any errors are found.
 func (m Model[T]) InsertMany(docs []T) Model[T] {
 	m.executor = func(m Model[T], ctx context.Context) any {
-		var documentsToInsert, detailedDocuments []any
+		var documentsToInsert []any
 		for _, doc := range docs {
-			documentToInsert, detailedDocument := enforceSchema(m.Schema, &doc, nil)
-			documentsToInsert = append(documentsToInsert, documentToInsert)
-			detailedDocuments = append(detailedDocuments, detailedDocument)
+			documentsToInsert = append(documentsToInsert, enforceSchema(m.Schema, &doc, nil))
 		}
 		lo.Must(m.Collection().InsertMany(ctx, documentsToInsert))
-		return utils.CastBSONSlice[T](detailedDocuments)
+		return utils.CastBSONSlice[T](documentsToInsert)
 	}
 	return m
 }
@@ -124,8 +123,8 @@ func (m Model[T]) Find(query ...primitive.M) Model[T] {
 		var results []T
 		cursor := lo.Must(m.Collection().Aggregate(ctx, m.pipeline))
 		m.checkConditionsAndPanicForErr(cursor.All(ctx, &results))
-		m.middleware.post.find.run(results)
 		m.checkConditionsAndPanic(results)
+		m.middleware.post.find.run(&results)
 		return results
 	}
 	q := utils.MergedQueryOrDefault(query)

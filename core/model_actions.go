@@ -2,8 +2,6 @@ package elemental
 
 import (
 	"context"
-	"reflect"
-
 	"github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
 
@@ -31,8 +29,7 @@ func (m Model[T]) Ping(ctx ...context.Context) error {
 
 // Creates or updates the indexes for this model. This method will only create the indexes if they do not exist.
 func (m Model[T]) SyncIndexes(ctx ...context.Context) {
-	var sample [0]T
-	m.Schema.syncIndexes(reflect.TypeOf(sample).Elem(), lo.FromPtr(m.temporaryDatabase), lo.FromPtr(m.temporaryConnection), lo.FromPtr(m.temporaryCollection), ctx...)
+	m.Schema.syncIndexes(m.docReflectType, lo.FromPtr(m.temporaryDatabase), lo.FromPtr(m.temporaryConnection), lo.FromPtr(m.temporaryCollection), ctx...)
 }
 
 // Drops all indexes for this model except the default `_id` index.

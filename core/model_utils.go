@@ -121,15 +121,12 @@ func (m Model[T]) findMatchStage() bson.M {
 	return bson.M{}
 }
 
-func (m Model[T]) parseDocument(doc any) primitive.M {
+func (m Model[T]) parseDocument(doc any) bson.M {
 	docType := reflect.TypeOf(doc).Kind()
 	if docType == reflect.Ptr {
 		doc = reflect.ValueOf(doc).Elem().Interface()
 	}
-	if docType == reflect.Map {
-		return utils.Cast[primitive.M](doc)
-	}
-	result := *utils.ToBSONDoc(doc)
+	result := utils.CastBSON[bson.M](doc)
 	for k, v := range result {
 		fieldValue := reflect.ValueOf(v)
 		if !fieldValue.IsValid() || fieldValue.IsZero() {
@@ -170,4 +167,10 @@ func (m Model[T]) setUpdateOperator(operator string, doc any) Model[T] {
 		})()
 	}
 	return m
+}
+
+// Computes and stores some expensive operations. Invoked at the time of model creation.
+func (m *Model[T]) preprocess() {
+	var sample [0]T // Slice of zero length to get the type of T
+	m.docReflectType = reflect.TypeOf(sample).Elem()
 }

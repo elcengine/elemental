@@ -22,10 +22,8 @@ func (m Model[T]) populate(value any) Model[T] {
 		path = utils.Cast[string](value)
 	}
 	if path != "" {
-		var sample [0]T // Slice of zero length to get the type of T
-		modelType := reflect.TypeOf(sample).Elem()
-		for i := range modelType.NumField() {
-			field := modelType.Field(i)
+		for i := range m.docReflectType.NumField() {
+			field := m.docReflectType.Field(i)
 			if cleanTag(field.Tag.Get("bson")) == path {
 				fieldname = field.Name
 				break

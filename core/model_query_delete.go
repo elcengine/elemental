@@ -23,11 +23,11 @@ func (m Model[T]) FindOneAndDelete(query ...primitive.M) Model[T] {
 	} else {
 		m.executor = func(m Model[T], ctx context.Context) any {
 			var doc T
-			m.middleware.pre.findOneAndDelete.run(q)
+			m.middleware.pre.findOneAndDelete.run(&q)
 			result := m.Collection().FindOneAndDelete(ctx, q)
-			m.middleware.post.findOneAndDelete.run(&doc)
 			m.checkConditionsAndPanicForSingleResult(result)
 			lo.Must0(result.Decode(&doc))
+			m.middleware.post.findOneAndDelete.run(&doc)
 			return doc
 		}
 	}
@@ -59,10 +59,10 @@ func (m Model[T]) DeleteOne(query ...primitive.M) Model[T] {
 		m = m.UpdateOne(&q, m.softDeletePayload())
 	} else {
 		m.executor = func(m Model[T], ctx context.Context) any {
-			m.middleware.pre.deleteOne.run(q)
+			m.middleware.pre.deleteOne.run(&q)
 			result, err := m.Collection().DeleteOne(ctx, q)
-			m.middleware.post.deleteOne.run(result, err)
 			m.checkConditionsAndPanicForErr(err)
+			m.middleware.post.deleteOne.run(result, err)
 			return result
 		}
 	}
@@ -110,7 +110,7 @@ func (m Model[T]) DeleteMany(query ...primitive.M) Model[T] {
 		m = m.UpdateMany(&q, m.softDeletePayload())
 	} else {
 		m.executor = func(m Model[T], ctx context.Context) any {
-			m.middleware.pre.deleteMany.run(q)
+			m.middleware.pre.deleteMany.run(&q)
 			result, err := m.Collection().DeleteMany(ctx, q)
 			m.checkConditionsAndPanicForErr(err)
 			m.middleware.post.deleteMany.run(result, err)

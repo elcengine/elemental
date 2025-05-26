@@ -40,13 +40,3 @@ func FromBSON[T any](bytes []byte) T {
 	bson.Unmarshal(bytes, &v)
 	return v
 }
-
-// Converts an interface to a bson document
-func ToBSONDoc(v any) (doc *bson.M) {
-	data, err := bson.Marshal(v)
-	if err != nil {
-		return nil
-	}
-	bson.Unmarshal(data, &doc)
-	return doc
-}

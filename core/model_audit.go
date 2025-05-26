@@ -2,11 +2,13 @@ package elemental
 
 import (
 	"context"
-	"github.com/elcengine/elemental/utils"
-	"github.com/samber/lo"
 	"reflect"
 	"time"
 
+	"github.com/elcengine/elemental/utils"
+	"github.com/samber/lo"
+
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -68,7 +70,7 @@ func (m Model[T]) EnableAuditing(ctx ...context.Context) {
 		execWithModelOpts(AuditModel.Create(Audit{
 			Entity:    m.Name,
 			Type:      AuditTypeInsert,
-			Document:  *utils.ToBSONDoc(doc),
+			Document:  utils.CastBSON[bson.M](doc),
 			User:      lo.CoalesceOrEmpty(utils.Cast[string](context.Value(CtxUser)), userFallback),
 			CreatedAt: time.Now(),
 		}))
@@ -77,7 +79,7 @@ func (m Model[T]) EnableAuditing(ctx ...context.Context) {
 		execWithModelOpts(AuditModel.Create(Audit{
 			Entity:    m.Name,
 			Type:      AuditTypeUpdate,
-			Document:  *utils.ToBSONDoc(doc),
+			Document:  utils.CastBSON[bson.M](doc),
 			User:      lo.CoalesceOrEmpty(utils.Cast[string](context.Value(CtxUser)), userFallback),
 			CreatedAt: time.Now(),
 		}))
