@@ -75,15 +75,15 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 			}
 		}
 
+		hasRef := definition.Type == ObjectID && (definition.Ref != "" || definition.Collection != "")
+
 		// Type check
-		if definition.Type != reflect.Invalid {
-			actualKind := reflectedField.Type.Kind()
-			if actualKind == reflect.Ptr {
-				actualKind = reflectedField.Type.Elem().Kind()
-			}
-			if actualKind != definition.Type {
-				panic(fmt.Errorf("field %s has an invalid type. It must be of type %s", field, definition.Type.String()))
-			}
+		actualType := reflectedField.Type
+		if actualType.Kind() == reflect.Ptr {
+			actualType = actualType.Elem()
+		}
+		if actualType.String() != definition.Type.String() && !hasRef {
+			panic(fmt.Errorf("field %s has an invalid type. It must be of type %s", field, definition.Type.String()))
 		}
 
 		// Nested schema validation
@@ -94,8 +94,12 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 			continue
 		}
 
-		// Reference/Collection
-		if definition.Type == reflect.Struct && (definition.Ref != "" || definition.Collection != "") && val != nil {
+		// Nested ref validation
+		if hasRef {
+
+		}
+
+		if hasRef && val != nil {
 			subdocumentField := reflectedField
 			if subdocumentIDField, ok := subdocumentField.Type.FieldByName("ID"); ok {
 				entityToInsert = lo.Assign(

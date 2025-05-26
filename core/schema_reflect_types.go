@@ -5,6 +5,10 @@ import (
 	"reflect"
 )
 
+type FieldType interface {
+	String() string
+}
+
 // Inbuilt types
 
 var Slice = reflect.Slice
@@ -27,4 +31,4 @@ var String = reflect.String
 
 // Custom types
 
-var ObjectID = reflect.TypeOf(primitive.NilObjectID).Kind()
+var ObjectID = reflect.TypeOf(primitive.NilObjectID)

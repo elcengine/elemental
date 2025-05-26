@@ -54,16 +54,15 @@ type Monster struct {
 	UpdatedAt  time.Time          `json:"updated_at" bson:"updated_at"`
 }
 
-type Bestiary struct {
+type GenericBestiary[T any, Y any] struct {
 	ID      primitive.ObjectID `json:"_id" bson:"_id"`
-	Monster Monster            `json:"monster" bson:"monster"`
-	Kingdom Kingdom            `json:"kingdom" bson:"kingdom"`
+	Monster T                  `json:"monster" bson:"monster"`
+	Kingdom Y                  `json:"kingdom" bson:"kingdom"`
 }
 
-type BestiaryWithID struct {
-	ID        primitive.ObjectID `json:"_id" bson:"_id"`
-	MonsterID string             `json:"monster_id" bson:"monster_id"`
-}
+type Bestiary = GenericBestiary[any, any]
+
+type DetailedBestiary = GenericBestiary[Monster, Kingdom]
 
 const DefaultUserAge = 18
 
@@ -137,23 +136,13 @@ var KingdomModel = elemental.NewModel[Kingdom]("Kingdom", elemental.NewSchema(ma
 
 var BestiaryModel = elemental.NewModel[Bestiary]("Bestiary", elemental.NewSchema(map[string]elemental.Field{
 	"Monster": {
-		Type: elemental.Struct,
+		Type: elemental.ObjectID,
 		Ref:  "Monster",
 	},
 	"Kingdom": {
-		Type: elemental.Struct,
+		Type: elemental.ObjectID,
 		Ref:  "Kingdom",
 	},
 }, elemental.SchemaOptions{
 	Collection: "bestiary",
-}))
-
-var BestiaryWithIDModel = elemental.NewModel[BestiaryWithID]("BestiaryWithID", elemental.NewSchema(map[string]elemental.Field{
-	"MonsterID": {
-		Type:    elemental.String,
-		Ref:     "Monster",
-		IsRefID: true,
-	},
-}, elemental.SchemaOptions{
-	Collection: "bestiaryWithID",
 }))
