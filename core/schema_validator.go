@@ -88,14 +88,16 @@ func enforceSchema[T any](schema Schema, doc *T, reflectedEntityType *reflect.Ty
 				entityToInsert[fieldBsonName] = enforceSchema(*definition.Schema, utils.Cast[*bson.M](val), &subdocumentField.Type, false)
 				continue
 			}
+		}
+
+		if definition.Type == reflect.Struct || definition.Type == ObjectID {
 			// Extract subdocument ID if it exists for ObjectID references
-			if hasRef && val != nil && actualType.Kind() == reflect.Struct {
-				subdocumentField := reflectedField
-				if subdocumentIDField, ok := subdocumentField.Type.FieldByName("ID"); ok {
+			if hasRef && val != nil && (actualType.Kind() == reflect.Struct || actualType.Kind() == reflect.Interface) {
+				if id, ok := utils.CastBSON[bson.M](val)["_id"]; ok {
 					entityToInsert = lo.Assign(
 						entityToInsert,
 						bson.M{
-							fieldBsonName: val.(primitive.M)[subdocumentIDField.Tag.Get("bson")],
+							fieldBsonName: id,
 						},
 					)
 				}

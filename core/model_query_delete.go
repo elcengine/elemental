@@ -25,7 +25,7 @@ func (m Model[T]) FindOneAndDelete(query ...primitive.M) Model[T] {
 			var doc T
 			m.middleware.pre.findOneAndDelete.run(&q)
 			result := m.Collection().FindOneAndDelete(ctx, q)
-			m.checkConditionsAndPanicForSingleResult(result)
+			m.checkConditionsAndPanic(result)
 			lo.Must0(result.Decode(&doc))
 			m.middleware.post.findOneAndDelete.run(&doc)
 			return doc

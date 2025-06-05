@@ -88,18 +88,21 @@ func (m Model[T]) addToPipeline(stage, key string, value any) Model[T] {
 	return m
 }
 
-func (m Model[T]) checkConditionsAndPanic(results []T) {
-	if m.failWith != nil && len(results) == 0 {
-		panic(*m.failWith)
-	}
-}
-
-func (m Model[T]) checkConditionsAndPanicForSingleResult(result *mongo.SingleResult) {
-	if result.Err() != nil {
-		if m.failWith != nil {
+func (m Model[T]) checkConditionsAndPanic(result any) {
+	sliceT, okT := result.([]T)
+	if slice, ok := result.([]any); ok || okT {
+		if m.failWith != nil && (len(slice) == 0 || len(sliceT) == 0) {
 			panic(*m.failWith)
 		}
-		panic(result.Err())
+		return
+	}
+	if singleResult, ok := result.(*mongo.SingleResult); ok {
+		if err := singleResult.Err(); err != nil {
+			if m.failWith != nil {
+				panic(*m.failWith)
+			}
+			panic(err)
+		}
 	}
 }
 

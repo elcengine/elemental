@@ -22,7 +22,7 @@ func (m Model[T]) FindOneAndUpdate(query *primitive.M, doc any, opts ...*options
 		m.middleware.pre.findOneAndUpdate.run(&filters, &doc)
 		result := m.Collection().FindOneAndUpdate(ctx, filters,
 			primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
-		m.checkConditionsAndPanicForSingleResult(result)
+		m.checkConditionsAndPanic(result)
 		lo.Must0(result.Decode(&resultDoc))
 		m.middleware.post.findOneAndUpdate.run(&resultDoc)
 		return resultDoc
@@ -37,7 +37,7 @@ func (m Model[T]) FindByIDAndUpdate(id any, doc any, opts ...*options.FindOneAnd
 		var resultDoc T
 		result := m.Collection().FindOneAndUpdate(ctx, primitive.M{"_id": utils.EnsureObjectID(id)},
 			primitive.M{"$set": m.parseDocument(doc)}, parseUpdateOptions(m, opts)...)
-		m.checkConditionsAndPanicForSingleResult(result)
+		m.checkConditionsAndPanic(result)
 		lo.Must0(result.Decode(&resultDoc))
 		return resultDoc
 	}
@@ -85,7 +85,7 @@ func (m Model[T]) Save(doc T) Model[T] {
 		m.middleware.pre.save.run(&parsedDoc)
 		result := m.Collection().FindOneAndUpdate(ctx, &primitive.M{"_id": parsedDoc["_id"]},
 			primitive.M{"$set": parsedDoc}, options.FindOneAndUpdate().SetUpsert(true))
-		m.checkConditionsAndPanicForSingleResult(result)
+		m.checkConditionsAndPanic(result)
 		lo.Must0(result.Decode(&resultDoc))
 		m.middleware.post.save.run(&resultDoc)
 		return utils.CastBSON[T](resultDoc)
@@ -153,7 +153,7 @@ func (m Model[T]) FindOneAndReplace(query *primitive.M, doc any, opts ...*option
 		maps.Copy(filters, m.findMatchStage())
 		m.middleware.pre.findOneAndReplace.run(&filters, &doc)
 		res := m.Collection().FindOneAndReplace(ctx, filters, m.parseDocument(doc), opts...)
-		m.checkConditionsAndPanicForSingleResult(res)
+		m.checkConditionsAndPanic(res)
 		lo.Must0(res.Decode(&resultDoc))
 		m.middleware.post.findOneAndReplace.run(&resultDoc)
 		return resultDoc
@@ -169,7 +169,7 @@ func (m Model[T]) FindByIDAndReplace(id any, doc any, opts ...*options.FindOneAn
 		var resultDoc T
 		res := m.Collection().FindOneAndReplace(ctx, primitive.M{"_id": utils.EnsureObjectID(id)},
 			m.parseDocument(doc), parseUpdateOptions(m, opts)...)
-		m.checkConditionsAndPanicForSingleResult(res)
+		m.checkConditionsAndPanic(res)
 		lo.Must0(res.Decode(&resultDoc))
 		return resultDoc
 	}

@@ -1,6 +1,7 @@
 package elemental
 
 import (
+	"context"
 	"reflect"
 	"strings"
 
@@ -84,6 +85,13 @@ func (m Model[T]) Populate(values ...any) Model[T] {
 	}
 	for _, value := range values {
 		m = m.populate(value)
+	}
+	m.executor = func(m Model[T], ctx context.Context) any {
+		var results []bson.M
+		cursor := lo.Must(m.Collection().Aggregate(ctx, m.pipeline))
+		lo.Must0(cursor.All(ctx, &results))
+		m.checkConditionsAndPanic(results)
+		return results
 	}
 	return m
 }
