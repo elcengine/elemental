@@ -129,7 +129,8 @@ func (m Model[T]) parseDocument(doc any) bson.M {
 	if docType == reflect.Ptr {
 		doc = reflect.ValueOf(doc).Elem().Interface()
 	}
-	if docType == reflect.Map {
+	switch doc.(type) {
+	case bson.M, map[string]any:
 		return utils.Cast[bson.M](doc)
 	}
 	result := utils.CastBSON[bson.M](doc)
