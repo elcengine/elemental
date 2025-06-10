@@ -3,6 +3,10 @@ pre-commit:
   commands:
     format:
       run: make format && git add .
+    lint:
+      run: make lint-fix && git add .
+    tidy:
+      run: make tidy && git add .
 
 commit-msg:
   commands:
