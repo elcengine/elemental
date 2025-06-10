@@ -57,8 +57,8 @@ jobs:
           env:
             DEFAULT_DATASOURCE: mongodb://127.0.0.1:27017/elemental?replicaSet=rs0
             SECONDARY_DATASOURCE: mongodb://127.0.0.1:27018/elemental?replicaSet=rs1
-            GOEXPERIMENT: ${{ matrix.go-version == '1.23' && 'aliastypeparams' }}
-            GODEBUG: ${{ matrix.go-version == '1.23' && 'gotypesalias=1' }}
+            GOEXPERIMENT: ${{ matrix.go-version == '1.23' && 'aliastypeparams' || '' }}
+            GODEBUG: ${{ matrix.go-version == '1.23' && 'gotypesalias=1' || '' }}
         
         - name: Upload coverage report
           if: github.event_name == 'pull_request' && github.base_ref == 'main' && matrix.go-version == '1.24' && matrix.mongo-version == '8.0'
