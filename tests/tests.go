@@ -14,6 +14,8 @@ type Kingdom = fixtures.Kingdom
 
 type Monster = fixtures.Monster
 
+type GenericBestiary[T any, Y any] = fixtures.GenericBestiary[T, Y]
+
 type Bestiary = fixtures.Bestiary
 
 type DetailedBestiary = fixtures.DetailedBestiary

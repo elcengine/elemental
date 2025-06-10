@@ -53,13 +53,13 @@ func TestCoreDelete(t *testing.T) {
 			So(user.Name, ShouldEqual, mocks.Caranthir.Name)
 
 			So(func() {
-				UserModel.SetConnection(uuid.NewString()).DeleteByID(user.ID).OrFail().Exec()
+				UserModel.SetConnection(uuid.NewString()).FindByIDAndDelete(user.ID).OrFail().Exec()
 			}, ShouldPanicWith, errors.New("no results found matching the given query"))
 
 			Convey("With custom error", func() {
 				err := errors.New("some custom error")
 				So(func() {
-					UserModel.SetConnection(uuid.NewString()).DeleteByID(user.ID).OrFail(err).Exec()
+					UserModel.SetConnection(uuid.NewString()).FindByIDAndDelete(user.ID).OrFail(err).Exec()
 				}, ShouldPanicWith, err)
 			})
 		})

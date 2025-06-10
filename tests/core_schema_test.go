@@ -8,6 +8,7 @@ import (
 	elemental "github.com/elcengine/elemental/core"
 	ts "github.com/elcengine/elemental/tests/fixtures/setup"
 	"github.com/google/uuid"
+	"github.com/samber/lo"
 
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -87,8 +88,34 @@ func TestCoreSchemaOptions(t *testing.T) {
 					Model.Validate(User{})
 				}, ShouldPanicWith, fmt.Errorf("field Name is required"))
 				So(func() {
-					UserModel.Validate(User{Name: "Geralt"})
+					Model.Validate(User{Name: "Geralt"})
 				}, ShouldNotPanic)
+			})
+			Convey("Pointer type check", func() {
+				type User struct {
+					Name *string `json:"name"`
+				}
+				Model := elemental.NewModel[User](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
+					"Name": {
+						Type: elemental.String,
+					},
+				}))
+				So(func() {
+					Model.Validate(User{Name: lo.ToPtr("Geralt")})
+				}, ShouldNotPanic)
+			})
+			Convey("Type check", func() {
+				type InvalidUser struct {
+					Name int64 `json:"name"`
+				}
+				Model := elemental.NewModel[InvalidUser](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
+					"Name": {
+						Type: elemental.String,
+					},
+				}))
+				So(func() {
+					Model.Validate(InvalidUser{Name: 12345})
+				}, ShouldPanicWith, fmt.Errorf("field Name has an invalid type. It must be of type string"))
 			})
 			Convey("Min check", func() {
 				Model := elemental.NewModel[User](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
@@ -150,6 +177,19 @@ func TestCoreSchemaOptions(t *testing.T) {
 				}, ShouldPanicWith, fmt.Errorf("field Name must match the regex pattern ^[A-Z]+$"))
 				So(func() {
 					Model.Validate(User{Name: "GERALT"})
+				}, ShouldNotPanic)
+			})
+			Convey("Ignore non existing definitions", func() {
+				Model := elemental.NewModel[User](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
+					"Name": {
+						Type: elemental.String,
+					},
+					"NonExistingField": {
+						Type: elemental.String,
+					},
+				}))
+				So(func() {
+					Model.Validate(User{Name: "Geralt"})
 				}, ShouldNotPanic)
 			})
 		})

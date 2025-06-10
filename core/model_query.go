@@ -134,7 +134,9 @@ func (m Model[T]) ExecSS(ctx ...context.Context) []string {
 }
 
 // ExecInto is a specialized method that executes the query and unmarshals the result into the provided result variable.
-// It is useful when you want to extract results into a custom struct other than the model type such as when you populate certain fields
+// It is useful when you want to extract results into a custom struct other than the model type such as when you populate certain fields.
+//
+// The result variable must be a pointer to your desired type.
 func (m Model[T]) ExecInto(result any, ctx ...context.Context) {
 	rv, bytes := lo.Must2(bson.MarshalValue(m.Exec(ctx...)))
 	bson.UnmarshalValue(rv, bytes, result)

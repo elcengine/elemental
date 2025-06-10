@@ -95,5 +95,13 @@ func TestCoreReadPopulate(t *testing.T) {
 			So(bestiaries[0].Monster.Category, ShouldEqual, "")
 			So(bestiaries[0].Kingdom.Name, ShouldEqual, "Nilfgaard")
 		})
+		Convey("Populate just one field", func() {
+			var bestiaries []GenericBestiary[Monster, primitive.ObjectID]
+			BestiaryModel.Find().Populate("monster").ExecInto(&bestiaries)
+			So(bestiaries, ShouldHaveLength, 3)
+			So(bestiaries[0].Monster.Name, ShouldEqual, "Katakan")
+			So(bestiaries[0].Monster.Category, ShouldEqual, "Vampire")
+			So(bestiaries[0].Kingdom, ShouldEqual, kingdoms[0].ID)
+		})
 	})
 }
