@@ -193,5 +193,45 @@ func TestCoreSchemaOptions(t *testing.T) {
 				}, ShouldNotPanic)
 			})
 		})
+		Convey("Should use default values when provided", func() {
+			Convey("Default value of a primitive", func() {
+				Model := elemental.NewModel[User](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
+					"Name": {
+						Type: elemental.String,
+					},
+					"Age": {
+						Type:    elemental.Int,
+						Default: 30,
+					},
+				}))
+				user := Model.Create(User{Name: uuid.NewString()}).ExecT()
+				So(user.Age, ShouldEqual, 30)
+			})
+			Convey("Default value of a struct", func() {
+				type UserPreferences struct {
+					Language string `json:"language" bson:"language"`
+					Theme    string `json:"theme" bson:"theme"`
+				}
+				type User struct {
+					Name        string           `json:"name" bson:"name"`
+					Preferences *UserPreferences `json:"preferences" bson:"preferences"`
+				}
+				Model := elemental.NewModel[User](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
+					"Name": {
+						Type: elemental.String,
+					},
+					"Preferences": {
+						Type: elemental.Struct,
+						Default: UserPreferences{
+							Language: "en",
+							Theme:    "light",
+						},
+					},
+				}))
+				user := Model.Create(User{Name: uuid.NewString()}).ExecT()
+				So(user.Preferences.Language, ShouldEqual, "en")
+				So(user.Preferences.Theme, ShouldEqual, "light")
+			})
+		})
 	})
 }

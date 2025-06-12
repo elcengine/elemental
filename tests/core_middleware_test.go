@@ -2,6 +2,7 @@ package tests
 
 import (
 	"testing"
+	"time"
 
 	elemental "github.com/elcengine/elemental/core"
 	ts "github.com/elcengine/elemental/tests/fixtures/setup"
@@ -28,11 +29,15 @@ func TestCoreMiddleware(t *testing.T) {
 
 	CastleModel.PreSave(func(castle *bson.M) bool {
 		invokedHooks["preSave"] = true
+		(*castle)["created_at"] = time.Now().AddDate(-1, 0, 0)
 		return true
 	})
 
 	CastleModel.PostSave(func(castle *bson.M) bool {
 		invokedHooks["postSave"] = true
+		if name, ok := (*castle)["name"].(string); ok {
+			(*castle)["name"] = "Created: " + name
+		}
 		return true
 	})
 
@@ -78,6 +83,9 @@ func TestCoreMiddleware(t *testing.T) {
 
 	CastleModel.PostFind(func(castle *[]Castle) bool {
 		invokedHooks["postFind"] = true
+		for i := range *castle {
+			(*castle)[i].Name = "Modified: " + (*castle)[i].Name
+		}
 		return true
 	})
 
@@ -88,6 +96,9 @@ func TestCoreMiddleware(t *testing.T) {
 
 	CastleModel.PostFindOneAndUpdate(func(castle *Castle) bool {
 		invokedHooks["postFindOneAndUpdate"] = true
+		if castle != nil {
+			castle.Name = "Updated: " + castle.Name
+		}
 		return true
 	})
 
@@ -98,6 +109,9 @@ func TestCoreMiddleware(t *testing.T) {
 
 	CastleModel.PostFindOneAndDelete(func(castle *Castle) bool {
 		invokedHooks["postFindOneAndDelete"] = true
+		if castle != nil {
+			castle.Name = "Deleted: " + castle.Name
+		}
 		return true
 	})
 
@@ -108,32 +122,37 @@ func TestCoreMiddleware(t *testing.T) {
 
 	CastleModel.PostFindOneAndReplace(func(castle *Castle) bool {
 		invokedHooks["postFindOneAndReplace"] = true
+		if castle != nil {
+			castle.Name = "Replaced: " + castle.Name
+		}
 		return true
 	})
 
 	CastleModel.Create(Castle{Name: "Aretuza"}).Exec()
 
-	CastleModel.Create(Castle{Name: "Maverick"}).Exec()
+	CastleModel.Create(Castle{Name: "Rozrog"}).Exec()
 
-	CastleModel.Create(Castle{Name: "Robert"}).Exec()
+	createdCastle := CastleModel.Create(Castle{Name: "Drakenborg"}).ExecT()
 
-	CastleModel.FindOneAndReplace(&primitive.M{"name": "Robert"}, Castle{Name: "Jack"}).Exec()
+	replacedCastle := CastleModel.FindOneAndReplace(&primitive.M{"name": "Drakenborg"}, Castle{Name: "Tesham Mutna"}).ExecPtr()
 
 	CastleModel.UpdateOne(&primitive.M{"name": "Aretuza"}, Castle{Name: "Kaer Morhen"}).Exec()
 
-	CastleModel.Find().Exec()
-
-	CastleModel.FindOneAndUpdate(&primitive.M{"name": "Maverick"}, primitive.M{"name": "Maverickk"}).Exec()
+	updatedCastle := CastleModel.FindOneAndUpdate(&primitive.M{"name": "Rozrog"}, primitive.M{"name": "Rozrog Ruins"}).ExecPtr()
 
 	CastleModel.DeleteOne(primitive.M{"name": "Kaer Morhen"}).Exec()
 
-	CastleModel.FindOneAndDelete(primitive.M{"name": "Jack"}).Exec()
+	deletedCastle := CastleModel.FindOneAndDelete(primitive.M{"name": "Tesham Mutna"}).ExecPtr()
 
-	CastleModel.DeleteMany(primitive.M{"name": primitive.M{"$in": []string{"Aretuza", "Maverick"}}}).Exec()
+	CastleModel.DeleteMany(primitive.M{"name": primitive.M{"$in": []string{"Aretuza", "Rozrog"}}}).Exec()
+
+	castles := CastleModel.Find().ExecTT()
 
 	Convey("Pre hooks", t, func() {
 		Convey("Save", func() {
 			So(invokedHooks["preSave"], ShouldBeTrue)
+			firstInsertedCastle := CastleModel.FindOne().ExecT()
+			So(firstInsertedCastle.CreatedAt.Year(), ShouldEqual, time.Now().AddDate(-1, 0, 0).Year())
 		})
 		Convey("UpdateOne", func() {
 			So(invokedHooks["preUpdateOne"], ShouldBeTrue)
@@ -160,6 +179,7 @@ func TestCoreMiddleware(t *testing.T) {
 			So(invokedHooks["postSave"], ShouldBeTrue)
 			So(invokedHooks["postSaveSecond"], ShouldBeTrue)
 			So(invokedHooks["postSaveThird"], ShouldBeFalse)
+			So(createdCastle.Name, ShouldEqual, "Created: Drakenborg")
 		})
 		Convey("UpdateOne", func() {
 			So(invokedHooks["postUpdateOne"], ShouldBeTrue)
@@ -172,15 +192,22 @@ func TestCoreMiddleware(t *testing.T) {
 		})
 		Convey("Find", func() {
 			So(invokedHooks["postFind"], ShouldBeTrue)
+			So(castles, ShouldNotBeEmpty)
+			for _, castle := range castles {
+				So(castle.Name, ShouldStartWith, "Modified: ")
+			}
 		})
 		Convey("FindOneAndUpdate", func() {
 			So(invokedHooks["postFindOneAndUpdate"], ShouldBeTrue)
+			So(updatedCastle.Name, ShouldEqual, "Updated: Rozrog")
 		})
 		Convey("FindOneAndDelete", func() {
 			So(invokedHooks["postFindOneAndDelete"], ShouldBeTrue)
+			So(deletedCastle.Name, ShouldEqual, "Deleted: Tesham Mutna")
 		})
 		Convey("FindOneAndReplace", func() {
 			So(invokedHooks["postFindOneAndReplace"], ShouldBeTrue)
+			So(replacedCastle.Name, ShouldEqual, "Replaced: Drakenborg")
 		})
 	})
 }
