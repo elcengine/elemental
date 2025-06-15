@@ -159,14 +159,14 @@ func TestCoreReadPopulate(t *testing.T) {
 					Type:       elemental.ObjectID,
 					Collection: "kingdoms",
 				},
+			}, elemental.SchemaOptions{
+				Collection: "bestiary",
 			}))
-			BestiaryModel.Create(Bestiary{Monster: monsters[0], Kingdom: kingdoms[0]}).Exec()
-			var bestiaries []GenericBestiary[Monster, primitive.ObjectID]
-			BestiaryModel.Find().Populate("monster").ExecInto(&bestiaries)
-			So(bestiaries, ShouldHaveLength, 1)
-			So(bestiaries[0].Monster.Name, ShouldEqual, "Katakan")
-			So(bestiaries[0].Monster.Category, ShouldEqual, "Vampire")
-			So(bestiaries[0].Kingdom, ShouldEqual, kingdoms[0].ID)
+			var bestiaries []DetailedBestiary
+			BestiaryModel.Find().Populate("monster", "kingdom").ExecInto(&bestiaries)
+			So(bestiaries, ShouldHaveLength, 3)
+			SoKatakan(bestiaries[0])
+			SoDrowner(bestiaries[1])
 		})
 	})
 }
