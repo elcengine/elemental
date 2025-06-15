@@ -5,6 +5,7 @@ import (
 
 	elemental "github.com/elcengine/elemental/core"
 	ts "github.com/elcengine/elemental/tests/fixtures/setup"
+	"github.com/google/uuid"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -149,7 +150,7 @@ func TestCoreReadPopulate(t *testing.T) {
 			So(bestiaries[0].Kingdom, ShouldEqual, kingdoms[0].ID)
 		})
 		Convey("Populate a model with just collection references", func() {
-			BestiaryModel := elemental.NewModel[Bestiary]("Bestiary", elemental.NewSchema(map[string]elemental.Field{
+			BestiaryModel := elemental.NewModel[Bestiary](uuid.NewString(), elemental.NewSchema(map[string]elemental.Field{
 				"Monster": {
 					Type:       elemental.ObjectID,
 					Collection: "monsters",
