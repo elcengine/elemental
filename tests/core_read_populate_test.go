@@ -3,6 +3,7 @@ package tests
 import (
 	"testing"
 
+	elemental "github.com/elcengine/elemental/core"
 	ts "github.com/elcengine/elemental/tests/fixtures/setup"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -59,30 +60,43 @@ func TestCoreReadPopulate(t *testing.T) {
 		},
 	}).Exec()
 
+	SoKatakan := func(bestiary DetailedBestiary) {
+		t.Helper()
+		So(bestiary.Monster.Name, ShouldEqual, "Katakan")
+		So(bestiary.Monster.Category, ShouldEqual, "Vampire")
+		So(bestiary.Kingdom.Name, ShouldEqual, "Nilfgaard")
+		So(bestiary.Kingdom.ID, ShouldEqual, kingdoms[0].ID)
+	}
+
+	SoDrowner := func(bestiary DetailedBestiary) {
+		t.Helper()
+		So(bestiary.Monster.Name, ShouldEqual, "Drowner")
+		So(bestiary.Monster.Category, ShouldEqual, "Drowner")
+		So(bestiary.Kingdom.Name, ShouldEqual, "Redania")
+		So(bestiary.Kingdom.ID, ShouldEqual, kingdoms[1].ID)
+	}
+
 	Convey("Find with populated fields", t, func() {
 		Convey("Populate a with multiple calls", func() {
 			bestiaries := make([]DetailedBestiary, 0)
 			BestiaryModel.Find().Populate("monster").Populate("kingdom").ExecInto(&bestiaries)
 			So(bestiaries, ShouldHaveLength, 3)
-			So(bestiaries[0].Monster.Name, ShouldEqual, "Katakan")
-			So(bestiaries[0].Monster.Category, ShouldEqual, "Vampire")
-			So(bestiaries[0].Kingdom.Name, ShouldEqual, "Nilfgaard")
+			SoKatakan(bestiaries[0])
+			SoDrowner(bestiaries[1])
 		})
 		Convey("Populate with a single call", func() {
 			var bestiaries []DetailedBestiary
 			BestiaryModel.Find().Populate("monster", "kingdom").ExecInto(&bestiaries)
 			So(bestiaries, ShouldHaveLength, 3)
-			So(bestiaries[0].Monster.Name, ShouldEqual, "Katakan")
-			So(bestiaries[0].Monster.Category, ShouldEqual, "Vampire")
-			So(bestiaries[0].Kingdom.Name, ShouldEqual, "Nilfgaard")
+			SoKatakan(bestiaries[0])
+			SoDrowner(bestiaries[1])
 		})
 		Convey("Populate with a single call (Comma separated string)", func() {
 			var bestiaries []DetailedBestiary
 			BestiaryModel.Find().Populate("monster kingdom").ExecInto(&bestiaries)
 			So(bestiaries, ShouldHaveLength, 3)
-			So(bestiaries[0].Monster.Name, ShouldEqual, "Katakan")
-			So(bestiaries[0].Monster.Category, ShouldEqual, "Vampire")
-			So(bestiaries[0].Kingdom.Name, ShouldEqual, "Nilfgaard")
+			SoKatakan(bestiaries[0])
+			SoDrowner(bestiaries[1])
 		})
 		Convey("Populate with select", func() {
 			var bestiaries []DetailedBestiary
@@ -95,6 +109,19 @@ func TestCoreReadPopulate(t *testing.T) {
 			So(bestiaries[0].Monster.Category, ShouldEqual, "")
 			So(bestiaries[0].Kingdom.Name, ShouldEqual, "Nilfgaard")
 		})
+		Convey("Populate with a pipeline", func() {
+			var bestiaries []DetailedBestiary
+			BestiaryModel.Find().Populate("kingdom", primitive.M{
+				"path": "monster",
+				"pipeline": []primitive.M{
+					{"$addFields": primitive.M{"name": primitive.M{"$concat": []string{"Rare ", "$name"}}}},
+				},
+			}).ExecInto(&bestiaries)
+			So(bestiaries, ShouldHaveLength, 3)
+			So(bestiaries[0].Monster.Name, ShouldEqual, "Rare Katakan")
+			So(bestiaries[0].Monster.Category, ShouldEqual, "Vampire")
+			So(bestiaries[0].Kingdom.Name, ShouldEqual, "Nilfgaard")
+		})
 		Convey("Populate just one field", func() {
 			var bestiaries []GenericBestiary[Monster, primitive.ObjectID]
 			BestiaryModel.Find().Populate("monster").ExecInto(&bestiaries)
@@ -102,6 +129,25 @@ func TestCoreReadPopulate(t *testing.T) {
 			So(bestiaries[0].Monster.Name, ShouldEqual, "Katakan")
 			So(bestiaries[0].Monster.Category, ShouldEqual, "Vampire")
 			So(bestiaries[0].Kingdom, ShouldEqual, kingdoms[0].ID)
+		})
+		Convey("Populate a model with just collection references", func() {
+			BestiaryModel := elemental.NewModel[Bestiary]("Bestiary", elemental.NewSchema(map[string]elemental.Field{
+				"Monster": {
+					Type:       elemental.ObjectID,
+					Collection: "monsters",
+				},
+				"Kingdom": {
+					Type:       elemental.ObjectID,
+					Collection: "kingdoms",
+				},
+			}, elemental.SchemaOptions{
+				Collection: "bestiary",
+			}))
+			var bestiaries []GenericBestiary[Monster, Kingdom]
+			BestiaryModel.Find().Populate("monster", "kingdom").ExecInto(&bestiaries)
+			So(bestiaries, ShouldHaveLength, 3)
+			SoKatakan(bestiaries[0])
+			SoDrowner(bestiaries[1])
 		})
 	})
 }

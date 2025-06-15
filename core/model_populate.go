@@ -15,10 +15,12 @@ import (
 func (m Model[T]) populate(value any) Model[T] {
 	var path, fieldname string
 	var selectField any
+	var subpipeline any
 	switch v := value.(type) {
 	case primitive.M:
 		path = utils.Cast[string](v["path"])
 		selectField = v["select"]
+		subpipeline = v["pipeline"]
 	default:
 		path = utils.Cast[string](value)
 	}
@@ -34,20 +36,22 @@ func (m Model[T]) populate(value any) Model[T] {
 			schemaField := m.Schema.Field(fieldname)
 			if schemaField != nil {
 				collection := schemaField.Collection
-				if lo.IsEmpty(collection) {
-					if !lo.IsEmpty(schemaField.Ref) {
+				if collection == "" {
+					if schemaField.Ref != "" {
 						model := reflect.ValueOf(Models[schemaField.Ref])
 						collection = model.FieldByName("Schema").FieldByName("Options").FieldByName("Collection").String()
 					}
 				}
-				if !lo.IsEmpty(collection) {
+				if collection != "" {
 					lookup := primitive.M{
 						"from":         collection,
 						"localField":   path,
 						"foreignField": "_id",
 						"as":           path,
 					}
-					if selectField != nil {
+					if subpipeline != nil {
+						lookup["pipeline"] = subpipeline
+					} else if selectField != nil {
 						lookup["pipeline"] = []primitive.M{
 							{"$project": selectField},
 						}
@@ -71,6 +75,8 @@ func (m Model[T]) populate(value any) Model[T] {
 
 // Finds and attaches the referenced documents to the main document returned by the query.
 // The fields to populate must have a 'Collection' or 'Ref' property in their schema definition.
+//
+// It can accept a single string, a slice of strings, or a map with 'path' and optionally a 'select' or a 'pipeline' key.
 func (m Model[T]) Populate(values ...any) Model[T] {
 	if len(values) == 1 {
 		if str, ok := values[0].(string); ok && (strings.Contains(str, ",") || strings.Contains(str, " ")) {
