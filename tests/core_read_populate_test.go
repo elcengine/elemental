@@ -77,19 +77,37 @@ func TestCoreReadPopulate(t *testing.T) {
 	}
 
 	Convey("Find with populated fields", t, func() {
-		Convey("Populate a with multiple calls", func() {
-			bestiaries := make([]DetailedBestiary, 0)
-			BestiaryModel.Find().Populate("monster").Populate("kingdom").ExecInto(&bestiaries)
-			So(bestiaries, ShouldHaveLength, 3)
-			SoKatakan(bestiaries[0])
-			SoDrowner(bestiaries[1])
+		Convey("Populate with multiple calls", func() {
+			Convey("With bson field name", func() {
+				bestiaries := make([]DetailedBestiary, 0)
+				BestiaryModel.Find().Populate("monster").Populate("kingdom").ExecInto(&bestiaries)
+				So(bestiaries, ShouldHaveLength, 3)
+				SoKatakan(bestiaries[0])
+				SoDrowner(bestiaries[1])
+			})
+			Convey("With model field name", func() {
+				bestiaries := make([]DetailedBestiary, 0)
+				BestiaryModel.Find().Populate("Monster").Populate("Kingdom").ExecInto(&bestiaries)
+				So(bestiaries, ShouldHaveLength, 3)
+				SoKatakan(bestiaries[0])
+				SoDrowner(bestiaries[1])
+			})
 		})
 		Convey("Populate with a single call", func() {
-			var bestiaries []DetailedBestiary
-			BestiaryModel.Find().Populate("monster", "kingdom").ExecInto(&bestiaries)
-			So(bestiaries, ShouldHaveLength, 3)
-			SoKatakan(bestiaries[0])
-			SoDrowner(bestiaries[1])
+			Convey("With bson field name", func() {
+				var bestiaries []DetailedBestiary
+				BestiaryModel.Find().Populate("monster", "kingdom").ExecInto(&bestiaries)
+				So(bestiaries, ShouldHaveLength, 3)
+				SoKatakan(bestiaries[0])
+				SoDrowner(bestiaries[1])
+			})
+			Convey("With model field name", func() {
+				var bestiaries []DetailedBestiary
+				BestiaryModel.Find().Populate("Monster", "Kingdom").ExecInto(&bestiaries)
+				So(bestiaries, ShouldHaveLength, 3)
+				SoKatakan(bestiaries[0])
+				SoDrowner(bestiaries[1])
+			})
 		})
 		Convey("Populate with a single call (Comma separated string)", func() {
 			var bestiaries []DetailedBestiary

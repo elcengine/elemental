@@ -30,36 +30,32 @@ func TestCoreAudit(t *testing.T) {
 	ParallelConvey, Wait := pc.New(t)
 
 	ParallelConvey("Insert", t, func() {
-		KingdomModel.Create(Kingdom{Name: "Nilfgaard"}).Exec()
-		SoTimeout(t, func() (ok bool) {
+		kingdom := KingdomModel.Create(Kingdom{Name: "Nilfgaard"}).ExecT()
+		SoTimeout(t, func() bool {
 			audit := AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeInsert}).ExecT()
-			if audit.Type != "" {
-				ok = true
-			}
-			return
+			return audit.Type == elemental.AuditTypeInsert &&
+				audit.User == elemental.AuditUserFallback && audit.Entity == KingdomModel.Name && audit.Document["_id"] == kingdom.ID
 		})
 	})
 
 	ParallelConvey("Update", t, func() {
 		KingdomModel.UpdateOne(&primitive.M{"name": "Nilfgaard"}, Kingdom{Name: "Redania"}).Exec()
-		SoTimeout(t, func() (ok bool) {
+		SoTimeout(t, func() bool {
 			audit := AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeUpdate}).ExecT()
-			if audit.Type != "" {
-				ok = true
-			}
-			return
+			return audit.Type == elemental.AuditTypeUpdate &&
+				audit.User == elemental.AuditUserFallback && audit.Entity == KingdomModel.Name &&
+				audit.Document["name"] == "Redania"
 		})
 	})
 
 	ParallelConvey("Delete", t, func() {
-		KingdomModel.Create(Kingdom{Name: "Skellige"}).Exec()
+		kingdom := KingdomModel.Create(Kingdom{Name: "Skellige"}).ExecT()
 		KingdomModel.DeleteOne(primitive.M{"name": "Skellige"}).Exec()
-		SoTimeout(t, func() (ok bool) {
+		SoTimeout(t, func() bool {
 			audit := AuditModel.FindOne(primitive.M{"entity": entity, "type": elemental.AuditTypeDelete}).ExecT()
-			if audit.Type != "" {
-				ok = true
-			}
-			return
+			return audit.Type == elemental.AuditTypeDelete &&
+				audit.User == elemental.AuditUserFallback && audit.Entity == KingdomModel.Name &&
+				audit.Document["_id"] == kingdom.ID
 		})
 	})
 

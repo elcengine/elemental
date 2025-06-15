@@ -7,6 +7,7 @@ import (
 
 	"github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
+	"github.com/spf13/cast"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -21,6 +22,8 @@ const (
 	AuditTypeUpdate AuditType = "update"
 	AuditTypeDelete AuditType = "delete"
 )
+
+const AuditUserFallback = "System"
 
 type Audit struct {
 	Entity    string      `json:"entity" bson:"entity"`         // The name of the model that was audited.
@@ -64,14 +67,12 @@ func (m Model[T]) EnableAuditing(ctx ...context.Context) {
 		q.Exec(context)
 	}
 
-	userFallback := "System"
-
 	m.OnInsert(func(doc T) {
 		execWithModelOpts(AuditModel.Create(Audit{
 			Entity:    m.Name,
 			Type:      AuditTypeInsert,
 			Document:  utils.CastBSON[bson.M](doc),
-			User:      lo.CoalesceOrEmpty(utils.Cast[string](context.Value(CtxUser)), userFallback),
+			User:      lo.CoalesceOrEmpty(cast.ToString(context.Value(CtxUser)), AuditUserFallback),
 			CreatedAt: time.Now(),
 		}))
 	}, TriggerOptions{Context: &context, Filter: &primitive.M{"ns.coll": primitive.M{"$eq": m.Collection().Name()}}})
@@ -80,7 +81,7 @@ func (m Model[T]) EnableAuditing(ctx ...context.Context) {
 			Entity:    m.Name,
 			Type:      AuditTypeUpdate,
 			Document:  utils.CastBSON[bson.M](doc),
-			User:      lo.CoalesceOrEmpty(utils.Cast[string](context.Value(CtxUser)), userFallback),
+			User:      lo.CoalesceOrEmpty(cast.ToString(context.Value(CtxUser)), AuditUserFallback),
 			CreatedAt: time.Now(),
 		}))
 	}, TriggerOptions{Context: &context, Filter: &primitive.M{"ns.coll": primitive.M{"$eq": m.Collection().Name()}}})
@@ -89,7 +90,7 @@ func (m Model[T]) EnableAuditing(ctx ...context.Context) {
 			Entity:    m.Name,
 			Type:      AuditTypeDelete,
 			Document:  map[string]any{"_id": id},
-			User:      lo.CoalesceOrEmpty(utils.Cast[string](context.Value(CtxUser)), userFallback),
+			User:      lo.CoalesceOrEmpty(cast.ToString(context.Value(CtxUser)), AuditUserFallback),
 			CreatedAt: time.Now(),
 		}))
 	}, TriggerOptions{Context: &context, Filter: &primitive.M{"ns.coll": primitive.M{"$eq": m.Collection().Name()}}})

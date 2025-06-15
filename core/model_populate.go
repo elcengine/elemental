@@ -27,7 +27,11 @@ func (m Model[T]) populate(value any) Model[T] {
 	if path != "" {
 		for i := range m.docReflectType.NumField() {
 			field := m.docReflectType.Field(i)
-			if cleanTag(field.Tag.Get("bson")) == path {
+			tag := cleanTag(field.Tag.Get("bson"))
+			if path == field.Name {
+				path = tag
+			}
+			if path == tag {
 				fieldname = field.Name
 				break
 			}
