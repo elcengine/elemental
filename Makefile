@@ -6,7 +6,7 @@ format:
 test:
 	PARALLEL_CONVEY=false make test-lightspeed
 test-lightspeed:
-	go test $(GO_TEST_ARGS) --run=${run} -v --count=1 ./tests/...
+	go test $(GO_TEST_ARGS) --run='${run}' -v --count=1 ./tests/...
 test-coverage:
 	@mkdir -p ./coverage
 	make test GO_TEST_ARGS="--cover -coverpkg=./cmd/...,./core/...,./plugins/...,./utils/... --coverprofile=./coverage/coverage.out"

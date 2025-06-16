@@ -161,7 +161,7 @@ func TestCoreReadPopulate(t *testing.T) {
 				},
 			}, elemental.SchemaOptions{
 				Collection: "bestiary",
-			}))
+			})).SetDatabase(t.Name())
 			var bestiaries []DetailedBestiary
 			BestiaryModel.Find().Populate("monster", "kingdom").ExecInto(&bestiaries)
 			So(bestiaries, ShouldHaveLength, 3)
