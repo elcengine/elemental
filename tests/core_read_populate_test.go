@@ -101,7 +101,7 @@ func TestCoreReadPopulate(t *testing.T) {
 				}, ShouldPanicWith, errors.New("no results found matching the given query"))
 			})
 		})
-		Convey("Populate with a single call", func() {
+		Convey("Populate with a single call (Variadic arguments)", func() {
 			Convey("With bson field name", func() {
 				var bestiaries []DetailedBestiary
 				BestiaryModel.Find().Populate("monster", "kingdom").ExecInto(&bestiaries)
@@ -117,12 +117,55 @@ func TestCoreReadPopulate(t *testing.T) {
 				SoDrowner(bestiaries[1])
 			})
 		})
-		Convey("Populate with a single call (Space separated string)", func() {
-			var bestiaries []DetailedBestiary
-			BestiaryModel.Find().Populate("monster kingdom").ExecInto(&bestiaries)
-			So(bestiaries, ShouldHaveLength, 3)
-			SoKatakan(bestiaries[0])
-			SoDrowner(bestiaries[1])
+		Convey("Populate with a single call (Single argument)", func() {
+			Convey("String slice", func() {
+				Convey("With bson field name", func() {
+					var bestiaries []DetailedBestiary
+					BestiaryModel.Find().Populate([]string{"monster", "kingdom"}).ExecInto(&bestiaries)
+					So(bestiaries, ShouldHaveLength, 3)
+					SoKatakan(bestiaries[0])
+					SoDrowner(bestiaries[1])
+				})
+				Convey("With model field name", func() {
+					var bestiaries []DetailedBestiary
+					BestiaryModel.Find().Populate([]string{"Monster", "Kingdom"}).ExecInto(&bestiaries)
+					So(bestiaries, ShouldHaveLength, 3)
+					SoKatakan(bestiaries[0])
+					SoDrowner(bestiaries[1])
+				})
+			})
+			Convey("Space separated string", func() {
+				Convey("With bson field name", func() {
+					var bestiaries []DetailedBestiary
+					BestiaryModel.Find().Populate("monster kingdom").ExecInto(&bestiaries)
+					So(bestiaries, ShouldHaveLength, 3)
+					SoKatakan(bestiaries[0])
+					SoDrowner(bestiaries[1])
+				})
+				Convey("With model field name", func() {
+					var bestiaries []DetailedBestiary
+					BestiaryModel.Find().Populate("Monster Kingdom").ExecInto(&bestiaries)
+					So(bestiaries, ShouldHaveLength, 3)
+					SoKatakan(bestiaries[0])
+					SoDrowner(bestiaries[1])
+				})
+			})
+			Convey("Comma separated string", func() {
+				Convey("With bson field name", func() {
+					var bestiaries []DetailedBestiary
+					BestiaryModel.Find().Populate("monster, kingdom").ExecInto(&bestiaries)
+					So(bestiaries, ShouldHaveLength, 3)
+					SoKatakan(bestiaries[0])
+					SoDrowner(bestiaries[1])
+				})
+				Convey("With model field name", func() {
+					var bestiaries []DetailedBestiary
+					BestiaryModel.Find().Populate("Monster, Kingdom").ExecInto(&bestiaries)
+					So(bestiaries, ShouldHaveLength, 3)
+					SoKatakan(bestiaries[0])
+					SoDrowner(bestiaries[1])
+				})
+			})
 		})
 		Convey("Populate with select", func() {
 			var bestiaries []DetailedBestiary
