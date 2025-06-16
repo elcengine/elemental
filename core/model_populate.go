@@ -90,10 +90,18 @@ func (m Model[T]) Populate(values ...any) Model[T] {
 		return m.result
 	}
 	if len(values) == 1 {
-		if str, ok := values[0].(string); ok && (strings.Contains(str, ",") || strings.Contains(str, " ")) {
-			parts := strings.FieldsFunc(str, func(r rune) bool {
-				return r == ',' || r == ' '
-			})
+		var parts []string
+		switch v := values[0].(type) {
+		case []string:
+			parts = v
+		case string:
+			if strings.Contains(v, ",") || strings.Contains(v, " ") {
+				parts = strings.FieldsFunc(v, func(r rune) bool {
+					return r == ',' || r == ' '
+				})
+			}
+		}
+		if len(parts) > 0 {
 			for _, value := range parts {
 				m = m.populate(value)
 			}
