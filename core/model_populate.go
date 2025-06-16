@@ -82,6 +82,13 @@ func (m Model[T]) populate(value any) Model[T] {
 //
 // It can accept a single string, a slice of strings, or a map with 'path' and optionally a 'select' or a 'pipeline' key.
 func (m Model[T]) Populate(values ...any) Model[T] {
+	m.setResult([]bson.M{})
+	m.executor = func(m Model[T], ctx context.Context) any {
+		cursor := lo.Must(m.Collection().Aggregate(ctx, m.pipeline))
+		lo.Must0(cursor.All(ctx, m.result))
+		m.checkConditionsAndPanic(m.result)
+		return m.result
+	}
 	if len(values) == 1 {
 		if str, ok := values[0].(string); ok && (strings.Contains(str, ",") || strings.Contains(str, " ")) {
 			parts := strings.FieldsFunc(str, func(r rune) bool {
@@ -95,13 +102,6 @@ func (m Model[T]) Populate(values ...any) Model[T] {
 	}
 	for _, value := range values {
 		m = m.populate(value)
-	}
-	m.executor = func(m Model[T], ctx context.Context) any {
-		var results []bson.M
-		cursor := lo.Must(m.Collection().Aggregate(ctx, m.pipeline))
-		lo.Must0(cursor.All(ctx, &results))
-		m.checkConditionsAndPanic(results)
-		return results
 	}
 	return m
 }

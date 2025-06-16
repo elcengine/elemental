@@ -26,6 +26,7 @@ type Model[T any] struct {
 	Cloned              bool   // Indicates if this model has been cloned at least once
 	pipeline            mongo.Pipeline
 	executor            func(m Model[T], ctx context.Context) any
+	result              any // Pointer to the result of the last executed query. This is still not in full use. Only used for operations such as Populate for now.
 	whereField          string
 	failWith            *error
 	orConditionActive   bool

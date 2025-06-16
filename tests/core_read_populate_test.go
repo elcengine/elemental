@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"errors"
 	"testing"
 
 	elemental "github.com/elcengine/elemental/core"
@@ -93,6 +94,12 @@ func TestCoreReadPopulate(t *testing.T) {
 				SoKatakan(bestiaries[0])
 				SoDrowner(bestiaries[1])
 			})
+			Convey("With OrFail", func() {
+				bestiaries := make([]DetailedBestiary, 0)
+				So(func() {
+					BestiaryModel.Find(primitive.M{"monster": uuid.New()}).Populate("monster").Populate("kingdom").OrFail().ExecInto(&bestiaries)
+				}, ShouldPanicWith, errors.New("no results found matching the given query"))
+			})
 		})
 		Convey("Populate with a single call", func() {
 			Convey("With bson field name", func() {
@@ -110,7 +117,7 @@ func TestCoreReadPopulate(t *testing.T) {
 				SoDrowner(bestiaries[1])
 			})
 		})
-		Convey("Populate with a single call (Comma separated string)", func() {
+		Convey("Populate with a single call (Space separated string)", func() {
 			var bestiaries []DetailedBestiary
 			BestiaryModel.Find().Populate("monster kingdom").ExecInto(&bestiaries)
 			So(bestiaries, ShouldHaveLength, 3)

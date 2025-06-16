@@ -89,20 +89,17 @@ func (m Model[T]) addToPipeline(stage, key string, value any) Model[T] {
 }
 
 func (m Model[T]) checkConditionsAndPanic(result any) {
-	sliceT, okT := result.([]T)
-	if slice, ok := result.([]any); ok || okT {
-		if m.failWith != nil && (len(slice) == 0 || len(sliceT) == 0) {
+	if m.failWith != nil {
+		val := reflect.ValueOf(result)
+		if val.Kind() == reflect.Ptr {
+			val = val.Elem()
+		}
+		if (val.Kind() == reflect.Slice || val.Kind() == reflect.Array) && val.Len() == 0 {
 			panic(*m.failWith)
 		}
-		return
 	}
-	if singleResult, ok := result.(*mongo.SingleResult); ok {
-		if err := singleResult.Err(); err != nil {
-			if m.failWith != nil {
-				panic(*m.failWith)
-			}
-			panic(err)
-		}
+	if r, ok := result.(*mongo.SingleResult); ok {
+		m.checkConditionsAndPanicForErr(r.Err())
 	}
 }
 
@@ -180,4 +177,9 @@ func (m Model[T]) setUpdateOperator(operator string, doc any) Model[T] {
 func (m *Model[T]) preprocess() {
 	var sample [0]T // Slice of zero length to get the type of T
 	m.docReflectType = reflect.TypeOf(sample).Elem()
+}
+
+// Sets the variable that will hold the result of the last executed query.
+func (m *Model[T]) setResult(result any) {
+	m.result = &result
 }

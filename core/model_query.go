@@ -138,6 +138,11 @@ func (m Model[T]) ExecSS(ctx ...context.Context) []string {
 //
 // The result variable must be a pointer to your desired type.
 func (m Model[T]) ExecInto(result any, ctx ...context.Context) {
-	rv, bytes := lo.Must2(bson.MarshalValue(m.Exec(ctx...)))
-	bson.UnmarshalValue(rv, bytes, result)
+	if m.result != nil { // Gradually will migrate everything to use this approach since the block below this is expensive to use.
+		m.result = result
+		m.Exec(ctx...)
+	} else {
+		rv, bytes := lo.Must2(bson.MarshalValue(m.Exec(ctx...)))
+		bson.UnmarshalValue(rv, bytes, result)
+	}
 }
