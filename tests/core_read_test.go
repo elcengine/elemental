@@ -24,6 +24,11 @@ func TestCoreRead(t *testing.T) {
 			users := UserModel.Find().ExecTT()
 			So(users, ShouldHaveLength, len(mocks.Users))
 		})
+		Convey("Find all users with ExecInto", func() {
+			var users []User
+			UserModel.Find().ExecInto(&users)
+			So(users, ShouldHaveLength, len(mocks.Users))
+		})
 		Convey("Find all with a limit of 2", func() {
 			users := UserModel.Find().Limit(2).ExecTT()
 			So(users, ShouldHaveLength, 2)

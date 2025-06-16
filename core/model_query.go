@@ -7,6 +7,7 @@ import (
 	"github.com/elcengine/elemental/utils"
 	"github.com/samber/lo"
 	"github.com/spf13/cast"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // Extends the query with a where clause. The value of the clause if specified within this method itself
@@ -130,4 +131,18 @@ func (m Model[T]) ExecInt(ctx ...context.Context) int {
 func (m Model[T]) ExecSS(ctx ...context.Context) []string {
 	result := m.Exec(ctx...)
 	return cast.ToStringSlice(result)
+}
+
+// ExecInto is a specialized method that executes the query and unmarshals the result into the provided result variable.
+// It is useful when you want to extract results into a custom struct other than the model type such as when you populate certain fields.
+//
+// The result variable must be a pointer to your desired type.
+func (m Model[T]) ExecInto(result any, ctx ...context.Context) {
+	if m.result != nil { // Gradually will migrate everything to use this approach since the block below this is expensive to use.
+		m.result = result
+		m.Exec(ctx...)
+	} else {
+		rv, bytes := lo.Must2(bson.MarshalValue(m.Exec(ctx...)))
+		bson.UnmarshalValue(rv, bytes, result)
+	}
 }

@@ -1,7 +1,6 @@
 package elemental
 
 import (
-	"reflect"
 	"regexp"
 
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -17,7 +16,7 @@ type SchemaOptions struct {
 }
 
 type Field struct {
-	Type       reflect.Kind          // Type of the field. Can be of reflect.Kind, an alias defined within elemental such as elemental.String or a custom reflection
+	Type       FieldType             // Type of the field. Can be of reflect.Kind, reflect.Type, an Elemental alias such as elemental.String or a custom reflection
 	Schema     *Schema               // Defines a subschema for the field if it is a subdocument
 	Required   bool                  // Whether the field is required or not when creating a new document
 	Default    any                   // Default value for the field when creating a new document

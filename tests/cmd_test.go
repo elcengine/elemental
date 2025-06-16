@@ -45,6 +45,9 @@ func TestCmd(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		So(cfg.ConnectionStr, ShouldEqual, mocks.DEFAULT_DATASOURCE)
+
+		cmd.RootCmd.SetArgs([]string{"init", mocks.DEFAULT_DATASOURCE})
+		cmd.Execute() // Should do nothing if the file already exists
 	})
 
 	Convey("Migrations and seeds", t, func() {

@@ -14,9 +14,11 @@ type Kingdom = fixtures.Kingdom
 
 type Monster = fixtures.Monster
 
+type GenericBestiary[T any, Y any] = fixtures.GenericBestiary[T, Y]
+
 type Bestiary = fixtures.Bestiary
 
-type BestiaryWithID = fixtures.BestiaryWithID
+type DetailedBestiary = fixtures.DetailedBestiary
 
 type MonsterWeakness = fixtures.MonsterWeakness
 
@@ -29,8 +31,6 @@ var MonsterModel = fixtures.MonsterModel
 var KingdomModel = fixtures.KingdomModel
 
 var BestiaryModel = fixtures.BestiaryModel
-
-var BestiaryWithIDModel = fixtures.BestiaryWithIDModel
 
 // Test helper function to wait for a condition to be true or timeout.
 // It will keep checking the condition every 100 milliseconds until the timeout is reached.

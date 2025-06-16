@@ -272,7 +272,8 @@ func TestPluginFilterQuery(t *testing.T) {
 				Kingdom: kingdom,
 			}).Exec()
 
-			bestiaries := BestiaryModel.QS("include=monster,kingdom").ExecTT()
+			var bestiaries []DetailedBestiary
+			BestiaryModel.QS("include=monster,kingdom").ExecInto(&bestiaries)
 			So(bestiaries, ShouldHaveLength, 1)
 			So(bestiaries[0].Monster.Name, ShouldEqual, monster.Name)
 			So(bestiaries[0].Monster.Category, ShouldEqual, monster.Category)

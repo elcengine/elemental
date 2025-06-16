@@ -7,3 +7,5 @@ database
 .elemental
 
 .vscode
+
+.env

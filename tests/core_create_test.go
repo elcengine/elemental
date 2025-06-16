@@ -26,7 +26,7 @@ func TestCoreCreate(t *testing.T) {
 	Convey("Create users", t, func() {
 		Convey("Create a single user", func() {
 			user := UserModel.Create(mocks.Ciri).ExecT()
-			So(user.ID, ShouldNotBeNil)
+			So(user.ID.IsZero(), ShouldBeFalse)
 			So(user.Name, ShouldEqual, mocks.Ciri.Name)
 			So(user.Age, ShouldEqual, fixtures.DefaultUserAge)
 			So(user.CreatedAt.Unix(), ShouldBeBetweenOrEqual, time.Now().Add(-10*time.Second).Unix(), time.Now().Unix())
@@ -35,8 +35,8 @@ func TestCoreCreate(t *testing.T) {
 		Convey("Create many users", func() {
 			users := UserModel.CreateMany(mocks.Users[1:]).ExecTT()
 			So(len(users), ShouldEqual, len(mocks.Users[1:]))
-			So(users[0].ID, ShouldNotBeNil)
-			So(users[1].ID, ShouldNotBeNil)
+			So(users[0].ID.IsZero(), ShouldBeFalse)
+			So(users[1].ID.IsZero(), ShouldBeFalse)
 			So(users[0].Name, ShouldEqual, mocks.Geralt.Name)
 			So(users[1].Name, ShouldEqual, mocks.Eredin.Name)
 			So(users[0].Age, ShouldEqual, mocks.Geralt.Age)
@@ -45,7 +45,7 @@ func TestCoreCreate(t *testing.T) {
 		Convey("Create a single user in a different database", func() {
 			TEMPORARY_DB := fmt.Sprintf("%s_%s", t.Name(), "temporary_1")
 			user := UserModel.Create(mocks.Ciri).SetDatabase(TEMPORARY_DB).ExecT()
-			So(user.ID, ShouldNotBeNil)
+			So(user.ID.IsZero(), ShouldBeFalse)
 			var newUser User
 			elemental.UseDatabase(TEMPORARY_DB).Collection(UserModel.Collection().Name()).FindOne(context.TODO(), primitive.M{"_id": user.ID}).Decode(&newUser)
 			So(newUser.Name, ShouldEqual, mocks.Ciri.Name)
@@ -53,7 +53,7 @@ func TestCoreCreate(t *testing.T) {
 		Convey("Create a single user in a different collection in a different database", func() {
 			TEMPORARY_DB := fmt.Sprintf("%s_%s", t.Name(), "temporary_2")
 			user := UserModel.Create(mocks.Geralt).SetDatabase(TEMPORARY_DB).SetCollection("witchers").ExecT()
-			So(user.ID, ShouldNotBeNil)
+			So(user.ID.IsZero(), ShouldBeFalse)
 			var newUser User
 			elemental.UseDatabase(TEMPORARY_DB).Collection("witchers").FindOne(context.TODO(), primitive.M{"_id": user.ID}).Decode(&newUser)
 			So(newUser.Name, ShouldEqual, mocks.Geralt.Name)
@@ -64,7 +64,7 @@ func TestCoreCreate(t *testing.T) {
 			Name:     "Katakan",
 			Category: "Vampire",
 		}).ExecT()
-		So(monster.ID, ShouldNotBeNil)
+		So(monster.ID.IsZero(), ShouldBeFalse)
 		So(monster.Name, ShouldEqual, "Katakan")
 		So(monster.CreatedAt.Unix(), ShouldBeBetweenOrEqual, time.Now().Add(-10*time.Second).Unix(), time.Now().Unix())
 		So(monster.UpdatedAt.Unix(), ShouldBeBetweenOrEqual, time.Now().Add(-10*time.Second).Unix(), time.Now().Unix())

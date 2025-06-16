@@ -88,18 +88,18 @@ func (m Model[T]) addToPipeline(stage, key string, value any) Model[T] {
 	return m
 }
 
-func (m Model[T]) checkConditionsAndPanic(results []T) {
-	if m.failWith != nil && len(results) == 0 {
-		panic(*m.failWith)
-	}
-}
-
-func (m Model[T]) checkConditionsAndPanicForSingleResult(result *mongo.SingleResult) {
-	if result.Err() != nil {
-		if m.failWith != nil {
+func (m Model[T]) checkConditionsAndPanic(result any) {
+	if m.failWith != nil {
+		val := reflect.ValueOf(result)
+		if val.Kind() == reflect.Ptr {
+			val = val.Elem()
+		}
+		if (val.Kind() == reflect.Slice || val.Kind() == reflect.Array) && val.Len() == 0 {
 			panic(*m.failWith)
 		}
-		panic(result.Err())
+	}
+	if r, ok := result.(*mongo.SingleResult); ok {
+		m.checkConditionsAndPanicForErr(r.Err())
 	}
 }
 
@@ -121,15 +121,16 @@ func (m Model[T]) findMatchStage() bson.M {
 	return bson.M{}
 }
 
-func (m Model[T]) parseDocument(doc any) primitive.M {
+func (m Model[T]) parseDocument(doc any) bson.M {
 	docType := reflect.TypeOf(doc).Kind()
 	if docType == reflect.Ptr {
 		doc = reflect.ValueOf(doc).Elem().Interface()
 	}
-	if docType == reflect.Map {
-		return utils.Cast[primitive.M](doc)
+	switch doc.(type) {
+	case bson.M, map[string]any:
+		return utils.Cast[bson.M](doc)
 	}
-	result := *utils.ToBSONDoc(doc)
+	result := utils.CastBSON[bson.M](doc)
 	for k, v := range result {
 		fieldValue := reflect.ValueOf(v)
 		if !fieldValue.IsValid() || fieldValue.IsZero() {
@@ -170,4 +171,15 @@ func (m Model[T]) setUpdateOperator(operator string, doc any) Model[T] {
 		})()
 	}
 	return m
+}
+
+// Computes and stores some expensive operations. Invoked at the time of model creation.
+func (m *Model[T]) preprocess() {
+	var sample [0]T // Slice of zero length to get the type of T
+	m.docReflectType = reflect.TypeOf(sample).Elem()
+}
+
+// Sets the variable that will hold the result of the last executed query.
+func (m *Model[T]) setResult(result any) {
+	m.result = &result
 }
