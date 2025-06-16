@@ -1,4 +1,3 @@
-GO_TEST_ARGS ?= -tags=unit
 GO_BENCH_ARGS ?= -benchtime=30s
 	
 format:
