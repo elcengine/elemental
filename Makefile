@@ -40,6 +40,6 @@ install:
 	@echo "\033[0;32mGo modules installed successfully.\033[0m"
 tidy:
 	@echo "\033[0;32mRunning go mod tidy...\033[0m"
-	@GOPRIVATE="github.com/clubpay*" go mod tidy -v
+	go mod tidy -v
 	@echo "\033[0;32mVerifying packages...\033[0m"
-	@GOPRIVATE="github.com/clubpay*" go mod verify
+	go mod verify
