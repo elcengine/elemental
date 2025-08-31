@@ -34,6 +34,9 @@ func run(rollback bool, target string) {
 	if err != nil {
 		log.Fatalf("Failed to read %ss: %v", target, err)
 	}
+	files = lo.Filter(files, func(file os.DirEntry, index int) bool {
+		return file.Name() != ".gitkeep"
+	})
 	extractTimestamp := func(fileName string) int64 {
 		fileName = strings.TrimSuffix(fileName, ".go")
 		parts := strings.Split(fileName, "_")
