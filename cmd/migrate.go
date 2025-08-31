@@ -37,6 +37,9 @@ func run(rollback bool, target string) {
 	files = lo.Filter(files, func(file os.DirEntry, index int) bool {
 		return file.Name() != ".gitkeep"
 	})
+	if len(files) == 0 {
+		log.Fatalf("No %ss to run", target)
+	}
 	extractTimestamp := func(fileName string) int64 {
 		fileName = strings.TrimSuffix(fileName, ".go")
 		parts := strings.Split(fileName, "_")
