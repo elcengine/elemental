@@ -157,11 +157,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func Up_%s(ctx context.Context, db *mongo.Database, client *mongo.Client) {
+func Up_%s(ctx context.Context, db *mongo.Database, client *mongo.Client) { //nolint:staticcheck // ST1003
 	// Write your %s here
 }
 
-func Down_%s(ctx context.Context, db *mongo.Database, client *mongo.Client) {
+func Down_%s(ctx context.Context, db *mongo.Database, client *mongo.Client) { //nolint:staticcheck // ST1003
 	// Write your rollback here
 }`, target, timestamp, target, timestamp)
 	dir := cfg.MigrationsDir
