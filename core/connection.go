@@ -59,23 +59,30 @@ func Connect(arg any) mongo.Client {
 	}
 
 	opts.Alias = lo.CoalesceOrEmpty(opts.Alias, "default")
+
 	clientOpts := lo.CoalesceOrEmpty(opts.ClientOptions, options.Client()).
 		SetServerAPIOptions(options.ServerAPI(options.ServerAPIVersion1)).
-		SetPoolMonitor(lo.CoalesceOrEmpty(opts.PoolMonitor, defaultPoolMonitor(opts.Alias)))
-	if clientOpts.GetURI() == "" {
-		if opts.URI == "" {
-			panic(ErrURIRequired)
-		}
-		clientOpts = clientOpts.ApplyURI(opts.URI)
+		SetPoolMonitor(lo.CoalesceOrEmpty(opts.PoolMonitor, defaultPoolMonitor(opts.Alias))) // Set default client options if not provided
+
+	if opts.URI = lo.CoalesceOrEmpty(clientOpts.GetURI(), opts.URI); opts.URI == "" { // We prioritize the URI set in the client options if both are provided
+		panic(ErrURIRequired)
 	}
-	cs := lo.Must(connstring.ParseAndValidate(clientOpts.GetURI()))
+
+	lo.Must0(clientOpts.ApplyURI(opts.URI).Validate())
+
+	cs, _ := connstring.Parse(opts.URI) // We can ignore the error here since we already validated the URI above
 	defaultDatabases[opts.Alias] = cs.Database
+
 	ctx, cancel := context.WithTimeout(context.Background(), *lo.CoalesceOrEmpty(clientOpts.ConnectTimeout, lo.ToPtr(ConnectionTimeout)))
 	defer cancel()
+
 	client := lo.Must(mongo.Connect(ctx, clientOpts))
-	lo.Must0(client.Ping(ctx, readpref.Primary()))
+	lo.Must0(client.Ping(ctx, readpref.Primary())) // Verify connection
+
 	clients[opts.Alias] = client
+
 	triggerEventIfRegistered(opts.Alias, EventDeploymentDiscovered)
+
 	return *client
 }
 
